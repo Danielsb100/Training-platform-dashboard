@@ -1,0 +1,1023 @@
+const API_URL = window.location.origin;
+
+function getAuthToken() {
+    return localStorage.getItem('token');
+}
+
+async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
+    const token = getAuthToken();
+    if (!token) {
+        alert('Sessão expirada. Faça login novamente.');
+        window.location.href = 'index.html';
+        throw new Error('No token');
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${token}`
+    };
+
+    if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const options = {
+        method,
+        headers
+    };
+
+    if (body) {
+        options.body = isFormData ? body : JSON.stringify(body);
+    }
+
+    const res = await fetch(`${API_URL}${endpoint}`, options);
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.error || data.message || 'Erro na requisição');
+    }
+
+    return data.data || data;
+}
+
+// ==========================================
+// ESTADO DO GERENCIADOR DE MÓDULOS
+// ==========================================
+let dbModules = [];
+let editingModuleId = null;
+
+// ==========================================
+// BANCO DE MÓDULOS (SELETOR)
+// ==========================================
+
+async function fetchModulesFromDB() {
+    // Only used to keep dbModules cached if needed for other things
+    try {
+        const modules = await apiCall('/modules/my');
+        dbModules = modules || [];
+    } catch (error) {
+        console.error('Erro ao buscar módulos:', error);
+    }
+}
+
+function openModuleManager() {
+    document.getElementById('module-editor-modal').style.display = 'block';
+    document.getElementById('active-module-editor').style.display = 'none'; // hide detail panel initially
+    renderAttachedModules();
+}
+
+function closeModuleEditor() {
+    document.getElementById('module-editor-modal').style.display = 'none';
+    if(typeof updateConstructionUI === 'function') {
+        updateConstructionUI();
+    }
+}
+
+function renderModuleBank(modulesToRender) {
+    // Deprecated: We don't show the module bank anymore.
+}
+
+function filterModuleBank(query) {
+    // Deprecated
+}
+
+function attachModuleToCourse(dbModuleId) {
+    const module = dbModules.find(m => m.id === dbModuleId);
+    if (!module) return;
+
+    if (!window.courseModules) window.courseModules = [];
+    
+    if (window.courseModules.some(m => m.dbId === dbModuleId)) {
+        alert('Este módulo já está atrelado a este curso!');
+        return;
+    }
+
+    if (window.editingCourseId && !window.editingCourseId.toString().startsWith('course_')) {
+        apiCall(`/courses/${window.editingCourseId}/modules`, 'POST', {
+            moduleId: dbModuleId,
+            requireQuizPass: false
+        }).then(res => {
+            window.courseModules.push({
+                id: res.id, // courseModuleId
+                dbId: dbModuleId,
+                title: module.title,
+                content: module.description || '',
+                status: module.status
+            });
+            renderAttachedModules();
+            alert('Módulo adicionado à trilha do curso!');
+        }).catch(err => {
+            alert('Erro ao vincular módulo: ' + err.message);
+        });
+    } else {
+        alert('Salve o curso primeiro antes de vincular módulos.');
+    }
+}
+
+function renderAttachedModules() {
+    const container = document.getElementById('modules-grid-container');
+    const headerCount = document.getElementById('modules-count-header');
+    
+    if (!window.courseModules || window.courseModules.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px; grid-column: 1 / -1;">Nenhum módulo na trilha deste curso. Clique em "+ Criar Módulo".</p>';
+        if (headerCount) headerCount.innerText = '0';
+        return;
+    }
+    
+    if (headerCount) headerCount.innerText = window.courseModules.length;
+    
+    container.innerHTML = window.courseModules.map((m, index) => `
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"
+             onclick="openModuleEditor(${m.dbId})">
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                    <span style="background:#f1f5f9; color:#64748b; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">MÓDULO ${index + 1}</span>
+                    <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;" title="Remover da Trilha"><i class="fas fa-trash"></i></button>
+                </div>
+                <h3 style="margin:0 0 10px 0; color:#1e293b; font-size:1.2rem;">${m.title}</h3>
+                <p style="margin:0; color:#64748b; font-size:0.9rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'Sem descrição'}</p>
+            </div>
+            <div style="margin-top:20px; padding-top:15px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; color:#497aa7; font-size:0.85rem; font-weight:bold;">
+                <span><i class="fas fa-edit"></i> Editar Conteúdo</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function removeModuleFromCourse(localId) {
+    const mod = window.courseModules.find(m => m.id === localId);
+    if (!mod) return;
+
+    if (window.editingCourseId && !window.editingCourseId.toString().startsWith('course_') && !localId.toString().startsWith('17')) {
+        // If it's a real courseModuleId (not Date.now()), delete from DB
+        apiCall(`/courses/${window.editingCourseId}/modules/${localId}`, 'DELETE')
+            .then(() => {
+                window.courseModules = window.courseModules.filter(m => m.id !== localId);
+                renderAttachedModules();
+                document.getElementById('active-module-editor').style.display = 'none';
+            })
+            .catch(err => alert('Erro ao remover módulo do curso: ' + err.message));
+    } else {
+        window.courseModules = window.courseModules.filter(m => m.id !== localId);
+        renderAttachedModules();
+        document.getElementById('active-module-editor').style.display = 'none';
+    }
+}
+
+window.removeModule = removeModuleFromCourse; 
+
+
+
+// ==========================================
+// EDITOR AVANÇADO DE MÓDULOS
+// ==========================================
+
+async function openModuleEditor(moduleId = null) {
+    editingModuleId = moduleId;
+    
+    // Reset UI
+    document.getElementById('module-basics-form').reset();
+    document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando vídeos...</p>';
+    document.getElementById('d-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando documentos...</p>';
+    document.getElementById('q-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando quiz...</p>';
+    document.getElementById('btn-delete-module').style.display = 'none';
+    
+    switchModuleTab('basics');
+    document.getElementById('active-module-editor').style.display = 'block';
+
+    if (!moduleId) {
+        document.getElementById('editor-title').innerText = 'Criar Novo Módulo';
+        try {
+            const newModule = await apiCall('/modules', 'POST', {
+                title: 'Novo Módulo',
+                description: '',
+                status: 'DRAFT'
+            });
+            editingModuleId = newModule.id;
+            
+            document.getElementById('m-title').value = newModule.title;
+            document.getElementById('m-status').value = newModule.status;
+            document.getElementById('btn-delete-module').style.display = 'block';
+            
+            if (window.editingCourseId && !window.editingCourseId.toString().startsWith('course_')) {
+                try {
+                    const cmRes = await apiCall(`/courses/${window.editingCourseId}/modules`, 'POST', {
+                        moduleId: newModule.id,
+                        requireQuizPass: false
+                    });
+                    
+                    if (!window.courseModules) window.courseModules = [];
+                    window.courseModules.push({
+                        id: cmRes.id,
+                        dbId: newModule.id,
+                        title: newModule.title,
+                        content: newModule.description || '',
+                        status: newModule.status
+                    });
+                    renderAttachedModules();
+                } catch (err) {
+                    console.error('Failed to link new module to course', err);
+                }
+            }
+            
+            renderVideos([]);
+            renderDocs([]);
+            renderQuizzes([]);
+            
+        } catch (error) {
+            alert('Erro ao criar módulo base: ' + error.message);
+            document.getElementById('active-module-editor').style.display = 'none';
+        }
+    } else {
+        document.getElementById('editor-title').innerText = 'Editar Módulo';
+        document.getElementById('btn-delete-module').style.display = 'block';
+        loadModuleData(moduleId);
+    }
+}
+
+function switchModuleTab(tabName) {
+    document.querySelectorAll('.module-tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.color = '#64748b';
+        b.style.borderBottomColor = 'transparent';
+    });
+    
+    document.querySelectorAll('.module-tab-pane').forEach(p => p.style.display = 'none');
+    
+    const activeBtn = document.querySelector(`.module-tab-btn[data-tab="${tabName}"]`);
+    if(activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.style.color = '#cf982e';
+        activeBtn.style.borderBottomColor = '#cf982e';
+    }
+    
+    const activePane = document.getElementById(`pane-${tabName}`);
+    if(activePane) activePane.style.display = 'block';
+}
+
+async function loadModuleData(id) {
+    try {
+        const module = await apiCall(`/modules/${id}`);
+        window.currentModuleData = module;
+        
+        // Basics
+        document.getElementById('m-title').value = module.title || '';
+        document.getElementById('m-description').value = module.description || '';
+        document.getElementById('m-status').value = module.status || 'DRAFT';
+        
+        // Videos
+        renderVideos(module.videos || []);
+        
+        // Docs
+        renderDocs(module.documents || []);
+        
+        // Quizzes
+        const quizzes = module.quizzes || (module.quiz ? [module.quiz] : []);
+        renderQuizzes(quizzes);
+        
+    } catch (error) {
+        alert('Erro ao carregar módulo: ' + error.message);
+    }
+}
+
+async function saveModuleBasics() {
+    if (!editingModuleId) return;
+    try {
+        const title = document.getElementById('m-title').value;
+        const description = document.getElementById('m-description').value;
+        const status = document.getElementById('m-status').value;
+        
+        await apiCall(`/modules/${editingModuleId}`, 'PUT', { title, description, status });
+        
+        // Atualiza o local window.courseModules se este módulo estiver atrelado
+        const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
+        if(localMod) {
+            localMod.title = title;
+            localMod.content = description;
+            localMod.status = status;
+            if(typeof saveDraft === 'function') saveDraft(true);
+        }
+        
+        alert('Alterações gerais salvas com sucesso!');
+        fetchModulesFromDB(); // update list in background
+    } catch (error) {
+        alert('Erro ao salvar: ' + error.message);
+    }
+}
+
+async function deleteModuleFromDB() {
+    if(!editingModuleId) return;
+    if(!confirm('Certeza que deseja deletar permanentemente este módulo do banco de dados? Ele sumirá de todos os cursos.')) return;
+    
+    try {
+        await apiCall(`/modules/${editingModuleId}`, 'DELETE');
+        
+        // Remove do curso local se estiver atrelado
+        window.courseModules = window.courseModules.filter(m => m.dbId !== editingModuleId);
+        if(typeof saveDraft === 'function') saveDraft(true);
+        
+        alert('Módulo deletado!');
+        closeModuleEditor();
+    } catch (error) {
+        alert('Erro ao deletar: ' + error.message);
+    }
+}
+
+// --- VIDEOS ---
+function showAddVideoForm() { document.getElementById('add-video-form').style.display = 'block'; }
+function hideAddVideoForm() { document.getElementById('add-video-form').style.display = 'none'; }
+
+async function handleVideoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const formData = new FormData();
+        formData.append('document', file);
+        
+        const btn = document.getElementById('btn-upload-video');
+        let oldText = '<i class="fas fa-upload"></i> Escolher Vídeo do Computador';
+        const sizeMb = file.size ? (file.size / 1024 / 1024).toFixed(1) : null;
+        
+        if (btn) {
+            oldText = btn.innerHTML;
+            const loadingMsg = sizeMb ? `Enviando ${sizeMb} MB...` : 'Enviando...';
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingMsg}`;
+            btn.disabled = true;
+        }
+
+        const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
+        
+        // Auto-fill inputs
+        document.getElementById('v-url-input').value = `/api/documents/download/${docRes.id}`;
+        if (!document.getElementById('v-title-input').value) {
+            document.getElementById('v-title-input').value = file.name;
+        }
+        
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Vídeo Carregado!';
+            btn.style.borderColor = '#10b981';
+            btn.style.color = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = oldText;
+                btn.style.borderColor = '#497aa7';
+                btn.style.color = '#497aa7';
+                btn.disabled = false;
+            }, 3000);
+        }
+    } catch (error) {
+        alert('Erro ao fazer upload do vídeo: ' + error.message);
+        const btn = document.getElementById('btn-upload-video');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-upload"></i> Escolher Vídeo do Computador';
+            btn.disabled = false;
+        }
+    }
+}
+
+async function submitAddVideo() {
+    if (!editingModuleId) return;
+    const title = document.getElementById('v-title-input').value;
+    const description = document.getElementById('v-desc-input').value;
+    const url = document.getElementById('v-url-input').value;
+    
+    if(!title || !url) return alert('Título e URL são obrigatórios.');
+    
+    try {
+        await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, description, url });
+        hideAddVideoForm();
+        document.getElementById('v-title-input').value = '';
+        document.getElementById('v-desc-input').value = '';
+        document.getElementById('v-url-input').value = '';
+        if (document.getElementById('v-upload-input')) {
+            document.getElementById('v-upload-input').value = '';
+        }
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao adicionar vídeo: ' + error.message);
+    }
+}
+
+async function deleteVideo(videoId) {
+    if(!confirm('Deletar vídeo?')) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/videos/${videoId}`, 'DELETE');
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao deletar vídeo: ' + error.message);
+    }
+}
+
+function getThumbnailUrl(url) {
+    if (!url) return null;
+    let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (match && match[1]) {
+        return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    }
+    return null;
+}
+
+function renderVideos(videos) {
+    const list = document.getElementById('v-list');
+    if(!videos || videos.length === 0) {
+        list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum vídeo adicionado.</p>';
+        return;
+    }
+    
+    // Configura o grid
+    list.style.display = 'grid';
+    list.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    list.style.gap = '15px';
+    
+    list.innerHTML = videos.map(v => {
+        const thumb = getThumbnailUrl(v.url);
+        // Transform the title and url into safe strings for onclick
+        const safeUrl = v.url.replace(/"/g, '&quot;');
+        const safeTitle = (v.title || '').replace(/"/g, '&quot;');
+        
+        const thumbHtml = thumb 
+            ? `<div style="height:140px; background:url('${thumb}') center/cover; position:relative;">`
+            : `<div style="height:140px; background:#1e293b; display:flex; align-items:center; justify-content:center; position:relative;"><i class="fas fa-video" style="font-size:3rem; color:#475569;"></i>`;
+
+        return `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            ${thumbHtml}
+                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remover Vídeo"><i class="fas fa-trash"></i></button>
+            </div>
+            <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
+                <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${v.title}</strong>
+                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:15px; flex:1; line-height:1.4;">${v.description || ''}</span>
+                <button onclick="playVideo('${safeUrl}', '${safeTitle}')" style="font-size:0.85rem; color:#497aa7; font-weight:bold; text-align:center; display:block; padding:8px; background:#e2e8f0; border:radius:6px; text-decoration:none; border:none; width:100%; cursor:pointer;"><i class="fas fa-play-circle"></i> Assistir Vídeo</button>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function playVideo(url, title) {
+    const modal = document.getElementById('video-player-modal');
+    const container = document.getElementById('video-player-container');
+    const titleEl = document.getElementById('video-player-title');
+    
+    if (!modal || !container) return;
+    
+    titleEl.innerText = title || 'Assistir Vídeo';
+    
+    let embedUrl = url;
+    
+    // Transform YouTube URL to embed
+    let ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (ytMatch && ytMatch[1]) {
+        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+    }
+    
+    // Transform Vimeo URL to embed
+    let vimeoMatch = url.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i);
+    if (vimeoMatch && vimeoMatch[1]) {
+        embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+    }
+
+    let isDirectVideo = false;
+    if (url.includes('/api/documents/download/') || url.match(/\.(mp4|webm|ogg)$/i)) {
+        isDirectVideo = true;
+        if (url.includes('/api/documents/download/')) {
+            embedUrl = url + (url.includes('?') ? '&' : '?') + 'inline=true';
+        }
+    }
+
+    if (isDirectVideo) {
+        container.innerHTML = `<video src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay></video>`;
+    } else {
+        container.innerHTML = `<iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    }
+    modal.style.display = 'flex';
+}
+
+function closeVideoPlayer() {
+    const modal = document.getElementById('video-player-modal');
+    const container = document.getElementById('video-player-container');
+    if(container) container.innerHTML = '';
+    if(modal) modal.style.display = 'none';
+}
+
+// --- DOCS ---
+async function handleDocUpload(e) {
+    const file = e.target.files[0];
+    if (!file || !editingModuleId) return;
+
+    try {
+        // 1. Fazer upload do documento para a API de Documentos
+        const formData = new FormData();
+        formData.append('document', file);
+        
+        const btn = document.getElementById('btn-add-doc');
+        let oldText = '<i class="fas fa-file-alt"></i> + Doc';
+        if (btn) {
+            oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+        }
+
+        const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
+        const docId = docRes.id;
+        
+        // 2. Vincular o Documento ao Módulo
+        await apiCall(`/modules/${editingModuleId}/documents`, 'POST', { 
+            documentId: docId,
+            title: file.name 
+        });
+        
+        if (btn) {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+        
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao fazer upload: ' + error.message);
+        const btn = document.getElementById('btn-add-doc');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-file-alt"></i> + Doc';
+            btn.disabled = false;
+        }
+    }
+}
+
+async function deleteDoc(docId) {
+    if(!confirm('Remover este documento do módulo?')) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/documents/${docId}`, 'DELETE');
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao deletar: ' + error.message);
+    }
+}
+
+window.currentDocFilter = 'all';
+
+function setDocFilter(filter) {
+    window.currentDocFilter = filter;
+    
+    // Update active button styling
+    document.querySelectorAll('.doc-filter-btn').forEach(btn => {
+        if(btn.dataset.filter === filter) {
+            btn.classList.add('active');
+            btn.style.background = '#e2e8f0';
+            btn.style.color = '#1e293b';
+            btn.style.border = 'none';
+        } else {
+            btn.classList.remove('active');
+            btn.style.background = 'transparent';
+            btn.style.color = '#64748b';
+            btn.style.border = '1px solid #e2e8f0';
+        }
+    });
+    
+    if(window.currentModuleData && window.currentModuleData.documents) {
+        renderDocs(window.currentModuleData.documents);
+    }
+}
+
+function renderDocs(docs) {
+    const list = document.getElementById('d-list');
+    const grid = document.getElementById('d-grid');
+    
+    if(!docs || docs.length === 0) {
+        list.style.display = 'flex';
+        grid.style.display = 'none';
+        list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum documento adicionado.</p>';
+        return;
+    }
+    
+    const pdfs = [];
+    const words = [];
+    const ppts = [];
+    const images = [];
+    const others = [];
+    
+    docs.forEach(d => {
+        const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Documento';
+        const fileUrl = (d.document ? d.document.fileUrl : d.fileUrl) || '';
+        
+        // Tentamos extrair a extensão do fileUrl primeiro, se não tiver, usamos o nome
+        let stringToTest = fileUrl ? fileUrl.split('?')[0].toLowerCase() : name.toLowerCase();
+        
+        // Fallback se a URL não tiver extensão mas o nome tiver
+        if (!stringToTest.includes('.') && name.includes('.')) {
+            stringToTest = name.toLowerCase();
+        }
+
+        if (stringToTest.endsWith('.pdf')) pdfs.push(d);
+        else if (stringToTest.endsWith('.doc') || stringToTest.endsWith('.docx')) words.push(d);
+        else if (stringToTest.endsWith('.ppt') || stringToTest.endsWith('.pptx')) ppts.push(d);
+        else if (/\.(jpe?g|png|gif|webp)$/i.test(stringToTest)) images.push(d);
+        else others.push(d);
+    });
+
+    const filter = window.currentDocFilter;
+    let itemsToRenderList = [];
+    let itemsToRenderGrid = [];
+
+    if (filter === 'all') {
+        itemsToRenderList = [...pdfs, ...words, ...ppts, ...others];
+        itemsToRenderGrid = images;
+    } else if (filter === 'pdf') {
+        itemsToRenderList = pdfs;
+    } else if (filter === 'word') {
+        itemsToRenderList = words;
+    } else if (filter === 'ppt') {
+        itemsToRenderList = ppts;
+    } else if (filter === 'image') {
+        itemsToRenderGrid = images;
+    }
+
+    // Render List
+    if (itemsToRenderList.length > 0 || filter !== 'image' && filter !== 'all') {
+        list.style.display = 'flex';
+        if (itemsToRenderList.length === 0) {
+            list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum arquivo encontrado para este filtro.</p>';
+        } else {
+            list.innerHTML = itemsToRenderList.map(d => {
+                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Documento';
+                const fileUrl = (d.document ? d.document.fileUrl : d.fileUrl) || '';
+                let stringToTest = fileUrl ? fileUrl.split('?')[0].toLowerCase() : name.toLowerCase();
+                if (!stringToTest.includes('.') && name.includes('.')) stringToTest = name.toLowerCase();
+
+                let icon = 'fas fa-file';
+                let color = '#64748b';
+                
+                if (stringToTest.endsWith('.pdf')) { icon = 'fas fa-file-pdf'; color = '#ef4444'; }
+                else if (stringToTest.endsWith('.doc') || stringToTest.endsWith('.docx')) { icon = 'fas fa-file-word'; color = '#2563eb'; }
+                else if (stringToTest.endsWith('.ppt') || stringToTest.endsWith('.pptx')) { icon = 'fas fa-file-powerpoint'; color = '#d97706'; }
+
+                return `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <i class="${icon}" style="color: ${color}; font-size:1.2rem;"></i>
+                            <strong style="color:#1e293b; font-size:0.95rem;">${name}</strong>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <a href="${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}" target="_blank" style="color:#10b981; background:#d1fae5; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Baixar Arquivo"><i class="fas fa-download"></i></a>
+                            <button onclick="deleteDoc(${d.documentId || d.id})" style="background:#fee2e2; border:none; color:#ef4444; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="Remover"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } else {
+        list.style.display = 'none';
+        list.innerHTML = '';
+    }
+
+    // Render Grid
+    if (itemsToRenderGrid.length > 0 || filter === 'image') {
+        grid.style.display = 'grid';
+        if (itemsToRenderGrid.length === 0 && filter === 'image') {
+            grid.innerHTML = '<div style="grid-column: 1 / -1;"><p style="color: #64748b; text-align: center;">Nenhuma imagem encontrada.</p></div>';
+        } else {
+            grid.innerHTML = itemsToRenderGrid.map(d => {
+                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Imagem';
+                const url = `${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}&inline=true`;
+                return `
+                    <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="height:100px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src=''; this.alt='Erro ao carregar'; this.style.padding='10px';">
+                        </div>
+                        <div style="padding:10px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0;">
+                            <span style="font-size:0.75rem; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;" title="${name}">${name}</span>
+                            <div style="display:flex; gap:5px;">
+                                <a href="${url.replace('&inline=true', '')}" target="_blank" style="color:#10b981; font-size:0.9rem;" title="Baixar"><i class="fas fa-download"></i></a>
+                                <button onclick="deleteDoc(${d.documentId || d.id})" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem; padding:0;" title="Remover"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } else {
+        grid.style.display = 'none';
+        grid.innerHTML = '';
+    }
+}
+
+// --- QUIZ & IA ---
+function showGenerateAiQuizForm() { 
+    hideManualQuizForm();
+    document.getElementById('ai-quiz-form').style.display = 'block'; 
+}
+function hideAiQuizForm() { document.getElementById('ai-quiz-form').style.display = 'none'; }
+
+function showManualQuizForm(quizId) {
+    window.currentModuleQuizId = quizId;
+    window.editingQuestionId = null;
+    hideAiQuizForm();
+    
+    const form = document.getElementById('manual-quiz-form');
+    const container = document.getElementById(`forms-container-${quizId}`);
+    if (container && form) {
+        container.appendChild(form);
+    }
+    
+    form.style.display = 'block';
+    document.getElementById('manual-q-text').value = '';
+    document.querySelectorAll('.manual-q-opt').forEach(opt => opt.value = '');
+    document.querySelector('input[name="manual-q-correct"][value="0"]').checked = true;
+}
+
+function hideManualQuizForm() {
+    document.getElementById('manual-quiz-form').style.display = 'none';
+}
+
+function editQuizTitle(quizId) {
+    const quiz = window.currentQuizDataList.find(q => q.id === quizId);
+    if (!quiz) return;
+    
+    const newTitle = prompt('Digite o novo título do Quiz:', quiz.title || '');
+    if (newTitle === null || newTitle.trim() === '') return;
+    
+    apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'PUT', { title: newTitle.trim() })
+        .then(() => loadModuleData(editingModuleId))
+        .catch(err => alert('Erro ao atualizar título: ' + err.message));
+}
+
+async function showCreateQuizForm() {
+    try {
+        const order = window.currentQuizDataList ? window.currentQuizDataList.length : 0;
+        const defaultTitle = `Quiz ${order + 1}`;
+        
+        const title = prompt('Digite o título para o novo Quiz:', defaultTitle);
+        if (title === null || title.trim() === '') return;
+        
+        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: title.trim() });
+        loadModuleData(editingModuleId);
+    } catch (err) {
+        alert('Erro ao criar quiz: ' + err.message);
+    }
+}
+
+function editQuestion(quizId, questionId) {
+    if (!window.currentQuizDataList) return;
+    const quiz = window.currentQuizDataList.find(q => q.id === quizId);
+    if (!quiz) return;
+    const question = quiz.questions.find(q => q.id === questionId);
+    if (!question) return;
+
+    window.currentModuleQuizId = quizId;
+    window.editingQuestionId = questionId;
+
+    const form = document.getElementById('manual-quiz-form');
+    const container = document.getElementById(`forms-container-${quizId}`);
+    if (container && form) {
+        container.appendChild(form);
+    }
+
+    document.getElementById('manual-q-text').value = question.text;
+    const optionsInputs = Array.from(document.querySelectorAll('.manual-q-opt'));
+    
+    // Clear first
+    optionsInputs.forEach(opt => opt.value = '');
+    document.querySelector('input[name="manual-q-correct"][value="0"]').checked = true;
+
+    // Populate
+    question.options.forEach((opt, idx) => {
+        if (idx < 4) {
+            optionsInputs[idx].value = opt.text;
+            if (opt.isCorrect) {
+                const radio = document.querySelector(`input[name="manual-q-correct"][value="${idx}"]`);
+                if (radio) radio.checked = true;
+            }
+        }
+    });
+
+    hideAiQuizForm();
+    document.getElementById('manual-quiz-form').style.display = 'block';
+    document.getElementById('manual-quiz-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function createEmptyQuiz() {
+    if (!editingModuleId) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Quiz do Módulo' });
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao criar quiz: ' + error.message);
+    }
+}
+
+async function submitManualQuizQuestion() {
+    if (!editingModuleId) return;
+    
+    // First, verify if a quiz exists
+    let currentQuizId = window.currentModuleQuizId;
+    
+    if (!currentQuizId) {
+        // Create quiz first
+        try {
+            const newQuiz = await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Quiz do Módulo' });
+            currentQuizId = newQuiz.id;
+            window.currentModuleQuizId = currentQuizId;
+        } catch (error) {
+            alert('Erro ao criar quiz: ' + error.message);
+            return;
+        }
+    }
+    
+    const text = document.getElementById('manual-q-text').value;
+    const optionsInputs = Array.from(document.querySelectorAll('.manual-q-opt'));
+    const correctOptionRadio = document.querySelector('input[name="manual-q-correct"]:checked');
+    const correctOptionIndex = correctOptionRadio ? parseInt(correctOptionRadio.value) : 0;
+    
+    const options = optionsInputs.map((opt, i) => ({
+        text: opt.value.trim(),
+        isCorrect: i === correctOptionIndex
+    })).filter(val => val.text !== '');
+    
+    if (!text || options.length < 2) {
+        alert('Por favor, digite a pergunta e pelo menos 2 opções.');
+        return;
+    }
+    
+    try {
+        if (window.editingQuestionId) {
+            await apiCall(`/quizzes/${currentQuizId}/questions/${window.editingQuestionId}`, 'PUT', {
+                text,
+                options,
+                type: 'MULTIPLE_CHOICE',
+                explanation: ''
+            });
+            window.editingQuestionId = null;
+        } else {
+            await apiCall(`/quizzes/${currentQuizId}/questions`, 'POST', {
+                text,
+                options,
+                type: 'MULTIPLE_CHOICE',
+                explanation: ''
+            });
+        }
+        
+        hideManualQuizForm();
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao adicionar pergunta: ' + error.message);
+    }
+}
+
+async function submitAiQuiz() {
+    if (!editingModuleId) return;
+    const questionCount = parseInt(document.getElementById('ai-q-count').value) || 5;
+    const difficulty = document.getElementById('ai-q-difficulty').value || 'medium';
+    
+    const btn = document.getElementById('btn-submit-ai-quiz');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando com IA...';
+    btn.disabled = true;
+    
+    try {
+        await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', { title: 'Quiz IA', questionCount, optionsPerQuestion: 4 });
+        alert('Quiz gerado com sucesso!');
+        hideAiQuizForm();
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao gerar quiz: ' + error.message);
+    } finally {
+        btn.innerHTML = 'Gerar Perguntas Agora';
+        btn.disabled = false;
+    }
+}
+
+async function deleteQuiz(quizId) {
+    if(!confirm('Deletar este quiz e todas as suas perguntas?')) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'DELETE');
+        window.currentModuleQuizId = null;
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao deletar quiz: ' + error.message);
+    }
+}
+
+async function deleteQuestion(questionId) {
+    if(!confirm('Deletar esta pergunta?')) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Erro ao deletar pergunta: ' + error.message);
+    }
+}
+
+function renderQuizzes(quizzes) {
+    const list = document.getElementById('q-list');
+    
+    if(!quizzes || quizzes.length === 0) {
+        window.currentQuizDataList = [];
+        list.innerHTML = `
+            <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px dashed #cbd5e1; text-align: center;">
+                <p style="color:#64748b; margin-bottom: 20px;">Nenhum quiz encontrado para este módulo.</p>
+                <button onclick="showCreateQuizForm()" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Criar Novo Quiz</button>
+            </div>
+        `;
+        return;
+    }
+    
+    window.currentQuizDataList = quizzes;
+    
+    list.innerHTML = quizzes.map(quiz => {
+        const questions = quiz.questions || [];
+        return `
+            <div id="quiz-inner-container-${quiz.id}" style="background: #f1f5f9; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.2rem; display:flex; align-items:center; gap:8px; color: #1e293b;">
+                            <i class="fas fa-list-ul" style="color: #497aa7;"></i> ${quiz.title || 'Quiz do Módulo'}
+                            <button onclick="editQuizTitle(${quiz.id})" style="background:transparent; border:none; color:#497aa7; cursor:pointer; font-size:1rem;" title="Editar Título do Quiz"><i class="fas fa-edit"></i></button>
+                        </h4>
+                        <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; margin-top:5px; font-weight:bold;">${questions.length} perguntas</span>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Pergunta</button>
+                        <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Deletar Todo o Quiz"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    ${questions.map((q, idx) => `
+                        <details style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; cursor: pointer; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                            <summary style="display:flex; justify-content:space-between; align-items:flex-start; outline: none; list-style: none;">
+                                <div style="display:flex; align-items:center; gap: 10px;">
+                                    <span><i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #94a3b8;"></i></span>
+                                    <strong style="font-size: 1rem; color: #1e293b;">${idx + 1}. ${q.text}</strong>
+                                </div>
+                                <div style="display:flex; gap:10px;" onclick="event.preventDefault();">
+                                    <button onclick="editQuestion(${quiz.id}, ${q.id})" style="background: transparent; border: none; color: #497aa7; cursor: pointer;" title="Editar"><i class="fas fa-edit"></i></button>
+                                    <button onclick="deleteQuestion(${q.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer;" title="Deletar"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </summary>
+                            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px; padding-left: 20px; cursor: default;" onclick="event.preventDefault();">
+                                ${(q.options || []).map((opt) => `
+                                    <label style="display:flex; align-items:center; gap: 8px; font-size: 0.9rem; color: ${opt.isCorrect ? '#10b981' : '#64748b'}; font-weight: ${opt.isCorrect ? 'bold' : 'normal'}; cursor: default;">
+                                        <input type="radio" disabled ${opt.isCorrect ? 'checked' : ''} style="accent-color: #10b981;">
+                                        ${opt.text}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </details>
+                    `).join('')}
+                    
+                    ${questions.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nenhuma pergunta neste quiz. Adicione manualmente ou gere com IA.</p>' : ''}
+                </div>
+                <div id="forms-container-${quiz.id}"></div>
+            </div>
+        `;
+    }).join('');
+    
+    // Make sure forms are attached to the DOM but hidden by default
+    const firstContainer = document.getElementById(`forms-container-${quizzes[0].id}`);
+    const manualForm = document.getElementById('manual-quiz-form');
+    const aiForm = document.getElementById('ai-quiz-form');
+    if (firstContainer && manualForm) {
+        firstContainer.appendChild(manualForm);
+        manualForm.style.display = 'none';
+    }
+    if (firstContainer && aiForm) {
+        firstContainer.appendChild(aiForm);
+        aiForm.style.display = 'none';
+    }
+}
+
+// Sub-Modal Dinâmico
+function openSubModal(title, html, onConfirm) {
+    const modalId = 'dynamic-sub-modal';
+    let modal = document.getElementById(modalId);
+    if(modal) modal.remove();
+    
+    modal = document.createElement('div');
+    modal.id = modalId;
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center;';
+    modal.innerHTML = `
+        <div style="background:rgba(30, 41, 59, 0.95); width:90%; max-width:550px; border-radius:12px; padding:25px; position:relative; border: 1px solid rgba(255,255,255,0.1); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h3 style="margin-top:0; color:white; margin-bottom: 20px;">${title}</h3>
+            <div id="sub-modal-body" style="margin-bottom: 20px;">
+                ${html}
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="document.getElementById('${modalId}').remove()" style="padding:10px 15px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:6px; cursor:pointer;">Cancelar</button>
+                <button id="sub-modal-confirm" style="padding:10px 15px; background:#6366f1; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Confirmar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById('sub-modal-confirm').addEventListener('click', onConfirm);
+}
+
+
+
+async function deleteQuestion(questionId) {
+    if(!confirm('Deletar pergunta?')) return;
+    try {
+        await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
+        loadModuleData(editingModuleId);
+    } catch (err) {
+        alert('Erro ao excluir: ' + err.message);
+    }
+}

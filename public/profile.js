@@ -1,0 +1,576 @@
+document.addEventListener('DOMContentLoaded', async () => {
+    const userPagesGrid = document.getElementById('user-pages-grid');
+    const pagesCount = document.getElementById('pages-count');
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const logoutBtn = document.querySelector('.nav-item.logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+    }
+
+    // --- 1. Load Published Courses ---
+    let publishedCourses = [];
+    try {
+        const res = await fetch('/courses/my', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+            publishedCourses = Array.isArray(data) ? data : (data.data || []);
+        }
+    } catch (err) {
+        console.error('Failed to load courses:', err);
+    }
+    
+    if (pagesCount) pagesCount.innerText = publishedCourses.length;
+
+    function renderCourseCard(course) {
+        const statusColor = course.status === 'PUBLISHED' ? '#dcfce7' : '#f1f5f9';
+        const statusText = course.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho';
+        const textColor = course.status === 'PUBLISHED' ? '#166534' : '#475569';
+
+        const thumbUrl = course.coverImage || course.thumbnailUrl || course.custom_thumb;
+        const thumbHtml = thumbUrl
+            ? `<div style="height:140px; background-image:url(${thumbUrl}); background-size:cover; background-position:center;"></div>`
+            : `<div style="height:140px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:3rem;"><i class="fas fa-image"></i></div>`;
+
+        return `
+            <div class="course-card" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display:flex; flex-direction:column;">
+                ${thumbHtml}
+                <div style="padding:20px; flex:1; display:flex; flex-direction:column;">
+                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;">
+                        <h4 style="margin:0; color:#1e293b; font-size:1.1rem;">${course.title}</h4>
+                        <span style="font-size:0.7rem; padding:3px 8px; border-radius:10px; background:${statusColor}; color:${textColor}; font-weight:bold;">${statusText}</span>
+                    </div>
+                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || 'Sem descrição'}</p>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Editar</button>
+                        <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Ver Conteúdo</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    if (userPagesGrid) {
+        if (publishedCourses.length === 0) {
+            userPagesGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    <i class="fas fa-graduation-cap" style="font-size:3rem; color:#e2e8f0; margin-bottom:15px; display:block;"></i>
+                    <h3 style="color: #1e293b; margin-bottom: 10px;">Você ainda não tem nenhum Curso.</h3>
+                    <p style="color: #64748b; margin-bottom: 20px;">Crie seu primeiro curso agora mesmo e defina os módulos e a landing page!</p>
+                    <a href="course_builder.html" class="btn-primary" style="padding:12px 25px; border-radius:30px; background:#cf982e; color:white; text-decoration:none; font-weight:bold; display:inline-block;"><i class="fas fa-plus"></i> Criar Agora</a>
+                </div>
+            `;
+        } else {
+            let html = '';
+            publishedCourses.forEach(course => {
+                html += renderCourseCard(course);
+            });
+            userPagesGrid.innerHTML = html;
+        }
+    }
+
+    // --- 2. Load Operational Agenda / Notifications ---
+    await loadNotificationsSummary();
+
+    // --- 3. Load Profile API ---
+    try {
+        const profileRes = await fetch('/api/profile/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const profileData = await profileRes.json();
+        
+        if (profileRes.ok && (profileData.ok || profileData.data)) {
+            const actualData = profileData.data || profileData;
+            const profile = actualData.profile || {};
+            const user = actualData.user || {};
+
+            // Preenche Header Visual
+            const nameToDisplay = profile.displayName || user.username || 'Sem Nome';
+            document.getElementById('settings-name').value = nameToDisplay;
+            const headerName = document.querySelector('.profile-details h2');
+            if (headerName) headerName.innerText = nameToDisplay;
+
+            const headerRole = document.querySelector('.profile-role');
+            if (headerRole) {
+                headerRole.innerText = profile.headline || 'Nenhum cargo definido';
+                document.getElementById('settings-role').value = profile.headline || '';
+            }
+
+            const headerBio = document.querySelector('.profile-bio');
+            if (headerBio) {
+                headerBio.innerText = profile.bio || 'Adicione uma biografia em Configurações.';
+                document.getElementById('settings-bio').value = profile.bio || '';
+                document.getElementById('port-bio').value = profile.bio || '';
+            }
+            if (profile.interests) {
+                document.getElementById('settings-interests').value = profile.interests.join(', ');
+            }
+            if (profile.spokenLanguages) {
+                document.getElementById('settings-languages').value = profile.spokenLanguages.join(', ');
+                document.getElementById('port-languages').value = profile.spokenLanguages.join(', ');
+            }
+            if (profile.linkedinUrl) document.getElementById('port-linkedin').value = profile.linkedinUrl;
+            if (profile.githubUrl) document.getElementById('port-github').value = profile.githubUrl;
+            if (profile.behanceUrl) document.getElementById('port-behance').value = profile.behanceUrl;
+            if (profile.artstationUrl) document.getElementById('port-artstation').value = profile.artstationUrl;
+            if (profile.timezone) document.getElementById('port-timezone').value = profile.timezone;
+            if (profile.organization) document.getElementById('port-organization').value = profile.organization;
+            if (profile.course) document.getElementById('port-course').value = profile.course;
+            if (profile.location) document.getElementById('port-location').value = profile.location;
+            if (profile.websiteUrl) document.getElementById('port-website').value = profile.websiteUrl;
+            
+            const prefs = profileData.preferences || {};
+            if (prefs.language) document.getElementById('port-pref-language').value = prefs.language;
+            if (prefs.theme) document.getElementById('port-pref-theme').value = prefs.theme;
+            if (prefs.emailNotifications !== undefined) document.getElementById('port-pref-email').checked = prefs.emailNotifications;
+            if (prefs.allowDirectMessages !== undefined) document.getElementById('port-pref-contact').checked = prefs.allowDirectMessages;
+            if (prefs.reduceMotion !== undefined) document.getElementById('port-pref-motion').checked = prefs.reduceMotion;
+            if (prefs.highContrast !== undefined) document.getElementById('port-pref-contrast').checked = prefs.highContrast;
+
+            const consents = profileData.consents || {};
+            if (consents.termsAndPrivacy) document.getElementById('port-consent-terms').checked = consents.termsAndPrivacy.granted;
+            if (consents.marketingEmails) document.getElementById('port-consent-marketing').checked = consents.marketingEmails.granted;
+            if (consents.profileDiscovery) document.getElementById('port-consent-discovery').checked = consents.profileDiscovery.granted;
+            if (consents.worldProfileCard) document.getElementById('port-consent-world').checked = consents.worldProfileCard.granted;
+
+            // Foto de perfil precisa vir de User (que está vinculado)
+            if (user.profilePicture) {
+                document.getElementById('settings-profile-img-preview').src = user.profilePicture;
+                const headerPhoto = document.querySelector('.profile-photo');
+                if (headerPhoto) headerPhoto.src = user.profilePicture;
+            }
+
+            // Tags / Skills
+            if (profile.skills && profile.skills.length > 0) {
+                window.userTags = profile.skills.map(s => ({ name: s, bg: '#f1f5f9', text: '#333' }));
+                if (typeof renderSelectedTags === 'function') renderSelectedTags();
+            }
+        } else {
+            console.error('Failed to load profile, status:', profileRes.status);
+            if (profileRes.status === 401 || profileRes.status === 404) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            const nameToDisplay = 'Erro ao carregar perfil';
+            document.getElementById('settings-name').value = nameToDisplay;
+            const headerName = document.querySelector('.profile-details h2');
+            if (headerName) headerName.innerText = nameToDisplay;
+        }
+    } catch (err) {
+        console.error('Failed to load profile API:', err);
+    }
+    // --- 3. Load Notifications ---
+    try {
+        const notifRes = await fetch('/api/notifications/summary', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const notifData = await notifRes.json();
+        if (notifRes.ok && notifData.ok) {
+            const unreadCount = notifData.unreadCount || 0;
+            const recent = notifData.recent || [];
+
+            const popup = document.getElementById('notification-popup');
+            if (popup) {
+                const headerSpan = popup.querySelector('span');
+                if (headerSpan) headerSpan.innerText = `${unreadCount} novas`;
+
+                const listContainer = popup.querySelector('div:nth-child(2)');
+                if (listContainer) {
+                    if (recent.length === 0) {
+                        listContainer.innerHTML = '<div style="padding:15px 20px; color:#64748b; font-size:13px;">Nenhuma notificação.</div>';
+                    } else {
+                        listContainer.innerHTML = recent.map(n => `
+                            <div style="padding:15px 20px; border-bottom:1px solid #f1f5f9; cursor:pointer; background: ${n.isRead ? 'transparent' : '#f8fafc'};">
+                                <strong style="color:${n.isRead ? '#1e293b' : '#cf982e'}; font-size:0.9rem;">${n.title}</strong>
+                                <p style="margin:5px 0 0 0; font-size:0.85rem; color:#64748b;">${n.content}</p>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load notifications:', err);
+    }
+});
+
+// Sobrescrevendo a função de salvar no perfil para bater na API
+window.saveSettingsProfile = async function() {
+    const token = localStorage.getItem('token');
+    const name = document.getElementById('settings-name').value;
+    const role = document.getElementById('settings-role').value;
+    const bio = document.getElementById('settings-bio').value;
+    const interests = document.getElementById('settings-interests').value.split(',').map(s => s.trim());
+    const languages = document.getElementById('settings-languages').value.split(',').map(s => s.trim());
+    const photo = window.profileCustomPhoto; // Base64 if updated
+
+    try {
+        const res = await fetch('/api/profile/me', {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                displayName: name,
+                headline: role,
+                bio: bio,
+                interests: interests,
+                spokenLanguages: languages
+            })
+        });
+
+        if (res.ok) {
+            // Se houver uma foto nova, envia para a rota de upload (que aceita multipart)
+            if (photo && photo.startsWith('data:image')) {
+                // Convert Base64 to File
+                const resPhoto = await fetch(photo);
+                const blob = await resPhoto.blob();
+                const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
+                
+                const formData = new FormData();
+                formData.append('profilePicture', file);
+                
+                await fetch('/api/users/profile-picture', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+            }
+            alert('Perfil salvo com sucesso!');
+            location.reload();
+        } else {
+            alert('Falha ao salvar o perfil.');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar o perfil.');
+    }
+};
+
+window.saveAdvancedPortfolio = async function() {
+    const token = localStorage.getItem('token');
+    const bio = document.getElementById('port-bio').value;
+    const linkedin = document.getElementById('port-linkedin').value;
+    const github = document.getElementById('port-github').value;
+    const behance = document.getElementById('port-behance').value;
+    const artstation = document.getElementById('port-artstation').value;
+    
+    const languagesStr = document.getElementById('port-languages').value;
+    const spokenLanguages = languagesStr ? languagesStr.split(',').map(s => s.trim()) : [];
+    const timezone = document.getElementById('port-timezone').value;
+    const organization = document.getElementById('port-organization').value;
+    const course = document.getElementById('port-course').value;
+    const location = document.getElementById('port-location').value;
+    const websiteUrl = document.getElementById('port-website').value;
+
+    const skills = window.userTags ? window.userTags.map(t => t.name) : [];
+
+    const language = document.getElementById('port-pref-language').value;
+    const theme = document.getElementById('port-pref-theme').value;
+    const emailNotifications = document.getElementById('port-pref-email').checked;
+    const allowDirectMessages = document.getElementById('port-pref-contact').checked;
+    const reduceMotion = document.getElementById('port-pref-motion').checked;
+    const highContrast = document.getElementById('port-pref-contrast').checked;
+
+    const termsAndPrivacy = document.getElementById('port-consent-terms').checked;
+    const marketingEmails = document.getElementById('port-consent-marketing').checked;
+    const profileDiscovery = document.getElementById('port-consent-discovery').checked;
+    const worldProfileCard = document.getElementById('port-consent-world').checked;
+
+    try {
+        const res = await fetch('/api/profile/me', {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                bio: bio,
+                skills: skills,
+                spokenLanguages: spokenLanguages,
+                timezone: timezone,
+                organization: organization,
+                course: course,
+                location: location,
+                websiteUrl: websiteUrl,
+                linkedinUrl: linkedin,
+                githubUrl: github,
+                behanceUrl: behance,
+                artstationUrl: artstation,
+                preferences: {
+                    language, theme, emailNotifications, allowDirectMessages, reduceMotion, highContrast
+                },
+                consents: {
+                    termsAndPrivacy: { granted: termsAndPrivacy },
+                    marketingEmails: { granted: marketingEmails },
+                    profileDiscovery: { granted: profileDiscovery },
+                    worldProfileCard: { granted: worldProfileCard }
+                }
+            })
+        });
+
+        if (res.ok) {
+            alert('Perfil Profissional e Redes salvos com sucesso!');
+        } else {
+            alert('Falha ao salvar portfólio.');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar portfólio.');
+    }
+};
+
+// --- OPERATIONAL AGENDA & NOTIFICATIONS LOGIC ---
+
+const PRIORITY_LABELS = {
+    LOW: 'Low',
+    MEDIUM: 'Medium',
+    HIGH: 'High',
+    CRITICAL: 'Critical'
+};
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatDateLabel(value) {
+    if (!value) return 'No due date';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'No due date';
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function renderEmptyState(containerId, message) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = `<p style="font-size:13px; color:#64748b; margin:0;">${escapeHtml(message)}</p>`;
+}
+
+function renderOperationItems(containerId, items, renderer, emptyMessage) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+        renderEmptyState(containerId, emptyMessage);
+        return;
+    }
+
+    container.innerHTML = items.map(renderer).join('');
+}
+
+function renderNotificationItem(item) {
+    const statusTag = item.status === 'UNREAD' ? '<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">Unread</span>' : '<span style="background:#e2e8f0; color:#64748b; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">Read</span>';
+    const actionLink = item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : '';
+    const readAction = item.status === 'UNREAD'
+        ? `<button type="button" onclick="markNotificationRead(${Number(item.id)})" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Mark read</button>`
+        : '';
+
+    return `
+        <article style="padding:10px; border-radius:8px; border:1px solid #e2e8f0; background:${item.status === 'UNREAD' ? '#f0f9ff' : 'white'};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
+                <div style="flex:1; padding-right:10px;">
+                    <h5 style="color:#1e293b; margin:0 0 5px 0; font-size:13px;">${escapeHtml(item.title)}</h5>
+                    <p style="color:#64748b; margin:0; font-size:12px;">${escapeHtml(item.message)}</p>
+                </div>
+                ${statusTag}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div style="display:flex; gap:5px;">
+                    <span style="font-size:11px; color:#94a3b8;">${escapeHtml(formatDateLabel(item.createdAt))}</span>
+                </div>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    ${actionLink}
+                    ${readAction}
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+function renderTaskQueueItem(item) {
+    const statusAction = item.status === 'IN_PROGRESS'
+        ? `<button type="button" onclick="updateTaskQueueItemStatus(${Number(item.id)}, 'COMPLETED')" style="background:#166534; border:none; color:white; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Complete</button>`
+        : `<button type="button" onclick="updateTaskQueueItemStatus(${Number(item.id)}, 'IN_PROGRESS')" style="background:#1e40af; border:none; color:white; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Start</button>`;
+
+    const isUrgent = item.priority === 'CRITICAL';
+
+    return `
+        <article style="padding:10px; border-radius:8px; border:1px solid ${isUrgent ? '#fecaca' : '#e2e8f0'}; background:${isUrgent ? '#fff1f2' : 'white'};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
+                <div style="flex:1; padding-right:10px;">
+                    <h5 style="color:${isUrgent ? '#be123c' : '#1e293b'}; margin:0 0 5px 0; font-size:13px;">${escapeHtml(item.title)}</h5>
+                    <p style="color:${isUrgent ? '#e11d48' : '#64748b'}; margin:0; font-size:12px;">${escapeHtml(item.summary || 'No operational summary.')}</p>
+                </div>
+                <span style="background:${isUrgent ? '#ffe4e6' : '#f1f5f9'}; color:${isUrgent ? '#e11d48' : '#475569'}; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">${escapeHtml(PRIORITY_LABELS[item.priority] || item.priority || 'Low')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div style="display:flex; gap:5px;">
+                    <span style="font-size:11px; color:#94a3b8;">${escapeHtml(formatDateLabel(item.dueAt || item.scheduledFor))}</span>
+                </div>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : ''}
+                    ${statusAction}
+                    <button type="button" onclick="updateTaskQueueItemStatus(${Number(item.id)}, 'DISMISSED')" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Dismiss</button>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+function renderReminderItem(item) {
+    return `
+        <article style="padding:10px; border-radius:8px; border:1px solid #e2e8f0; background:white;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
+                <div style="flex:1; padding-right:10px;">
+                    <h5 style="color:#1e293b; margin:0 0 5px 0; font-size:13px;">${escapeHtml(item.title)}</h5>
+                    <p style="color:#64748b; margin:0; font-size:12px;">${escapeHtml(item.description || 'Internal reminder with no additional description.')}</p>
+                </div>
+                <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">${escapeHtml(PRIORITY_LABELS[item.priority] || item.priority || 'Low')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div style="display:flex; gap:5px;">
+                    <span style="font-size:11px; color:#94a3b8;">${escapeHtml(formatDateLabel(item.dueAt))}</span>
+                </div>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : ''}
+                    <button type="button" onclick="updateReminderStatus(${Number(item.id)}, 'COMPLETED')" style="background:#166534; border:none; color:white; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Complete</button>
+                    <button type="button" onclick="updateReminderStatus(${Number(item.id)}, 'DISMISSED')" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Dismiss</button>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+let currentNotificationsSummary = null;
+
+function renderNotificationsSummary(summary) {
+    currentNotificationsSummary = summary;
+    const elUnreadCount = document.getElementById('ops-unread-count');
+    const elUrgentCount = document.getElementById('ops-urgent-count');
+    const elInboxMeta = document.getElementById('ops-inbox-meta');
+    const elTodayMeta = document.getElementById('ops-today-meta');
+    const elUrgentMeta = document.getElementById('ops-urgent-meta');
+    const elWeekMeta = document.getElementById('ops-week-meta');
+    const elRemindersMeta = document.getElementById('ops-reminders-meta');
+
+    if (elUnreadCount) elUnreadCount.textContent = `${summary.counts.unread} unread`;
+    if (elUrgentCount) elUrgentCount.textContent = `${summary.counts.urgent} urgent`;
+    if (elInboxMeta) elInboxMeta.textContent = `${summary.inbox.length} itens`;
+    if (elTodayMeta) elTodayMeta.textContent = `${summary.operational.today.length} pending`;
+    if (elUrgentMeta) elUrgentMeta.textContent = `${summary.operational.urgent.length} bloqueios`;
+    if (elWeekMeta) elWeekMeta.textContent = `${summary.weeklyGoals.length} objetivos`;
+    if (elRemindersMeta) elRemindersMeta.textContent = `${summary.reminders.length} reminders`;
+
+    renderOperationItems('notifications-inbox', summary.inbox, renderNotificationItem, 'Nenhuma mensagem.');
+    renderOperationItems('operations-today', summary.operational.today, renderTaskQueueItem, 'Nada planejado.');
+    renderOperationItems('operations-urgent', summary.operational.urgent, renderTaskQueueItem, 'Sem bloqueios.');
+    renderOperationItems('operations-week', summary.weeklyGoals, renderTaskQueueItem, 'Defina suas metas.');
+    renderOperationItems('operations-reminders', summary.reminders, renderReminderItem, 'No open automatic reminders.');
+}
+
+async function loadNotificationsSummary() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/notifications/summary', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const result = await res.json();
+            const summaryData = result.data || result;
+            renderNotificationsSummary(summaryData);
+        }
+    } catch (err) {
+        console.error('Failed to load notifications:', err);
+    }
+}
+
+window.markNotificationRead = async function(id) {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/notifications/${id}/read`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        await loadNotificationsSummary();
+    } catch (err) {
+        console.error('Error marking notification as read:', err);
+    }
+};
+
+window.markAllNotificationsRead = async function() {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch('/api/notifications/read-all', {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        await loadNotificationsSummary();
+    } catch (err) {
+        console.error('Error marking all notifications as read:', err);
+    }
+};
+
+window.updateTaskQueueItemStatus = async function(id, status) {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/tasks/${id}`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        await loadNotificationsSummary();
+    } catch (err) {
+        console.error('Error updating task status:', err);
+    }
+};
+
+window.updateReminderStatus = async function(id, status) {
+    try {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/reminders/${id}`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        await loadNotificationsSummary();
+    } catch (err) {
+        console.error('Error updating reminder status:', err);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnMarkRead = document.getElementById('btn-mark-notifications-read');
+    if (btnMarkRead) {
+        btnMarkRead.addEventListener('click', window.markAllNotificationsRead);
+    }
+});

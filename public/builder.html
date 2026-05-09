@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modular Template Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="edit-mode">
+    <!-- Template Selector Modal -->
+    <div id="template-modal"
+        style="position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px;">
+        <h2 style="color:white; margin-bottom: 30px; font-size: 2.5rem; text-align: center;">Choose a Starting Layout
+        </h2>
+        <div id="template-cards-container"
+            style="display:flex; gap:30px; flex-wrap:wrap; max-width: 1200px; justify-content:center;">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- Editor Navbar -->
+    <nav class="editor-navbar" id="editor-navbar">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h2>Editing Panel</h2>
+                <input type="text" id="page-name-input" placeholder="Nome da Landing Page..." style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.9rem; outline: none; width: 250px;">
+            </div>
+            <p style="font-size: 0.8rem; opacity: 0.8; margin-top: 0;">Clique nos textos e imagens para alterar. Os limites estão destacados!</p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="add-subscribe-btn" class="toggle-btn" style="background: #10b981; color: white;" onclick="injectSubscribeButton()"><i class="fas fa-plus-circle"></i> Add Subscribe Button</button>
+            <a href="profile.html" class="toggle-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; background: #334155; color: white;"><i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Voltar ao Perfil</a>
+            <button id="toggle-view-btn" class="toggle-btn" style="background: #0ea5e9; color: white;"><i class="fas fa-eye"></i> Visualizar</button>
+            <button id="publish-btn" class="toggle-btn" style="background: #4f46e5; color: white;"><i class="fas fa-upload"></i> Publicar Página</button>
+        </div>
+    </nav>
+
+    <main id="template-container">
+
+        <!-- Header Section -->
+        <!-- O fundo desta div representa o "cabeçalho BG" em vermelho -->
+        <section class="module-section" id="header-section"
+            style="background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=2000');">
+            <div class="bg-overlay"></div>
+
+            <!-- Botão de alterar fundo (visível só na edição) -->
+            <button class="bg-edit-btn" onclick="triggerImageUpload('header-section', 'bg')">
+                <i class="fas fa-image"></i> Change Header BG
+            </button>
+
+            <div class="module-content">
+                <!-- Logo -->
+                <div class="logo-container editable-image-wrapper" onclick="triggerImageUpload('logo-img', 'src')">
+                    <img src="https://placehold.co/200x100/ffffff/111111?text=LOGO" alt="Logo" class="logo-img"
+                        id="logo-img">
+                </div>
+
+                <!-- Text Container -->
+                <div class="text-block text-white" style="flex: 1;">
+                    <h1 class="editable-text" id="titulo-cabecalho">My Awesome Title</h1>
+                    <p class="editable-text" id="desc-cabecalho">Esta é a descrição do cabeçalho. Você pode clicar e
+                        editar este texto livremente, assim como pode apertar nos botões vermelhos correspondentes e
+                        trocar a imagem de fundo ou a logo ao lado.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Body 1 Section -->
+        <section class="module-section" id="body1-section"
+            style="background-image: url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2000');">
+            <div class="bg-overlay"></div>
+
+            <button class="bg-edit-btn" onclick="triggerImageUpload('body1-section', 'bg')">
+                <i class="fas fa-image"></i> Change Body 1 BG
+            </button>
+
+            <div class="module-content">
+                <!-- Representative Image (corpo 1 imagem representativa) -->
+                <div class="body-img-container editable-image-wrapper" onclick="triggerImageUpload('body1-img', 'src')">
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800"
+                        alt="Imagem Representativa" class="body-img" id="body1-img">
+                </div>
+
+                <div class="text-block text-white" style="flex: 1;">
+                    <h1 class="editable-text" id="titulo-corpo1">Body Title 1</h1>
+                    <p class="editable-text" id="texto-corpo1">Este é o texto associado ao primeiro bloco do corpo da
+                        página. A imagem ao lado é a imagem representativa, clique nela para alterar o arquivo fonte, e
+                        clique no botão acima para alterar o background desta "Div", conforme o seu esquema.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Body 2 Section -->
+        <section class="module-section" id="body2-section"
+            style="background-image: url('https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?auto=format&fit=crop&q=80&w=2000');">
+            <div class="bg-overlay"></div>
+
+            <button class="bg-edit-btn" onclick="triggerImageUpload('body2-section', 'bg')">
+                <i class="fas fa-image"></i> Change Body 2 BG
+            </button>
+
+            <div class="module-content" style="justify-content: center; text-align: center;">
+                <div class="text-block text-white" style="max-width: 800px;">
+                    <p class="editable-text text-large" id="texto-corpo2">Este é o texto descritivo do bloco Corpo 2.
+                        Como definido na arquitetura visual, ele não possui um título específico, apenas um longo
+                        parágrafo (texto corpo 2) que serve de apoio, o qual você pode modificar de forma dinâmica.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Section -->
+        <footer class="module-section" id="footer-section"
+            style="background-image: url('https://images.unsplash.com/photo-1557683304-673a23048d34?auto=format&fit=crop&q=80&w=2000'); margin-bottom: 0;">
+            <div class="bg-overlay" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);"></div>
+
+            <button class="bg-edit-btn" onclick="triggerImageUpload('footer-section', 'bg')">
+                <i class="fas fa-image"></i> Change Footer BG
+            </button>
+
+            <div class="module-content"
+                style="padding: 20px; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+                <p class="editable-text text-white" id="rodape-texto"
+                    style="font-size: 0.9rem; margin: 0; text-align: center;">© 2026 Template Modular de Design. Todos
+                    os direitos reservados. Você pode visualizar como o público acessará na aba Publicação.</p>
+
+                <div class="body-img-container editable-image-wrapper"
+                    onclick="triggerImageUpload('footer-img', 'src')">
+                    <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&w=400&q=80"
+                        alt="Logos Rodapé" class="body-img" id="footer-img"
+                        style="height: auto; max-height: 120px; object-fit: contain; box-shadow: none;">
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Barra Lateral de Properties (Nova Implementação) -->
+    <aside id="properties-panel" class="hidden">
+        <div class="panel-header">
+            <h3>Properties</h3>
+            <button id="close-panel-btn"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="panel-content">
+            <div id="no-selection-msg" class="property-group"
+                style="background: transparent; box-shadow: none; text-align: center; color: #94a3b8; border: 1px dashed #334155; pointer-events: none;">
+                <p style="font-size: 0.9rem; margin: 0;">Selecione algum elemento na página (Texto, Imagem, Botão de
+                    Fundo) para ativar o painel de propriedades respectivo.</p>
+            </div>
+
+            <!-- Text Options -->
+            <div id="text-options" class="property-group hidden">
+                <h4>Text</h4>
+                <div class="prop-row">
+                    <label>Font Family</label>
+                    <select id="font-family-select">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Outfit', sans-serif">Outfit</option>
+                        <option value="'Courier New', monospace">Courier</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                    </select>
+                </div>
+                <div class="prop-row">
+                    <label>Size (px/rem)</label>
+                    <input type="text" id="font-size-input" value="16px">
+                </div>
+                <div class="prop-row btn-group">
+                    <button class="style-btn" data-style="fontWeight" data-value="bold" title="Bold"><i
+                            class="fas fa-bold"></i></button>
+                    <button class="style-btn" data-style="fontStyle" data-value="italic" title="Italic"><i
+                            class="fas fa-italic"></i></button>
+                </div>
+                <div class="prop-row btn-group">
+                    <button class="align-btn" data-align="left" title="Left Align"><i
+                            class="fas fa-align-left"></i></button>
+                    <button class="align-btn" data-align="center" title="Center Align"><i
+                            class="fas fa-align-center"></i></button>
+                    <button class="align-btn" data-align="right" title="Right Align"><i
+                            class="fas fa-align-right"></i></button>
+                </div>
+                <div class="prop-row">
+                    <label>Text Color</label>
+                    <input type="color" id="text-color-input" value="#000000">
+                </div>
+                <div class="prop-row">
+                    <label>Link (Page URL)</label>
+                    <div style="display:flex; gap: 5px;">
+                        <input type="text" id="text-link-input" placeholder="https://..." style="flex:1">
+                        <button id="apply-link-btn" class="style-btn" title="Apply/Create Link"><i class="fas fa-link"></i></button>
+                        <button id="remove-link-btn" class="style-btn" title="Remove Link"><i class="fas fa-unlink"></i></button>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label>Shadow (Text Shadow)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px;">
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Offset X (px)</small><input type="number" id="ts-x" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Offset Y (px)</small><input type="number" id="ts-y" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Blur (px)</small><input type="number" id="ts-blur" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Shadow Color</small><input type="color" id="ts-color" value="#000000" style="padding:0;height:24px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Position / Offset Options -->
+            <div id="position-options" class="property-group hidden">
+                <h4>Free Adjustment (Offset)</h4>
+                <div class="prop-row">
+                    <label>X Axis (Left/Right) px</label>
+                    <div style="display:flex; gap: 5px;">
+                        <input type="range" id="pos-x-range" min="-500" max="500" value="0" style="flex:2;">
+                        <input type="number" id="pos-x-input" value="0" style="flex:1;">
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label>Y Axis (Up/Down) px</label>
+                    <div style="display:flex; gap: 5px;">
+                        <input type="range" id="pos-y-range" min="-500" max="500" value="0" style="flex:2;">
+                        <input type="number" id="pos-y-input" value="0" style="flex:1;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Options -->
+            <div id="image-options" class="property-group hidden">
+                <h4>Image</h4>
+                <div class="prop-row">
+                    <button id="upload-img-panel-btn" class="prop-action-btn"><i class="fas fa-upload"></i> Escolher
+                        Nova Imagem</button>
+                </div>
+                <div class="prop-row">
+                    <label>Current Scale (%)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="range" id="image-scale-range" min="1" max="500" value="100" style="flex:2">
+                        <input type="number" id="image-scale-input" value="100" style="flex:1">
+                    </div>
+                </div>
+                <div class="prop-row btn-group">
+                    <button class="img-align-btn" data-align="flex-start" title="Left Align"><i
+                            class="fas fa-align-left"></i></button>
+                    <button class="img-align-btn" data-align="center" title="Center Align"><i
+                            class="fas fa-align-center"></i></button>
+                    <button class="img-align-btn" data-align="flex-end" title="Right Align"><i
+                            class="fas fa-align-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Background Options -->
+            <div id="bg-options" class="property-group hidden">
+                <h4>Section Background</h4>
+                <div class="prop-row">
+                    <label>Type</label>
+                    <select id="bg-type-select">
+                        <option value="image">Image Upload</option>
+                        <option value="color">Solid Color</option>
+                        <option value="gradient">Linear Gradient</option>
+                        <option value="radial">Radial Gradient (Light Points)</option>
+                    </select>
+                </div>
+
+                <div id="bg-image-controls">
+                    <button id="upload-panel-btn" class="prop-action-btn"><i class="fas fa-upload"></i> Escolher
+                        Imagem</button>
+                </div>
+
+                <div id="bg-color-controls" class="hidden">
+                    <div class="prop-row">
+                        <label>Solid Color</label>
+                        <input type="color" id="bg-color-input" value="#ffffff">
+                    </div>
+                </div>
+
+                <div id="bg-grad-controls" class="hidden">
+                    <div class="prop-row">
+                        <label>Left Color</label>
+                        <input type="color" id="bg-grad1" value="#0ea5e9">
+                    </div>
+                    <div class="prop-row">
+                        <label>Right Color</label>
+                        <input type="color" id="bg-grad2" value="#ef4444">
+                    </div>
+                </div>
+
+                <hr class="panel-hr">
+                <div class="prop-row" id="blur-row">
+                    <label>Blur Background (Overlay px)</label>
+                    <input type="range" id="bg-blur-range" min="0" max="20" value="0">
+                </div>
+                <div class="prop-row" id="opacity-row">
+                    <label>Background Opacity (%)</label>
+                    <input type="range" id="bg-opacity-range" min="0" max="100" value="100">
+                </div>
+            </div>
+
+            <hr class="panel-hr" id="box-hr-sep">
+
+            <!-- Animations & Effects -->
+            <div id="fx-options" class="property-group hidden">
+                <h4>Effects & Animations</h4>
+                <div class="prop-row">
+                    <label>Animation (CSS Class)</label>
+                    <select id="anim-select">
+                        <option value="">None</option>
+                        <option value="anim-float">Float (Loop)</option>
+                        <option value="anim-pulse">Pulse (Loop)</option>
+                        <option value="anim-fade-in">Fade In (Entrance)</option>
+                        <option value="anim-slide-up">Slide Up (Entrance)</option>
+                    </select>
+                </div>
+                <div class="prop-row" id="sticky-row">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" id="sticky-checkbox"> Stick to Top of Page
+                    </label>
+                </div>
+            </div>
+
+            <!-- Global Box Constraints (Borders) -->
+            <div id="box-options" class="property-group hidden">
+                <h4>Borders and Margins <small>(Global)</small></h4>
+                <div class="prop-row">
+                    <label>Border Style</label>
+                    <select id="border-style-select">
+                        <option value="none">No Border</option>
+                        <option value="solid">Solid</option>
+                        <option value="dashed">Dashed</option>
+                        <option value="dotted">Dotted</option>
+                    </select>
+                </div>
+                <div class="prop-row">
+                    <label>Thickness (px)</label>
+                    <input type="number" id="border-width-input" value="2" min="0">
+                </div>
+                <div class="prop-row">
+                    <label>Border Type</label>
+                    <select id="border-color-type" class="prop-select">
+                        <option value="solid-color">Cor Solid</option>
+                        <option value="gradient">Gradient</option>
+                    </select>
+                </div>
+
+                <div class="prop-row" id="border-solid-controls">
+                    <label>Border Color</label>
+                    <input type="color" id="border-color-input" value="#000000">
+                </div>
+
+                <div class="prop-row hidden" id="border-grad-controls">
+                    <label>Gradient Colors</label>
+                    <div style="display:flex;">
+                        <input type="color" id="border-grad1" value="#00a8ff" style="flex:1;">
+                        <input type="color" id="border-grad2" value="#e84118" style="flex:1;">
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label>Rounding (px)</label>
+                    <input type="number" id="border-radius-input" value="0" min="0">
+                </div>
+                <div class="prop-row">
+                    <label>Outer Margin (Margin) px</label>
+                    <input type="number" id="margin-input" value="0" min="0">
+                </div>
+                <div class="prop-row">
+                    <label>Inner Padding (Padding) px</label>
+                    <input type="number" id="padding-input" value="0" min="0">
+                </div>
+                <div class="prop-row">
+                    <label>Box Shadow</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px;">
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">X Axis (px)</small><input type="number" id="bs-x" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Y Axis (px)</small><input type="number" id="bs-y" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Blur (px)</small><input type="number" id="bs-blur" value="0"></div>
+                        <div><small style="font-size:0.7rem;color:#94a3b8;">Spread</small><input type="number" id="bs-spread" value="0"></div>
+                    </div>
+                    <div style="display:flex; gap: 10px; align-items: center; margin-top: 5px;">
+                        <input type="color" id="bs-color" value="#000000" style="flex:1; padding:0; height:30px;">
+                        <label style="flex:1; display:flex; align-items:center; gap:5px; font-size: 0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="bs-inset"> Inner Shadow (Inset)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Hidden Input File that gets triggered by JS -->
+    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+
+    <!-- Publish Settings Modal -->
+    <div id="publish-modal" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.9); z-index:9999; display:flex; align-items:center; justify-content:center; padding: 20px;">
+        <div style="background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: left; color: #1e293b;">
+            <h2 style="margin-top: 0; margin-bottom: 25px; color: #4338ca; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">Configurações de Publicação</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Título da Página</label>
+                <input type="text" id="publish-title" placeholder="Ex: Curso de Marketing Digital" style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;">
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Imagem de Capa (Thumbnail)</label>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <input type="text" id="publish-thumb-url" placeholder="URL da imagem (opcional)" style="flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none;">
+                    <span style="color: #64748b; font-size: 0.9rem; font-weight: 600;">OU</span>
+                    <button id="publish-thumb-upload-btn" style="background: #e2e8f0; color: #1e293b; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s;"><i class="fas fa-upload"></i> Upload</button>
+                    <input type="file" id="publish-thumb-file" accept="image/*" style="display: none;">
+                </div>
+                <div id="publish-thumb-preview" style="width: 100%; height: 160px; background-color: #f1f5f9; border-radius: 12px; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <span style="color: #94a3b8; font-size: 0.9rem;"><i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px; display: block; text-align: center;"></i> Pré-visualização</span>
+                    <img id="publish-thumb-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; inset: 0;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button id="publish-cancel-btn" style="background: white; border: 1px solid #cbd5e1; color: #64748b; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: background 0.2s;">Cancelar</button>
+                <button id="publish-confirm-btn" style="background: #4f46e5; border: none; color: white; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">Confirmar e Publicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="templates.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

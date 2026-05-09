@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Plataforma Training</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: url('abstract_bg.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(73, 122, 167, 0.6) 100%);
+            z-index: 1;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #cf982e; /* Gold */
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .input-group input:focus {
+            border-color: #cf982e; /* Gold */
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(90deg, #cf982e, #b8860b);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(207, 152, 46, 0.4);
+        }
+
+        .toggle-form {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-form a {
+            color: #cf982e;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .toggle-form a:hover {
+            color: white;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            display: none;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-overlay"></div>
+    <div class="login-container">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>TRAINING</span>
+        </div>
+        <div class="subtitle">Bem-vindo(a) ao seu ecossistema educacional.</div>
+
+        <div id="error-msg" class="error-message">Credenciais inválidas.</div>
+
+        <!-- Formulário de Login -->
+        <form id="login-form">
+            <div class="input-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="seu@email.com" required>
+            </div>
+            <div class="input-group">
+                <label for="login-password">Senha</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">ENTRAR</button>
+            <div class="toggle-form">
+                Não tem uma conta? <a onclick="toggleMode('register')">Cadastre-se</a>
+            </div>
+        </form>
+
+        <!-- Formulário de Registro -->
+        <form id="register-form" style="display: none;">
+            <div class="input-group">
+                <label for="reg-username">Nome de Usuário</label>
+                <input type="text" id="reg-username" placeholder="Seu nome" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-email">Email</label>
+                <input type="email" id="reg-email" placeholder="seu@email.com" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-password">Senha</label>
+                <input type="password" id="reg-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">CRIAR CONTA</button>
+            <div class="toggle-form">
+                Já possui uma conta? <a onclick="toggleMode('login')">Fazer Login</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleMode(mode) {
+            document.getElementById('error-msg').style.display = 'none';
+            if (mode === 'register') {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+            } else {
+                document.getElementById('register-form').style.display = 'none';
+                document.getElementById('login-form').style.display = 'block';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.ok) {
+                    if (result.token) localStorage.setItem('token', result.token);
+                    window.location.href = '/index.html';
+                } else {
+                    const errMsg = document.getElementById('error-msg');
+                    errMsg.innerText = result.error || 'Falha no login.';
+                    errMsg.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                const errMsg = document.getElementById('error-msg');
+                errMsg.innerText = 'Erro de conexão.';
+                errMsg.style.display = 'block';
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.ok) {
+                    if (result.token) localStorage.setItem('token', result.token);
+                    window.location.href = '/login.html'; // Register doesn't return token, send to login
+                } else {
+                    const errMsg = document.getElementById('error-msg');
+                    errMsg.innerText = result.error || 'Falha no cadastro.';
+                    errMsg.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                const errMsg = document.getElementById('error-msg');
+                errMsg.innerText = 'Erro de conexão.';
+                errMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

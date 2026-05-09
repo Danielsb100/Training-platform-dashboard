@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conteúdo do Curso - Plataforma Training</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="app.css">
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
+        .course-header { background: linear-gradient(135deg, #44749f 0%, #1e293b 100%); padding: 60px 80px; color: white; }
+        .back-link { color: rgba(255,255,255,0.7); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+        .back-link:hover { color: white; }
+        
+        .course-info h1 { margin: 0; font-size: 2.2rem; color: #cf9c33; }
+        .course-info p { margin: 10px 0 0 0; font-size: 1rem; opacity: 0.8; max-width: 700px; line-height: 1.6; }
+        
+        .main-content { padding: 40px 80px; max-width: 1000px; margin: 0 auto; }
+        .section-title { font-size: 1.4rem; color: #1e293b; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        
+        .module-item { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; overflow: hidden; }
+        .module-trigger { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; text-align: left; transition: 0.3s; }
+        .module-trigger:hover { background: #f8fafc; }
+        .module-title { font-size: 1.1rem; color: #1e293b; font-weight: bold; }
+        .module-content { padding: 0 20px 20px 20px; color: #475569; line-height: 1.6; display: none; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+        
+        .empty-state { text-align: center; padding: 100px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="course-content-root">
+        <!-- Content injected by JS -->
+    </div>
+
+    <script>
+        function toggleModule(id) {
+            const content = document.getElementById('content-' + id);
+            const icon = document.getElementById('icon-' + id);
+            const isVisible = content.style.display === 'block';
+            
+            content.style.display = isVisible ? 'none' : 'block';
+            icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+            const container = document.getElementById('course-content-root');
+
+            if (!courseId) {
+                container.innerHTML = '<div class="empty-state">ID do curso não encontrado.</div>';
+                return;
+            }
+
+            const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
+            const course = courses.find(c => c.id === courseId);
+            
+            if (!course) {
+                container.innerHTML = '<div class="empty-state">Curso não encontrado.</div>';
+                return;
+            }
+
+            const modules = course.modules || [];
+
+            let modulesHTML = '';
+            if (modules.length === 0) {
+                modulesHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
+                        <p style="color: #64748b;">Este curso ainda não possui módulos de conteúdo.</p>
+                        <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Adicionar módulos agora</a>
+                    </div>
+                `;
+            } else {
+                modules.forEach(m => {
+                    modulesHTML += `
+                        <div class="module-item">
+                            <button class="module-trigger" onclick="toggleModule(${m.id})">
+                                <span class="module-title">${m.title}</span>
+                                <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
+                            </button>
+                            <div class="module-content" id="content-${m.id}">
+                                ${m.content.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
+                        <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para minhas criações</a>
+                        <div class="course-info">
+                            <h1>${course.title}</h1>
+                            <p>${course.description || 'Este curso oferece um conteúdo estruturado para o seu desenvolvimento profissional.'}</p>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        <i class="fas fa-edit"></i> Editar Curso
+                    </button>
+                </header>
+
+                <main class="main-content">
+                    <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Conteúdo do Curso (${modules.length} módulos)</h2>
+                    ${modulesHTML}
+                </main>
+            `;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizando Página</title>
+    <!-- We link style.css so the landing page styles work correctly -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Floating Home Button specific to Viewer */
+        .viewer-home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(15, 23, 42, 0.85);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .viewer-home-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(79, 70, 229, 0.9);
+        }
+        
+        /* Ensure the viewer body handles the injected content smoothly */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Default dark bg just in case */
+        }
+
+        #page-content {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="view-mode">
+    
+    <a href="index.html" class="viewer-home-btn" title="Voltar para a Home">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div id="page-content">
+        <!-- Content will be injected here -->
+        <div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;">
+            <h2>Carregando página...</h2>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageId = urlParams.get('id');
+
+            if (!pageId) {
+                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Página não encontrada (Nenhum ID fornecido).</h2></div>';
+                return;
+            }
+
+            const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
+            const pages = JSON.parse(localStorage.getItem('published_pages') || '[]');
+            
+            let page = courses.find(c => c.id === pageId);
+            if (!page) {
+                page = pages.find(p => p.id === pageId);
+            }
+
+            if (page) {
+                document.title = page.title || 'Curso';
+                // Use compiled_content se for um curso que tem LP nova, senão modular_content do curso, senão content se for legacy page
+                const contentHtml = page.compiled_content || page.modular_content || page.content;
+                
+                if (contentHtml) {
+                    document.getElementById('page-content').innerHTML = contentHtml;
+                    
+                    // Initialize any animations if needed
+                    const animObserver = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if(entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                            } else {
+                                entry.target.classList.remove('is-visible');
+                            }
+                        });
+                    }, { threshold: 0.1 });
+                    
+                    document.querySelectorAll('.anim-fade-in, .anim-slide-up').forEach(el => {
+                        animObserver.observe(el);
+                    });
+                } else {
+                    document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white; text-align:center;"><h2>Este curso ainda não possui uma Landing Page.</h2><br><a href="course_content.html?id=' + page.id + '" style="color:#cf9c33; text-decoration:underline;">Acessar Módulos do Curso</a></div>';
+                }
+            } else {
+                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Página não encontrada (ID inválido ou excluído).</h2></div>';
+            }
+        });
+    </script>
+</body>
+</html>
