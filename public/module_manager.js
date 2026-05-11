@@ -980,8 +980,6 @@ function renderQuizzes(quizzes) {
     
     // Make sure forms are attached to the DOM but hidden by default
     const firstContainer = document.getElementById(`forms-container-${quizzes[0].id}`);
-    const manualForm = document.getElementById('manual-quiz-form');
-    const aiForm = document.getElementById('ai-quiz-form');
     if (firstContainer && manualForm) {
         firstContainer.appendChild(manualForm);
         manualForm.style.display = 'none';
