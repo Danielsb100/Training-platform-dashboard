@@ -909,6 +909,13 @@ async function deleteQuestion(questionId) {
 function renderQuizzes(quizzes) {
     const list = document.getElementById('q-list');
     
+    // SAFEGUARD: Move forms out of q-list before destroying its contents
+    const manualForm = document.getElementById('manual-quiz-form');
+    const aiForm = document.getElementById('ai-quiz-form');
+    const paneQuiz = document.getElementById('pane-quiz');
+    if (manualForm && paneQuiz) paneQuiz.appendChild(manualForm);
+    if (aiForm && paneQuiz) paneQuiz.appendChild(aiForm);
+    
     if(!quizzes || quizzes.length === 0) {
         window.currentQuizDataList = [];
         list.innerHTML = `
