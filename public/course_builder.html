@@ -78,6 +78,20 @@
                 </div>
             </div>
 
+            <div class="card" id="editors-section" style="display: none;">
+                <div class="card-header">
+                    <h3>Co-Editors & Instructors</h3>
+                    <p>Assign other users to help you edit this course and its landing page.</p>
+                </div>
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <input type="number" id="new-editor-id" placeholder="User ID" style="flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;">
+                    <button type="button" class="btn-primary" onclick="addCoEditor()" style="background: #497aa7;">Add Editor</button>
+                </div>
+                <ul id="editors-list" style="list-style: none; padding: 0; margin-top: 15px;">
+                    <!-- Injected by JS -->
+                </ul>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h3>Construction and Layout</h3>
@@ -542,6 +556,10 @@
                                 course = data.data;
                                 window.apiCourseData = data.data;
                             }
+                            
+                            // Load editors if saved course
+                            loadCoEditors(window.editingCourseId);
+                            document.getElementById('editors-section').style.display = 'block';
                         }
                     }
                 } catch (err) {
@@ -851,9 +869,76 @@
                         // Salvar o rascunho automaticamente para não perder a capa
                         saveDraft(true); // true = silent save
                     };
-                    img.src = e.target.result;
+                    img.src = e.result;
                 };
                 reader.readAsDataURL(file);
+            }
+        }
+
+        async function loadCoEditors(courseId) {
+            try {
+                const res = await fetch(`/api/courses/${courseId}/editors`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    const editors = await res.json();
+                    const list = document.getElementById('editors-list');
+                    list.innerHTML = '';
+                    editors.forEach(e => {
+                        list.innerHTML += `
+                            <li style="display:flex; justify-content:space-between; align-items:center; background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px;">
+                                <span>${e.user.profile?.displayName || e.user.username} (${e.user.email})</span>
+                                <button type="button" onclick="removeCoEditor(${e.userId})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                            </li>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function addCoEditor() {
+            const userId = document.getElementById('new-editor-id').value;
+            if (!userId) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/editors`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                if (res.ok) {
+                    document.getElementById('new-editor-id').value = '';
+                    loadCoEditors(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to add editor');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error adding editor');
+            }
+        }
+
+        async function removeCoEditor(userId) {
+            if (!confirm('Are you sure you want to remove this editor?')) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/editors/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    loadCoEditors(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to remove editor');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error removing editor');
             }
         }
     </script>

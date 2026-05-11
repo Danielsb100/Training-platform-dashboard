@@ -46,11 +46,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .then(res => res.json())
         .then(profileData => {
-            const photoUrl = profileData.user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            const user = profileData.data?.user;
+            const roles = profileData.data?.roles || [];
+            const photoUrl = user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            
             if (photoUrl !== cachedProfileImg) {
                 sessionStorage.setItem('cached_profile_img', photoUrl);
                 userAvatarBtn.innerHTML = `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
                 userAvatarBtn.style.border = '2px solid rgba(255,255,255,0.2)';
+            }
+
+            // Hide/Show navigation buttons based on role
+            const navCreations = document.getElementById('nav-creations');
+            const navUsers = document.getElementById('nav-users');
+
+            if (navCreations) {
+                // If only STUDENT, hide the creations button
+                const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
+                if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
+                    navCreations.style.display = 'none';
+                }
+            }
+
+            if (navUsers && user?.role === 'MASTER') {
+                navUsers.style.display = 'flex';
             }
         })
         .catch(err => console.error('Failed to fetch profile', err));

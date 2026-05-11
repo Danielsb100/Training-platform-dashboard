@@ -161,6 +161,11 @@ app.get('/courses/:id/runtime', authenticateToken, courseController.getCourseRun
 app.post('/courses/:id/modules/:moduleId/complete', authenticateToken, courseController.completeCourseModule);
 app.post('/api/courses/:id/subscribe', authenticateToken, courseController.selfEnroll);
 app.get('/api/courses/enrolled', authenticateToken, courseController.getEnrolledCourses);
+app.delete('/api/courses/:id/unsubscribe', authenticateToken, courseController.unsubscribe);
+
+app.get('/api/courses/:id/editors', authenticateToken, courseController.getCourseEditors);
+app.post('/api/courses/:id/editors', authenticateToken, courseController.addCourseEditor);
+app.delete('/api/courses/:id/editors/:userId', authenticateToken, courseController.removeCourseEditor);
 
 // --- Landing Pages API ---
 app.get('/api/landing-pages', authenticateToken, landingPageController.getLandingPages);

@@ -535,6 +535,13 @@ function playVideo(url, title) {
             embedUrl = url + (url.includes('?') ? '&' : '?') + 'inline=true';
         }
     }
+    
+    // Transform Sharepoint/OneDrive URL to embed
+    if (!isDirectVideo && (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('1drv.ms'))) {
+        if (!embedUrl.includes('action=embedview')) {
+            embedUrl = embedUrl + (embedUrl.includes('?') ? '&' : '?') + 'action=embedview&wdAllowInteractivity=False&wdVideoPlayback=1';
+        }
+    }
 
     if (isDirectVideo) {
         container.innerHTML = `<video src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay></video>`;

@@ -589,17 +589,26 @@ window.loadSubscriptions = async function() {
         if (!res.ok) throw new Error('Falha ao buscar inscrições');
         const courses = await res.json();
 
-        if (!courses || courses.length === 0) {
+        window.currentSubscriptionsType = window.currentSubscriptionsType || 'ALL';
+        
+        let filteredCourses = courses;
+        if (window.currentSubscriptionsType === 'COURSE') {
+            filteredCourses = courses.filter(c => !c.channelId);
+        } else if (window.currentSubscriptionsType === 'CHANNEL') {
+            filteredCourses = courses.filter(c => !!c.channelId);
+        }
+
+        if (!filteredCourses || filteredCourses.length === 0) {
             container.innerHTML = `
                 <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
                 <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma Inscrição Encontrada</h3>
-                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você ainda não se inscreveu em nenhum curso. Visite o marketplace para explorar novos conteúdos!</p>
+                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você não possui inscrições com esse filtro. Visite o marketplace para explorar novos conteúdos!</p>
             `;
             return;
         }
 
         let html = '<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; text-align:left;">';
-        courses.forEach(course => {
+        filteredCourses.forEach(course => {
             const thumbUrl = course.coverImage || 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&w=400&q=80';
             const progress = course.progressPercent || 0;
             
@@ -619,6 +628,9 @@ window.loadSubscriptions = async function() {
                                 <div style="background:#10b981; height:100%; width:${progress}%"></div>
                             </div>
                         </div>
+                        <button onclick="event.stopPropagation(); window.unsubscribeCourse(${course.id})" style="margin-top:15px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:6px 12px; font-size:0.85rem; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+                            <i class="fas fa-times-circle" style="margin-right:5px;"></i> Desinscrever
+                        </button>
                     </div>
                 </div>
             `;
@@ -633,3 +645,32 @@ window.loadSubscriptions = async function() {
     }
 };
 
+window.filterSubscriptions = function(type) {
+    window.currentSubscriptionsType = type;
+    document.getElementById('sub-filter-ALL').style.cssText = type === 'ALL' ? 'border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;' : 'border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;';
+    document.getElementById('sub-filter-COURSE').style.cssText = type === 'COURSE' ? 'border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;' : 'border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;';
+    document.getElementById('sub-filter-CHANNEL').style.cssText = type === 'CHANNEL' ? 'border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;' : 'border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;';
+    window.loadSubscriptions();
+};
+
+window.unsubscribeCourse = async function(courseId) {
+    if (!confirm('Tem certeza de que deseja desinscrever-se deste curso? Você perderá seu progresso.')) return;
+    
+    try {
+        const res = await fetch(`/api/courses/${courseId}/unsubscribe`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
+        
+        if (res.ok) {
+            alert('Desinscrito com sucesso.');
+            window.loadSubscriptions();
+        } else {
+            const data = await res.json();
+            alert('Erro: ' + (data.error || 'Não foi possível desinscrever-se.'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro de rede ao tentar desinscrever.');
+    }
+};

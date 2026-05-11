@@ -12,7 +12,10 @@ function getEffectiveUserRoles(user) {
 
 function isCourseManager(user, course) {
   const roles = getEffectiveUserRoles(user);
-  return String(course.ownerMasterId) === String(user.id) || roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
+  if (roles.has('SUPER_ADMIN')) return true;
+  if (String(course.ownerMasterId) === String(user?.id)) return true;
+  if (course.editors && course.editors.some(e => String(e.userId) === String(user?.id))) return true;
+  return false;
 }
 
 function slugify(value) {
@@ -106,7 +109,8 @@ function buildCourseInclude(userId, { includeEnrollmentUsers = false, includeLan
             select: { id: true, title: true, compiledHtml: true, compiledCss: true }
           }
         }
-      : {})
+      : {}),
+    editors: true
   };
 }
 
@@ -891,12 +895,16 @@ async function selfEnroll(req, res) {
 async function getEnrolledCourses(req, res) {
   try {
     const courses = await prisma.course.findMany({
-      where: { enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } } },
+      where: { 
+        enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } },
+        ownerMasterId: { not: req.user.id }
+      },
       include: {
         ...buildCourseInclude(req.user.id),
         landingPage: {
           select: { id: true, title: true }
-        }
+        },
+        CourseChannel: true
       },
       orderBy: { updatedAt: 'desc' }
     });
@@ -909,6 +917,7 @@ async function getEnrolledCourses(req, res) {
         title: course.title,
         description: course.description,
         coverImage: course.coverImage,
+        channelId: course.channelId || (course.CourseChannel && course.CourseChannel.length > 0 ? course.CourseChannel[0].channelId : null),
         sceneId: course.sceneId,
         status: course.status,
         moduleCount: course.courseModules.length,
@@ -927,7 +936,101 @@ async function getEnrolledCourses(req, res) {
   }
 }
 
+async function unsubscribe(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = req.user.id;
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'Invalid course ID.' });
+    }
+
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found.' });
+    }
+
+    await prisma.enrollment.delete({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    return res.json({ message: 'Unsubscribed successfully.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to unsubscribe from course.' });
+  }
+}
+
+async function getCourseEditors(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const editors = await prisma.courseEditor.findMany({
+      where: { courseId },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, profile: { select: { displayName: true } } }
+        }
+      }
+    });
+    return res.json(editors);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to load editors' });
+  }
+}
+
+async function addCourseEditor(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const { userId } = req.body;
+    
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (!isCourseManager(req.user, course)) return res.status(403).json({ error: 'Forbidden' });
+
+    if (String(course.ownerMasterId) === String(userId)) {
+        return res.status(400).json({ error: 'User is already the owner' });
+    }
+
+    const newEditor = await prisma.courseEditor.upsert({
+      where: { courseId_userId: { courseId, userId: Number(userId) } },
+      update: {},
+      create: { courseId, userId: Number(userId) },
+      include: { user: { select: { id: true, username: true, email: true } } }
+    });
+    return res.status(201).json(newEditor);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to add editor' });
+  }
+}
+
+async function removeCourseEditor(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (!isCourseManager(req.user, course)) return res.status(403).json({ error: 'Forbidden' });
+
+    await prisma.courseEditor.deleteMany({
+      where: { courseId, userId }
+    });
+    return res.json({ message: 'Editor removed' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to remove editor' });
+  }
+}
+
 module.exports = {
+  addCourseEditor,
+  removeCourseEditor,
+  getCourseEditors,
   getEffectiveUserRoles,
   isCourseManager,
   buildCourseInclude,
@@ -946,6 +1049,7 @@ module.exports = {
   removeCourseModule,
   enrollUser,
   selfEnroll,
+  unsubscribe,
   getEnrolledCourses,
   getCourseRuntime,
   completeCourseModule,

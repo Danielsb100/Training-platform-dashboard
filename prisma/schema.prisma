@@ -98,6 +98,7 @@ model User {
   reminders Reminder[]
   taskQueueItems TaskQueueItem[]
   ownedCourses Course[] @relation("CourseOwner")
+  editedCourses CourseEditor[]
   enrollments Enrollment[]
   moduleCompletions ModuleCompletion[]
   landingPages  LandingPage[] @relation("MasterLandingPages")
@@ -353,8 +354,20 @@ model Course {
   completions     ModuleCompletion[]
   placements      WorldModulePlacement[]
   landingPage     LandingPage? @relation("CourseLandingPage")
+  editors         CourseEditor[]
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+}
+
+model CourseEditor {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  userId    Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([courseId, userId])
 }
 
 

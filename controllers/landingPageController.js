@@ -138,12 +138,19 @@ async function updateLandingPage(req, res) {
     const id = Number(req.params.id);
     const { title, content, compiledHtml, compiledCss, courseId } = req.body;
 
-    const existing = await prisma.landingPage.findUnique({ where: { id } });
+    const existing = await prisma.landingPage.findUnique({ 
+        where: { id },
+        include: { course: { include: { editors: true } } }
+    });
     if (!existing) {
       return res.status(404).json({ error: 'Landing page not found' });
     }
 
-    if (existing.ownerMasterId !== req.user.id && !canManageLandingPages(req.user)) {
+    const isEditor = existing.course?.editors?.some(e => String(e.userId) === String(req.user.id));
+    const isOwner = String(existing.ownerMasterId) === String(req.user.id) || (existing.course && String(existing.course.ownerMasterId) === String(req.user.id));
+    const isSuperAdmin = getEffectiveUserRoles(req.user).has('SUPER_ADMIN');
+
+    if (!isOwner && !isEditor && !isSuperAdmin) {
         return res.status(403).json({ error: 'You do not have permission to edit this landing page' });
     }
 
@@ -177,13 +184,20 @@ async function updateLandingPage(req, res) {
 async function deleteLandingPage(req, res) {
   try {
     const id = Number(req.params.id);
-    const existing = await prisma.landingPage.findUnique({ where: { id } });
+    const existing = await prisma.landingPage.findUnique({ 
+        where: { id },
+        include: { course: { include: { editors: true } } }
+    });
     
     if (!existing) {
       return res.status(404).json({ error: 'Landing page not found' });
     }
 
-    if (existing.ownerMasterId !== req.user.id && !getEffectiveUserRoles(req.user).has('SUPER_ADMIN')) {
+    const isEditor = existing.course?.editors?.some(e => String(e.userId) === String(req.user.id));
+    const isOwner = String(existing.ownerMasterId) === String(req.user.id) || (existing.course && String(existing.course.ownerMasterId) === String(req.user.id));
+    const isSuperAdmin = getEffectiveUserRoles(req.user).has('SUPER_ADMIN');
+
+    if (!isOwner && !isEditor && !isSuperAdmin) {
       return res.status(403).json({ error: 'You do not have permission to delete this landing page' });
     }
 

@@ -17,6 +17,7 @@
             <div class="nav-item" onclick="switchProfilePane('subscriptions')" id="nav-subscriptions" title="My Subscriptions"><i class="fas fa-graduation-cap"></i></div>
             <div class="nav-item" onclick="toggleNotifications(event)" title="Notifications"><i class="fas fa-bell"></i></div>
             <div class="nav-item" onclick="switchProfilePane('creations')" id="nav-creations" title="My Creations"><i class="fas fa-file-alt"></i></div>
+            <div class="nav-item" onclick="window.location.href='user_management.html'" id="nav-users" title="User Management" style="display:none;"><i class="fas fa-users"></i></div>
             <div class="nav-item" onclick="switchProfilePane('portfolio')" id="nav-portfolio" title="Portfolio"><i class="fas fa-briefcase"></i></div>
             <div class="nav-item active" onclick="switchProfilePane('profile')" id="nav-profile" title="My Profile"><i class="fas fa-user"></i></div>
             <div class="nav-item" onclick="switchProfilePane('settings')" id="nav-settings" title="Settings"><i class="fas fa-cog"></i></div>
@@ -156,7 +157,14 @@
 
             <!-- Subscriptions Pane -->
             <section id="pane-subscriptions" style="display:none; padding:40px 60px;">
-                <h2 style="margin-bottom:20px; font-family:'Inter', sans-serif;">Subscribed Courses & Channels</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 style="margin:0; font-family:'Inter', sans-serif;">Subscribed Courses & Channels</h2>
+                    <div class="filter-group" style="display:flex; gap:10px; background:#f1f5f9; padding:5px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <button onclick="filterSubscriptions('ALL')" id="sub-filter-ALL" style="border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;">All</button>
+                        <button onclick="filterSubscriptions('COURSE')" id="sub-filter-COURSE" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;">Courses</button>
+                        <button onclick="filterSubscriptions('CHANNEL')" id="sub-filter-CHANNEL" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;">Channels</button>
+                    </div>
+                </div>
                 <div id="subscriptions-container" style="text-align:center; padding:60px; background:white; border-radius:12px; border:1px solid #e2e8f0;">
                     <i class="fas fa-graduation-cap" style="font-size:48px; color:#e2e8f0; margin-bottom:15px; display:block;"></i>
                     <p>You are not subscribed to any courses or channels yet.</p>
@@ -324,7 +332,14 @@
                         </div>
                         <div>
                             <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Headline (Role)</label>
-                            <input type="text" id="settings-role" placeholder="Loading..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <select id="settings-role" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
+                                <option value="">Select a role...</option>
+                                <option value="STUDENT">Student</option>
+                                <option value="TEACHER">Teacher</option>
+                                <option value="TUTOR">Tutor</option>
+                                <option value="BUSINESS_MENTOR">Business Mentor</option>
+                                <option value="COORDINATOR">Coordinator</option>
+                            </select>
                         </div>
                         <div style="grid-column: span 2;">
                             <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Biography</label>

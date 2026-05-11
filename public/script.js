@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const body = document.body;
     let editingPageId = null;
 
@@ -100,23 +100,33 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
         }
     } else if (courseIdParam) {
-        const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-        const course = courses.find(c => c.id === courseIdParam);
-        if (course && course.modular_content) {
-            editingPageId = 'course_lp';
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/api/landing-pages/course/${courseIdParam}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             
-            const navNameInput = document.getElementById('page-name-input');
-            if(navNameInput) navNameInput.value = course.title || 'Curso sem título';
+            if (res.ok) {
+                const landingPage = await res.json();
+                if (landingPage && landingPage.content && landingPage.content.html) {
+                    editingPageId = 'course_lp';
+                    
+                    const navNameInput = document.getElementById('page-name-input');
+                    if(navNameInput) navNameInput.value = landingPage.title || 'Curso sem título';
 
-            const container = document.getElementById('template-container');
-            if (container) {
-                container.innerHTML = course.modular_content;
-                container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                    const container = document.getElementById('template-container');
+                    if (container) {
+                        container.innerHTML = landingPage.content.html;
+                        container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
+                        container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                    }
+                    const tModal = document.getElementById('template-modal');
+                    if (tModal) tModal.style.display = 'none';
+                    setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+                }
             }
-            const tModal = document.getElementById('template-modal');
-            if (tModal) tModal.style.display = 'none';
-            setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+        } catch (err) {
+            console.error('Failed to load existing landing page for course:', err);
         }
     } else if (pageIdParam) {
         const pages = JSON.parse(localStorage.getItem('published_pages') || '[]');
