@@ -85,6 +85,22 @@ async function getLandingPageByCourseId(req, res) {
     }
 
     let isAuthorized = false;
+
+    // Optional authentication to verify ownership
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+        const token = authHeader.split(' ')[1];
+        if (token) {
+            try {
+                const jwt = require('jsonwebtoken');
+                const env = require('../config/env');
+                req.user = jwt.verify(token, env.auth.jwtSecret);
+            } catch (err) {
+                // Ignore invalid token, just treat as unauthorized viewer
+            }
+        }
+    }
+
     if (req.user) {
         const isOwner = String(page.ownerMasterId) === String(req.user.id) || (page.course && String(page.course.ownerMasterId) === String(req.user.id));
         const isEditor = page.course?.editors?.some(e => String(e.userId) === String(req.user.id));

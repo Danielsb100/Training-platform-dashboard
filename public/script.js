@@ -108,7 +108,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (res.ok) {
                 const landingPage = await res.json();
-                if (landingPage && landingPage.content && landingPage.content.html) {
+                
+                // Parse content if it's a string (e.g. from SQLite JSON field)
+                let pageContent = landingPage.content;
+                if (typeof pageContent === 'string') {
+                    try { pageContent = JSON.parse(pageContent); } catch(e) {}
+                }
+
+                if (landingPage && pageContent && pageContent.html) {
                     editingPageId = 'course_lp';
                     
                     const navNameInput = document.getElementById('page-name-input');
@@ -116,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const container = document.getElementById('template-container');
                     if (container) {
-                        container.innerHTML = landingPage.content.html;
+                        container.innerHTML = pageContent.html;
                         container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
                         container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
                     }
