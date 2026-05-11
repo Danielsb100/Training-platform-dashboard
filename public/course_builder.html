@@ -574,6 +574,8 @@
                             // Load editors if saved course
                             loadCoEditors(window.editingCourseId);
                             document.getElementById('editors-section').style.display = 'block';
+                            loadStudents(window.editingCourseId);
+                            document.getElementById('students-section').style.display = 'block';
                         }
                     }
                 } catch (err) {

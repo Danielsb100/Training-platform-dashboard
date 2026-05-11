@@ -538,9 +538,8 @@ function playVideo(url, title) {
     
     // Transform Sharepoint/OneDrive URL to embed
     if (!isDirectVideo && (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('1drv.ms'))) {
-        if (!embedUrl.includes('action=embedview')) {
-            embedUrl = embedUrl + (embedUrl.includes('?') ? '&' : '?') + 'action=embedview&wdAllowInteractivity=False&wdVideoPlayback=1';
-        }
+        let baseUrl = embedUrl.split('?')[0];
+        embedUrl = baseUrl + '?action=embedview&wdAllowInteractivity=False&wdVideoPlayback=1';
     }
 
     if (isDirectVideo) {

@@ -102,8 +102,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const headerRole = document.querySelector('.profile-role');
             if (headerRole) {
-                headerRole.innerText = profile.headline || 'No role defined';
-                document.getElementById('settings-role').value = profile.headline || '';
+                const userRole = (user.roles && user.roles.length > 0) ? user.roles[0] : (user.role || 'USER');
+                headerRole.innerText = profile.headline || userRole;
+                document.getElementById('settings-role').value = userRole;
             }
 
             const headerBio = document.querySelector('.profile-bio');
