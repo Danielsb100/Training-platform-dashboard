@@ -125,24 +125,32 @@ function renderAttachedModules() {
     
     if (headerCount) headerCount.innerText = window.courseModules.length;
     
-    container.innerHTML = window.courseModules.map((m, index) => `
-        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"
-             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)';"
+    container.innerHTML = window.courseModules.map((m, index) => {
+        const bgImg = m.coverImage ? `url('${m.coverImage}')` : 'none';
+        const bgColor = m.coverImage ? '#1e293b' : 'linear-gradient(135deg, #1e293b, #4c1d95)';
+        const font = m.titleFont && m.titleFont !== 'inherit' ? m.titleFont : 'inherit';
+        const color = m.textColor || '#ffffff';
+        
+        return `
+        <div style="background: ${bgColor}; background-image: ${bgImg}; background-size: cover; background-position: center; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); aspect-ratio: 1; position: relative; overflow: hidden;"
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.2)';"
              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"
              onclick="openModuleEditor(${m.dbId})">
-            <div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                    <span style="background:#f1f5f9; color:#64748b; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">MODULE ${index + 1}</span>
-                    <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;" title="Remove from Track"><i class="fas fa-trash"></i></button>
-                </div>
-                <h3 style="margin:0 0 10px 0; color:#1e293b; font-size:1.2rem;">${m.title}</h3>
-                <p style="margin:0; color:#64748b; font-size:0.9rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
+            
+            <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0; pointer-events: none;"></div>
+            
+            <div style="position: relative; z-index: 10; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <span style="background: rgba(255,255,255,0.2); color: #fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; backdrop-filter: blur(4px);">MODULE ${index + 1}</span>
+                <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:rgba(255,255,255,0.2); border:none; color:#ef4444; padding: 4px 8px; border-radius: 4px; cursor:pointer; backdrop-filter: blur(4px);" title="Remove from Track"><i class="fas fa-trash"></i></button>
             </div>
-            <div style="margin-top:20px; padding-top:15px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; color:#497aa7; font-size:0.85rem; font-weight:bold;">
-                <span><i class="fas fa-edit"></i> Edit Content</span>
+            
+            <div style="position: relative; z-index: 10; margin-top: auto;">
+                <h3 style="margin:0 0 5px 0; font-size:1.2rem; color: ${color}; font-family: ${font};">${m.title}</h3>
+                <p style="margin:0; font-size:0.85rem; color: rgba(255,255,255,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function removeModuleFromCourse(localId) {
@@ -266,6 +274,11 @@ async function loadModuleData(id) {
         document.getElementById('m-description').value = module.description || '';
         document.getElementById('m-status').value = module.status || 'DRAFT';
         
+        // Cover
+        document.getElementById('m-coverImage').value = module.coverImage || '';
+        document.getElementById('m-titleFont').value = module.titleFont || 'inherit';
+        document.getElementById('m-textColor').value = module.textColor || '#ffffff';
+        
         // Videos
         renderVideos(module.videos || []);
         
@@ -275,6 +288,9 @@ async function loadModuleData(id) {
         // Quizzes
         const quizzes = module.quizzes || (module.quiz ? [module.quiz] : []);
         renderQuizzes(quizzes);
+        
+        // Update the cover preview based on loaded data
+        updateCoverPreview();
         
     } catch (error) {
         alert('Error loading module: ' + error.message);
@@ -304,6 +320,38 @@ async function saveModuleBasics() {
     } catch (error) {
         alert('Error saving: ' + error.message);
     }
+}
+
+async function saveModuleCover(silent = false) {
+    if (!editingModuleId) return;
+    try {
+        const coverImage = document.getElementById('m-coverImage').value;
+        const titleFont = document.getElementById('m-titleFont').value;
+        const textColor = document.getElementById('m-textColor').value;
+        
+        await apiCall(`/modules/${editingModuleId}`, 'PUT', { coverImage, titleFont, textColor });
+        
+        // Update local memory
+        const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
+        if(localMod) {
+            localMod.coverImage = coverImage;
+            localMod.titleFont = titleFont;
+            localMod.textColor = textColor;
+        }
+        
+        renderAttachedModules();
+        
+        if (!silent) alert('Cover layout saved successfully!');
+        fetchModulesFromDB();
+    } catch (error) {
+        if (!silent) alert('Error saving cover layout: ' + error.message);
+    }
+}
+
+async function removeCoverImage() {
+    document.getElementById('m-coverImage').value = '';
+    updateCoverPreview();
+    await saveModuleCover(true);
 }
 
 async function deleteModuleFromDB() {
@@ -543,6 +591,66 @@ async function handleDocUpload(e) {
             btn.innerHTML = '<i class="fas fa-file-alt"></i> + Doc';
             btn.disabled = false;
         }
+    }
+}
+
+async function handleCoverUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const formData = new FormData();
+        formData.append('document', file);
+        
+        const btn = document.getElementById('btn-upload-cover');
+        let oldText = '<i class="fas fa-upload"></i> Upload';
+        if (btn) {
+            oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+        }
+
+        const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
+        
+        if (docRes && docRes.downloadUrl) {
+            document.getElementById('m-coverImage').value = docRes.downloadUrl;
+            updateCoverPreview();
+            
+            // Auto-save the cover silently
+            await saveModuleCover(true);
+        }
+        
+        if (btn) {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        alert('Error uploading cover: ' + error.message);
+        const btn = document.getElementById('btn-upload-cover');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+            btn.disabled = false;
+        }
+    }
+}
+
+function updateCoverPreview() {
+    const bgUrl = document.getElementById('m-coverImage').value;
+    const font = document.getElementById('m-titleFont').value;
+    const color = document.getElementById('m-textColor').value;
+    const moduleTitle = document.getElementById('m-title').value || 'Preview Title';
+    
+    const previewBox = document.getElementById('cover-preview-box');
+    const previewTitle = document.getElementById('cover-preview-title');
+    
+    if (previewBox) {
+        previewBox.style.backgroundImage = bgUrl ? `url('${bgUrl}')` : 'none';
+    }
+    
+    if (previewTitle) {
+        previewTitle.textContent = moduleTitle;
+        previewTitle.style.fontFamily = font !== 'inherit' ? font : 'inherit';
+        previewTitle.style.color = color;
     }
 }
 

@@ -57,6 +57,9 @@ function buildProgressModuleInclude(userId) {
         title: true,
         description: true,
         status: true,
+        coverImage: true,
+        titleFont: true,
+        textColor: true,
         quizzes: {
           select: { id: true }
         },
@@ -224,6 +227,9 @@ function buildCourseProgress(course, userId, isManagerView = false) {
       title: courseModule.module?.title || 'Untitled module',
       description: courseModule.module?.description || '',
       moduleStatus: courseModule.module?.status || 'DRAFT',
+      coverImage: courseModule.module?.coverImage || null,
+      titleFont: courseModule.module?.titleFont || 'inherit',
+      textColor: courseModule.module?.textColor || '#ffffff',
       orderIndex: courseModule.orderIndex,
       isRequired: courseModule.isRequired,
       requireQuizPass: Boolean(courseModule.requireQuizPass),
@@ -452,6 +458,8 @@ async function getCourseDetail(req, res) {
       title: course.title,
       description: course.description,
       coverImage: course.coverImage,
+      contentHtml: course.contentHtml,
+      contentCss: course.contentCss,
       status: course.status,
       sceneId: course.sceneId,
       canManage: managerView,
@@ -502,6 +510,8 @@ async function updateCourse(req, res) {
         title: req.body.title || existing.title,
         description: req.body.description === undefined ? existing.description : req.body.description,
         coverImage: req.body.coverImage === undefined ? existing.coverImage : req.body.coverImage,
+        contentHtml: req.body.contentHtml === undefined ? existing.contentHtml : req.body.contentHtml,
+        contentCss: req.body.contentCss === undefined ? existing.contentCss : req.body.contentCss,
         status: req.body.status || existing.status
       }
     });
@@ -851,6 +861,72 @@ async function completeCourseModule(req, res) {
   }
 }
 
+async function selfEnroll(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = req.user.id;
+
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+
+    if (course.status !== 'PUBLISHED') {
+      return res.status(403).json({ error: 'Cannot subscribe to an unpublished course.' });
+    }
+
+    const enrollment = await prisma.enrollment.upsert({
+      where: { courseId_userId: { courseId, userId } },
+      update: { status: 'ENROLLED' },
+      create: { courseId, userId, status: 'ENROLLED' }
+    });
+
+    return res.status(201).json(enrollment);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to subscribe to course.' });
+  }
+}
+
+async function getEnrolledCourses(req, res) {
+  try {
+    const courses = await prisma.course.findMany({
+      where: { enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } } },
+      include: {
+        ...buildCourseInclude(req.user.id),
+        landingPage: {
+          select: { id: true, title: true }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    const result = courses.map((course) => {
+      const managerView = isCourseManager(req.user, course);
+      const progress = buildCourseProgress(course, req.user.id, managerView);
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        coverImage: course.coverImage,
+        sceneId: course.sceneId,
+        status: course.status,
+        moduleCount: course.courseModules.length,
+        progressPercent: progress.progressPercent,
+        completedCount: progress.completedCount,
+        enrollmentCount: course.enrollments.length,
+        creator: course.ownerMaster ? course.ownerMaster.name : 'Platform',
+        landingPageId: course.landingPage?.id || null
+      };
+    });
+
+    return res.json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to load enrolled courses.' });
+  }
+}
+
 module.exports = {
   getEffectiveUserRoles,
   isCourseManager,
@@ -869,6 +945,8 @@ module.exports = {
   reorderCourseModules,
   removeCourseModule,
   enrollUser,
+  selfEnroll,
+  getEnrolledCourses,
   getCourseRuntime,
   completeCourseModule,
   syncCoursePlacements

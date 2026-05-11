@@ -222,6 +222,7 @@
                     <button class="module-tab-btn" data-tab="videos" onclick="switchModuleTab('videos')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;">Videos</button>
                     <button class="module-tab-btn" data-tab="docs" onclick="switchModuleTab('docs')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;">Documents</button>
                     <button class="module-tab-btn" data-tab="quiz" onclick="switchModuleTab('quiz')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;">Quiz & AI</button>
+                    <button class="module-tab-btn" data-tab="cover" onclick="switchModuleTab('cover')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;">Cover</button>
                 </div>
 
                 <!-- Conteúdos das Abas -->
@@ -248,6 +249,45 @@
                             <div style="display: flex; gap: 15px; margin-top: 20px;">
                                 <button type="button" id="btn-delete-module" onclick="deleteModuleFromDB()" style="padding: 12px 20px; background: white; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; font-weight: bold; cursor: pointer; display: none;">Delete Module</button>
                             </div>
+                        </form>
+                    </div>
+
+                    <!-- Cover Pane -->
+                    <div class="module-tab-pane" id="pane-cover" style="display: none;">
+                        <form id="module-cover-form" onsubmit="event.preventDefault(); saveModuleCover();">
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Cover Image URL</label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                    <input type="text" id="m-coverImage" placeholder="https://..." style="flex:1; padding:12px; border:1px solid #cbd5e1; border-radius:8px;" oninput="updateCoverPreview()">
+                                    <input type="file" id="m-coverImage-file" style="display:none;" accept="image/*" onchange="handleCoverUpload(event)">
+                                    <button type="button" id="btn-upload-cover" onclick="document.getElementById('m-coverImage-file').click()" style="background:#e2e8f0; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#475569;"><i class="fas fa-upload"></i> Upload</button>
+                                    <button type="button" onclick="removeCoverImage()" style="background:#fee2e2; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#ef4444;" title="Remove Cover Image"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title Font</label>
+                                <select id="m-titleFont" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;" onchange="updateCoverPreview()">
+                                    <option value="inherit">Default Font</option>
+                                    <option value="'Inter', sans-serif">Inter</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                    <option value="'Outfit', sans-serif">Outfit</option>
+                                    <option value="'Courier New', monospace">Courier</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Text Color</label>
+                                <input type="color" id="m-textColor" value="#ffffff" style="width:100%; height:45px; padding:2px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;" onchange="updateCoverPreview()" oninput="updateCoverPreview()">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Preview</label>
+                                <div id="cover-preview-box" style="width: 100%; aspect-ratio: 1; border-radius: 16px; background-color: #1e293b; background-size: cover; background-position: center; margin-bottom: 15px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 20px;">
+                                    <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0;"></div>
+                                    <h3 id="cover-preview-title" style="position: relative; z-index: 10; margin: 0; font-size: 1.5rem; color: #ffffff; font-family: inherit;">Preview Title</h3>
+                                </div>
+                            </div>
+                            <button type="submit" style="width: 100%; padding: 12px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;">Save Cover Layout</button>
                         </form>
                     </div>
 
@@ -548,14 +588,16 @@
                     }
                 }
                 
-                // Handle modules format from DB
                 if (course.modules) {
                     window.courseModules = course.modules.map(m => ({
                         id: m.courseModuleId,
                         dbId: m.moduleId,
                         title: m.title,
                         content: m.description || '',
-                        status: m.moduleStatus || 'DRAFT'
+                        status: m.moduleStatus || 'DRAFT',
+                        coverImage: m.coverImage,
+                        titleFont: m.titleFont,
+                        textColor: m.textColor
                     }));
                 } else {
                     window.courseModules = [];
@@ -646,7 +688,9 @@
                     <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:15px; height:100%;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                             <h4 style="margin:0; color:#1e293b;">Modules (${window.courseModules.length})</h4>
-                            <button onclick="openModuleManager()" style="background:none; border:none; color:#497aa7; font-weight:bold; cursor:pointer;"><i class="fas fa-cog"></i> Manage</button>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="openModuleManager()" style="background:none; border:none; color:#497aa7; font-weight:bold; cursor:pointer;"><i class="fas fa-cog"></i> Manage</button>
+                            </div>
                         </div>
                         <div style="max-height: 250px; overflow-y: auto; padding-right:5px;">
                             ${modulesHTML}

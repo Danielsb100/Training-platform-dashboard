@@ -16,6 +16,8 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
         title: module.title,
         description: module.description,
         coverImage: module.coverImage,
+        titleFont: module.titleFont,
+        textColor: module.textColor,
         status: module.status,
         createdAt: module.createdAt,
         updatedAt: module.updatedAt,
@@ -61,7 +63,7 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
 
 const createModule = async (req, res) => {
     try {
-        const { title, description, coverImage } = req.body || {};
+        const { title, description, coverImage, titleFont, textColor } = req.body || {};
         const normalizedTitle = typeof title === 'string' ? title.trim() : '';
         if (!normalizedTitle) {
             return res.status(400).json({ error: 'Module title is required.' });
@@ -74,6 +76,8 @@ const createModule = async (req, res) => {
                 title: normalizedTitle,
                 description,
                 coverImage,
+                titleFont,
+                textColor,
                 ownerMasterId
             }
         });
@@ -110,6 +114,8 @@ const getAllPublishedModules = async (req, res) => {
                 title: true,
                 description: true,
                 coverImage: true,
+                titleFont: true,
+                textColor: true,
                 updatedAt: true
             }
         });
@@ -167,7 +173,7 @@ const getModuleById = async (req, res) => {
 const updateModule = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, coverImage } = req.body || {};
+        const { title, description, coverImage, titleFont, textColor, status } = req.body || {};
         if (!req.body) {
             return res.status(400).json({ error: 'Request body is required.' });
         }
@@ -180,7 +186,7 @@ const updateModule = async (req, res) => {
 
         const updated = await prisma.trainingModule.update({
             where: { id: parseInt(id) },
-            data: { title, description, coverImage }
+            data: { title, description, coverImage, titleFont, textColor, status }
         });
 
         res.json(updated);

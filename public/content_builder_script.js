@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const body = document.body;
     let editingPageId = null;
 
@@ -100,23 +100,48 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
         }
     } else if (courseIdParam) {
-        const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-        const course = courses.find(c => c.id === courseIdParam);
-        if (course && course.modular_content) {
-            editingPageId = 'course_lp';
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/courses/${courseIdParam}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch course');
+            const courseRes = await res.json();
+            const course = courseRes.data || courseRes;
             
-            const navNameInput = document.getElementById('page-name-input');
-            if(navNameInput) navNameInput.value = course.title || 'Curso sem título';
+            if (course && course.contentHtml && course.contentHtml.length > 100) {
+                editingPageId = 'course_lp';
+                
+                const navNameInput = document.getElementById('page-name-input');
+                if(navNameInput) navNameInput.value = course.title || 'Curso sem título';
 
-            const container = document.getElementById('template-container');
-            if (container) {
-                container.innerHTML = course.modular_content;
-                container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                const container = document.getElementById('template-container');
+                if (container) {
+                    container.innerHTML = course.contentHtml;
+                    container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
+                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                }
+                const tModal = document.getElementById('template-modal');
+                if (tModal) tModal.style.display = 'none';
+                setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+            } else if (course) {
+                editingPageId = 'course_lp';
+                
+                const navNameInput = document.getElementById('page-name-input');
+                if(navNameInput) navNameInput.value = course.title || 'Curso sem título';
+                
+                const titleEl = document.getElementById('titulo-cabecalho');
+                const descEl = document.getElementById('desc-cabecalho');
+                if (titleEl) titleEl.innerText = course.title || 'Course Title';
+                if (descEl) descEl.innerText = course.description || 'Course Description';
+                
+                const tModal = document.getElementById('template-modal');
+                if (tModal) tModal.style.display = 'none';
+                setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
             }
-            const tModal = document.getElementById('template-modal');
-            if (tModal) tModal.style.display = 'none';
-            setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+        } catch (error) {
+            console.error('Error fetching course:', error);
+            alert('Não foi possível carregar o curso.');
         }
     } else if (pageIdParam) {
         const pages = JSON.parse(localStorage.getItem('published_pages') || '[]');
@@ -422,33 +447,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Not authenticated');
 
-            // 1. Check if a landing page already exists for this course
-            const getRes = await fetch(`/api/landing-pages/course/${courseIdParam}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            // Save directly to the Course model
+            const payload = {
+                contentHtml: compiledContent,
+                contentCss: ''
+            };
             
-            let method = 'POST';
-            let url = '/api/landing-pages';
-            
-            if (getRes.ok) {
-                const existingPage = await getRes.json();
-                if (existingPage && existingPage.id) {
-                    method = 'PUT';
-                    url = `/api/landing-pages/${existingPage.id}`;
-                }
+            if (thumbUrl) {
+                payload.coverImage = thumbUrl;
             }
 
-            // 2. Save to database
-            const payload = {
-                title: 'Landing Page for Course ' + courseIdParam,
-                content: { html: modularContent },
-                compiledHtml: compiledContent,
-                compiledCss: '',
-                courseId: courseIdParam
-            };
-
-            const saveRes = await fetch(url, {
-                method: method,
+            const saveRes = await fetch(`/courses/${courseIdParam}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -457,26 +467,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!saveRes.ok) {
-                throw new Error('Failed to save landing page to database');
+                throw new Error('Failed to save content page to database');
             }
 
-            // 3. Update course cover image if needed
-            if (thumbUrl) {
-                await fetch(`/courses/${courseIdParam}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ coverImage: thumbUrl })
-                });
-            }
-
-            alert('Design e Capa salvos no curso com sucesso (PostgreSQL)!');
-            window.location.href = 'course_builder.html?id=' + courseIdParam;
+            alert('Design salvo no conteúdo do curso com sucesso!');
+            window.location.href = 'course_content.html?id=' + courseIdParam;
         } catch (error) {
             console.error(error);
-            alert('Erro ao salvar Landing Page oficial: ' + error.message);
+            alert('Erro ao salvar página de conteúdo: ' + error.message);
         }
     }
 
@@ -798,18 +796,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     closePanelBtn.addEventListener('click', hidePanelCompletely);
-
-    const deleteElementBtn = document.getElementById('delete-element-btn');
-    if (deleteElementBtn) {
-        deleteElementBtn.addEventListener('click', () => {
-            if (activeElement) {
-                if(confirm('Tem certeza que deseja deletar este elemento?')) {
-                    activeElement.remove();
-                    hidePanelCompletely();
-                }
-            }
-        });
-    }
 
     // Em vez de esconder, apenas tira o hook no elemento focado
     document.getElementById('template-container').addEventListener('click', deselectElement);
@@ -1329,32 +1315,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Focar no elemento recém criado
-        btnWrap.click();
-    };
-
-    window.injectViewModulesButton = function() {
-        if (!isEditMode) return;
-        const container = document.getElementById('template-container');
-        if (!container) return;
-
-        let targetSection = container.querySelector('.module-section .module-content');
-        if (!targetSection) {
-            alert('Não foi possível encontrar uma seção para adicionar o botão. Escolha um template primeiro.');
-            return;
-        }
-
-        const btnWrap = document.createElement('div');
-        btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = 'display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; margin:20px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none; transition:transform 0.2s;';
-        btnWrap.innerText = 'Show Content';
-        btnWrap.dataset.isViewModulesBtn = "true";
-
-        targetSection.appendChild(btnWrap);
-        
-        if(typeof initDynamicEvents === 'function') {
-            initDynamicEvents();
-        }
-        
         btnWrap.click();
         btnWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };

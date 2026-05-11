@@ -574,3 +574,62 @@ document.addEventListener('DOMContentLoaded', () => {
         btnMarkRead.addEventListener('click', window.markAllNotificationsRead);
     }
 });
+
+window.loadSubscriptions = async function() {
+    const container = document.getElementById('subscriptions-container');
+    if (!container) return;
+
+    container.innerHTML = '<p>Carregando inscrições...</p>';
+
+    try {
+        const res = await fetch('/api/courses/enrolled', {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
+        
+        if (!res.ok) throw new Error('Falha ao buscar inscrições');
+        const courses = await res.json();
+
+        if (!courses || courses.length === 0) {
+            container.innerHTML = `
+                <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
+                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma Inscrição Encontrada</h3>
+                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você ainda não se inscreveu em nenhum curso. Visite o marketplace para explorar novos conteúdos!</p>
+            `;
+            return;
+        }
+
+        let html = '<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; text-align:left;">';
+        courses.forEach(course => {
+            const thumbUrl = course.coverImage || 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&w=400&q=80';
+            const progress = course.progressPercent || 0;
+            
+            html += `
+                <div class="course-card" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display:flex; flex-direction:column; cursor:pointer;" onclick="window.location.href='course_content.html?id=${course.id}'">
+                    <div style="height:140px; background-image:url('${thumbUrl}'); background-size:cover; background-position:center;"></div>
+                    <div style="padding:20px; flex:1; display:flex; flex-direction:column;">
+                        <h4 style="margin:0 0 10px 0; color:#1e293b; font-size:1.1rem;">${course.title}</h4>
+                        <p style="font-size:0.85rem; color:#64748b; flex:1;">By: ${course.creator}</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#475569; margin-bottom:5px;">
+                                <span>Progresso</span>
+                                <span>${progress}%</span>
+                            </div>
+                            <div style="background:#e2e8f0; border-radius:10px; height:6px; overflow:hidden;">
+                                <div style="background:#10b981; height:100%; width:${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        container.innerHTML = html;
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:#ef4444;">Erro ao carregar suas inscrições.</p>';
+    }
+};
+

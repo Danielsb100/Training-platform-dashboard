@@ -159,6 +159,8 @@ app.delete('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddle
 app.post('/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
 app.get('/courses/:id/runtime', authenticateToken, courseController.getCourseRuntime);
 app.post('/courses/:id/modules/:moduleId/complete', authenticateToken, courseController.completeCourseModule);
+app.post('/api/courses/:id/subscribe', authenticateToken, courseController.selfEnroll);
+app.get('/api/courses/enrolled', authenticateToken, courseController.getEnrolledCourses);
 
 // --- Landing Pages API ---
 app.get('/api/landing-pages', authenticateToken, landingPageController.getLandingPages);

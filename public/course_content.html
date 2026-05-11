@@ -6,6 +6,7 @@
     <title>Course Content - Training Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
         .course-header { background: linear-gradient(135deg, #44749f 0%, #1e293b 100%); padding: 60px 80px; color: white; }
@@ -19,12 +20,24 @@
         .section-title { font-size: 1.4rem; color: #1e293b; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
         
         .module-item { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; overflow: hidden; }
-        .module-trigger { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; text-align: left; transition: 0.3s; }
-        .module-trigger:hover { background: #f8fafc; }
-        .module-title { font-size: 1.1rem; color: #1e293b; font-weight: bold; }
-        .module-content { padding: 0 20px 20px 20px; color: #475569; line-height: 1.6; display: none; border-top: 1px solid #f1f5f9; padding-top: 20px; }
-        
         .empty-state { text-align: center; padding: 100px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
+        
+        /* New Grid Styles */
+        .modules-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 0; }
+        .module-card { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
+        .module-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 0.8; }
+        .module-card:hover .module-cover { opacity: 0.3; transform: scale(1.1); }
+        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
+        .module-card:hover .module-overlay { background: rgba(0,0,0,0.4); justify-content: flex-start; padding-top: 30px; }
+        .module-title { margin: 0; font-size: 1.3rem; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.3s; }
+        .module-card:hover .module-title { margin-bottom: 15px; color: #cf9c33; }
+        .module-desc { margin: 0; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.5; }
+        .module-card:hover .module-desc { opacity: 1; transform: translateY(0); }
+        
+        /* Custom Design Container */
+        #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
+        #custom-design-container .module-section { position: relative; }
     </style>
 </head>
 <body>
@@ -75,57 +88,132 @@
                 }
 
                 // Handle modules format from DB or Local
-                const rawModules = course.modules || [];
-                const modules = rawModules.map(m => ({
+                const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
+                const modules = rawModules.map((m, i) => ({
                     id: m.courseModuleId || m.id,
-                    title: m.title || 'Untitled Module',
-                    content: m.description || m.content || ''
+                    title: m.title || `Module ${i+1}`,
+                    content: m.description || m.content || 'No description available for this module.',
+                    coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
+                    titleFont: m.titleFont || 'inherit',
+                    textColor: m.textColor || '#ffffff'
                 }));
 
                 let modulesHTML = '';
                 if (modules.length === 0) {
                     modulesHTML = `
-                        <div class="empty-state">
+                        <div class="empty-state" style="grid-column: 1 / -1;">
                             <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
                             <p style="color: #64748b;">This course does not have content modules yet.</p>
                             <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
                         </div>
                     `;
                 } else {
+                    modulesHTML = `<div class="modules-grid">`;
                     modules.forEach(m => {
                         modulesHTML += `
-                            <div class="module-item">
-                                <button class="module-trigger" onclick="toggleModule('${m.id}')">
-                                    <span class="module-title">${m.title}</span>
-                                    <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
-                                </button>
-                                <div class="module-content" id="content-${m.id}">
-                                    ${m.content.replace(/\n/g, '<br>')}
+                            <div class="module-card" onclick="alert('Module access flow to be implemented')">
+                                <div class="module-cover" style="background-image: url('${m.coverImage}');"></div>
+                                <div class="module-overlay">
+                                    <h3 class="module-title" style="font-family: ${m.titleFont}; color: ${m.textColor};">${m.title}</h3>
+                                    <p class="module-desc">${m.content}</p>
                                 </div>
                             </div>
                         `;
                     });
+                    modulesHTML += `</div>`;
                 }
 
-                container.innerHTML = `
-                    <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="flex:1;">
-                            <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>
-                            <div class="course-info">
-                                <h1>${course.title}</h1>
-                                <p>${course.description || 'This course offers structured content for your professional development.'}</p>
-                            </div>
-                        </div>
-                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                            <i class="fas fa-edit"></i> Edit Course
-                        </button>
-                    </header>
+                // Inject custom CSS if exists
+                if (course.contentCss) {
+                    const style = document.createElement('style');
+                    style.innerHTML = course.contentCss;
+                    document.head.appendChild(style);
+                }
 
-                    <main class="main-content">
-                        <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Course Content (${modules.length} modules)</h2>
-                        ${modulesHTML}
-                    </main>
-                `;
+                // If the course has a custom design, use it and append modules at the bottom
+                if (course.contentHtml) {
+                    let finalHtml = course.contentHtml;
+                    if (finalHtml.includes('id="course-modules-section"')) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = finalHtml;
+                        const modSec = tempDiv.querySelector('#course-modules-section');
+                        if (modSec) {
+                            modSec.style.flex = "1";
+                            modSec.innerHTML = `
+                                <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
+                                    <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                        <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
+                                    </h2>
+                                    ${modulesHTML}
+                                </div>
+                            `;
+                            finalHtml = tempDiv.innerHTML;
+                        }
+                    } else {
+                        finalHtml += `
+                            <main class="main-content" style="max-width: 1200px; margin: 40px auto; padding: 0 40px;">
+                                <h2 class="section-title"><i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules</h2>
+                                ${modulesHTML}
+                            </main>
+                        `;
+                    }
+                    
+                    container.innerHTML = `
+                        <div id="custom-design-container">
+                            <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
+                            </div>
+                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
+                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
+                            </div>
+                            ${finalHtml}
+                        </div>
+                    `;
+                } else {
+                    // Fallback to default template layout
+                    container.innerHTML = `
+                        <div id="custom-design-container">
+                            <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
+                            </div>
+                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
+                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
+                            </div>
+                            
+                            <section class="module-section" id="header-section" style="background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=2000');">
+                                <div class="bg-overlay"></div>
+                                <div class="module-content">
+                                    <div class="logo-container">
+                                        <img src="https://placehold.co/200x100/ffffff/111111?text=LOGO" alt="Logo" class="logo-img" id="logo-img">
+                                    </div>
+                                    <div class="text-block text-white" style="flex: 1;">
+                                        <h1 id="titulo-cabecalho">${course.title || 'My Awesome Title'}</h1>
+                                        <p id="desc-cabecalho">${course.description || 'Esta é a descrição do cabeçalho. Você pode clicar e editar este texto livremente, assim como pode apertar nos botões vermelhos correspondentes e trocar a imagem de fundo ou a logo ao lado.'}</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section id="course-modules-section" class="module-section" style="background-color: #f8fafc; padding: 40px; min-height: 300px; flex: 1;">
+                                <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
+                                    <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                        <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
+                                    </h2>
+                                    ${modulesHTML}
+                                </div>
+                            </section>
+
+                            <footer class="module-section" id="footer-section" style="background-image: url('https://images.unsplash.com/photo-1557683304-673a23048d34?auto=format&fit=crop&q=80&w=2000'); margin-bottom: 0;">
+                                <div class="bg-overlay" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);"></div>
+                                <div class="module-content" style="padding: 20px; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+                                    <p class="text-white" id="rodape-texto" style="font-size: 0.9rem; margin: 0; text-align: center;">© 2026 Template Modular de Design. Todos os direitos reservados. Você pode visualizar como o público acessará na aba Publicação.</p>
+                                    <div class="body-img-container">
+                                        <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&w=400&q=80" alt="Logos Rodapé" class="body-img" id="footer-img" style="height: auto; max-height: 120px; object-fit: contain; box-shadow: none;">
+                                    </div>
+                                </div>
+                            </footer>
+                        </div>
+                    `;
+                }
             })
             .catch(err => {
                 // Tenta carregar do localStorage como fallback para testes antigos
@@ -134,32 +222,35 @@
                 
                 if (course) {
                     // Copiar o mesmo código de renderização do then(...)
-                    const modules = course.modules || [];
-                    let modulesHTML = '';
-                    if (modules.length === 0) {
-                        modulesHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
-                                <p style="color: #64748b;">This course does not have content modules yet.</p>
-                                <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
-                            </div>
-                        `;
-                    } else {
-                        modules.forEach(m => {
-                            modulesHTML += `
-                                <div class="module-item">
-                                    <button class="module-trigger" onclick="toggleModule('${m.id}')">
-                                        <span class="module-title">${m.title}</span>
-                                        <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
-                                    </button>
-                                    <div class="module-content" id="content-${m.id}">
-                                        ${m.content.replace(/\n/g, '<br>')}
-                                    </div>
+                        const modules = course.modules || [];
+                        let modulesHTML = '';
+                        if (modules.length === 0) {
+                            modulesHTML = `
+                                <div class="empty-state" style="grid-column: 1 / -1;">
+                                    <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
+                                    <p style="color: #64748b;">This course does not have content modules yet.</p>
+                                    <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
                                 </div>
                             `;
-                        });
-                    }
-                    container.innerHTML = `
+                        } else {
+                            modulesHTML = `<div class="modules-grid">`;
+                            modules.forEach((m, i) => {
+                                const mTitle = m.title || `Module ${i+1}`;
+                                const mDesc = m.description || m.content || 'No description';
+                                const mCover = m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800';
+                                modulesHTML += `
+                                    <div class="module-card">
+                                        <div class="module-cover" style="background-image: url('${mCover}');"></div>
+                                        <div class="module-overlay">
+                                            <h3 class="module-title">${mTitle}</h3>
+                                            <p class="module-desc">${mDesc}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            modulesHTML += `</div>`;
+                        }
+                        container.innerHTML = `
                         <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="flex:1;">
                                 <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>

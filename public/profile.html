@@ -438,6 +438,12 @@
             const targetNav = document.getElementById('nav-' + paneName);
             if (targetPane) targetPane.style.display = 'block';
             if (targetNav) targetNav.classList.add('active');
+
+            if (paneName === 'subscriptions') {
+                if (typeof window.loadSubscriptions === 'function') {
+                    window.loadSubscriptions();
+                }
+            }
         }
 
         function switchCreationTab(tab) {
