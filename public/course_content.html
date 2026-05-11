@@ -80,7 +80,8 @@
                 })
             ])
             .then(([profileData, courseData]) => {
-                const currentUser = profileData.user || {};
+                const actualProfileData = profileData.data || profileData;
+                const currentUser = actualProfileData.user || {};
                 const course = courseData.data || courseData;
                 
                 if (!course) {
