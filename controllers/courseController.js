@@ -903,8 +903,7 @@ async function getEnrolledCourses(req, res) {
         ...buildCourseInclude(req.user.id),
         landingPage: {
           select: { id: true, title: true }
-        },
-        CourseChannel: true
+        }
       },
       orderBy: { updatedAt: 'desc' }
     });
@@ -917,7 +916,6 @@ async function getEnrolledCourses(req, res) {
         title: course.title,
         description: course.description,
         coverImage: course.coverImage,
-        channelId: course.channelId || (course.CourseChannel && course.CourseChannel.length > 0 ? course.CourseChannel[0].channelId : null),
         sceneId: course.sceneId,
         status: course.status,
         moduleCount: course.courseModules.length,

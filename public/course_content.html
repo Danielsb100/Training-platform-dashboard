@@ -72,15 +72,16 @@
                 return;
             }
 
-            fetch(`/courses/${courseId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Course not found');
-                return res.json();
-            })
-            .then(data => {
-                const course = data.data || data;
+            Promise.all([
+                fetch(`/api/profile/me`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()),
+                fetch(`/courses/${courseId}`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => {
+                    if (!res.ok) throw new Error('Course not found');
+                    return res.json();
+                })
+            ])
+            .then(([profileData, courseData]) => {
+                const currentUser = profileData.user || {};
+                const course = courseData.data || courseData;
                 
                 if (!course) {
                     container.innerHTML = '<div class="empty-state">Course not found.</div>';
@@ -130,6 +131,17 @@
                     document.head.appendChild(style);
                 }
 
+                // Check if current user is owner or editor
+                const isOwnerOrEditor = String(course.ownerMasterId) === String(currentUser.id) || 
+                                        (course.editors && course.editors.some(e => String(e.userId) === String(currentUser.id))) ||
+                                        (currentUser.roles && currentUser.roles.includes('SUPER_ADMIN'));
+
+                const editSettingsButtonHTML = isOwnerOrEditor ? `
+                    <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
+                        <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
+                    </div>
+                ` : '';
+
                 // If the course has a custom design, use it and append modules at the bottom
                 if (course.contentHtml) {
                     let finalHtml = course.contentHtml;
@@ -163,9 +175,7 @@
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
                                 <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
                             </div>
-                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
-                            </div>
+                            ${editSettingsButtonHTML}
                             ${finalHtml}
                         </div>
                     `;
@@ -176,9 +186,7 @@
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
                                 <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
                             </div>
-                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
-                            </div>
+                            ${editSettingsButtonHTML}
                             
                             <section class="module-section" id="header-section" style="background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=2000');">
                                 <div class="bg-overlay"></div>
@@ -259,7 +267,7 @@
                                     <p>${course.description || 'This course offers structured content for your professional development.'}</p>
                                 </div>
                             </div>
-                            <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;">
+                            <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="display:${isOwnerOrEditor ? 'flex' : 'none'}; background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; align-items:center; gap:10px; transition:0.3s;">
                                 <i class="fas fa-edit"></i> Edit Course
                             </button>
                         </header>

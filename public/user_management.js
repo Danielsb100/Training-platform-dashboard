@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         if (!profileRes.ok) throw new Error('Not authenticated');
         const profileData = await profileRes.json();
-        const user = profileData.data?.user;
+        const user = profileData.user;
         
         if (user?.role !== 'MASTER') {
             window.location.href = 'index.html';
