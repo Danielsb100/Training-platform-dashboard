@@ -11,7 +11,7 @@ const getEffectiveUserRoles = (user) => new Set([
 
 const isModuleManager = (user, module) => {
     const roles = getEffectiveUserRoles(user);
-    return module?.ownerMasterId === user?.id
+    return String(module?.ownerMasterId) === String(user?.id)
         || roles.has('ADMIN')
         || roles.has('MASTER')
         || roles.has('SUPER_ADMIN');

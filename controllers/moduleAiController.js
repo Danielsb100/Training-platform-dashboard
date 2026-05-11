@@ -13,7 +13,7 @@ const getEffectiveUserRoles = (user) => new Set([
 
 const isManagerForModule = (user, module) => {
   const roles = getEffectiveUserRoles(user);
-  return module?.ownerMasterId === user?.id || [...MANAGER_ROLES].some((role) => roles.has(role));
+  return String(module?.ownerMasterId) === String(user?.id) || [...MANAGER_ROLES].some((role) => roles.has(role));
 };
 
 const getBestQuizScore = (submissions = []) => {

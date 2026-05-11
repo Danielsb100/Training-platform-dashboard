@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conteúdo do Curso - Plataforma Training</title>
+    <title>Course Content - Training Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="app.css">
     <style>
@@ -49,7 +49,7 @@
             const container = document.getElementById('course-content-root');
 
             if (!courseId) {
-                container.innerHTML = '<div class="empty-state">ID do curso não encontrado.</div>';
+                container.innerHTML = '<div class="empty-state">Course ID not found.</div>';
                 return;
             }
 
@@ -57,7 +57,7 @@
             const course = courses.find(c => c.id === courseId);
             
             if (!course) {
-                container.innerHTML = '<div class="empty-state">Curso não encontrado.</div>';
+                container.innerHTML = '<div class="empty-state">Course not found.</div>';
                 return;
             }
 
@@ -68,8 +68,8 @@
                 modulesHTML = `
                     <div class="empty-state">
                         <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
-                        <p style="color: #64748b;">Este curso ainda não possui módulos de conteúdo.</p>
-                        <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Adicionar módulos agora</a>
+                        <p style="color: #64748b;">This course does not have content modules yet.</p>
+                        <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
                     </div>
                 `;
             } else {
@@ -91,19 +91,19 @@
             container.innerHTML = `
                 <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
-                        <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para minhas criações</a>
+                        <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>
                         <div class="course-info">
                             <h1>${course.title}</h1>
-                            <p>${course.description || 'Este curso oferece um conteúdo estruturado para o seu desenvolvimento profissional.'}</p>
+                            <p>${course.description || 'This course offers structured content for your professional development.'}</p>
                         </div>
                     </div>
                     <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        <i class="fas fa-edit"></i> Editar Curso
+                        <i class="fas fa-edit"></i> Edit Course
                     </button>
                 </header>
 
                 <main class="main-content">
-                    <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Conteúdo do Curso (${modules.length} módulos)</h2>
+                    <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Course Content (${modules.length} modules)</h2>
                     ${modulesHTML}
                 </main>
             `;

@@ -12,7 +12,7 @@ function getEffectiveUserRoles(user) {
 
 function isCourseManager(user, course) {
   const roles = getEffectiveUserRoles(user);
-  return course.ownerMasterId === user.id || roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
+  return String(course.ownerMasterId) === String(user.id) || roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
 }
 
 function slugify(value) {

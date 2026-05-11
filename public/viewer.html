@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizando Página</title>
+    <title>Viewing Page</title>
     <!-- We link style.css so the landing page styles work correctly -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -50,14 +50,14 @@
 </head>
 <body class="view-mode">
     
-    <a href="index.html" class="viewer-home-btn" title="Voltar para a Home">
+    <a href="index.html" class="viewer-home-btn" title="Back to Home">
         <i class="fas fa-home"></i>
     </a>
 
     <div id="page-content">
         <!-- Content will be injected here -->
         <div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;">
-            <h2>Carregando página...</h2>
+            <h2>Loading page...</h2>
         </div>
     </div>
 
@@ -67,7 +67,7 @@
             const pageId = urlParams.get('id');
 
             if (!pageId) {
-                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Página não encontrada (Nenhum ID fornecido).</h2></div>';
+                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (No ID provided).</h2></div>';
                 return;
             }
 
@@ -80,7 +80,7 @@
             }
 
             if (page) {
-                document.title = page.title || 'Curso';
+                document.title = page.title || 'Course';
                 // Use compiled_content se for um curso que tem LP nova, senão modular_content do curso, senão content se for legacy page
                 const contentHtml = page.compiled_content || page.modular_content || page.content;
                 
@@ -102,10 +102,10 @@
                         animObserver.observe(el);
                     });
                 } else {
-                    document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white; text-align:center;"><h2>Este curso ainda não possui uma Landing Page.</h2><br><a href="course_content.html?id=' + page.id + '" style="color:#cf9c33; text-decoration:underline;">Acessar Módulos do Curso</a></div>';
+                    document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white; text-align:center;"><h2>This course does not have a Landing Page yet.</h2><br><a href="course_content.html?id=' + page.id + '" style="color:#cf9c33; text-decoration:underline;">Access Course Modules</a></div>';
                 }
             } else {
-                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Página não encontrada (ID inválido ou excluído).</h2></div>';
+                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (Invalid or deleted ID).</h2></div>';
             }
         });
     </script>

@@ -68,11 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <img src="${thumbUrl}" alt="Thumbnail" class="course-thumb" style="width: 100%; object-fit: cover; border-bottom: 1px solid #e2e8f0; height: 180px;">
                 <div style="padding: 20px; flex: 1; display: flex; flex-direction: column;">
                     <h3 class="course-title" style="margin-top:0;">${course.title}</h3>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Por ${course.instructor || 'Instrutor'}</p>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">By ${course.instructor || 'Instructor'}</p>
                     <div class="course-meta" style="margin-top: auto; margin-bottom: 15px;">
                         <div class="rating"><i class="fas fa-star" style="color: #cf982e;"></i> ${rating}</div>
                     </div>
-                    <button class="btn-outline" style="width:100%; margin-top:0; pointer-events: none;">VER DETALHES DO CURSO</button>
+                    <button class="btn-outline" style="width:100%; margin-top:0; pointer-events: none;">VIEW COURSE DETAILS</button>
                 </div>
             </div>
         `;
@@ -150,14 +150,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="min-width:250px; background:white; border-radius:12px; border:1px solid #e2e8f0; padding:15px; text-align:center; cursor:pointer;" onclick="window.location.href='channel_view.html?id=${ch.id}&view=public'">
                     ${thumbHtml}
                     <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
-                    <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Canal Exclusivo'}</p>
-                    <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Acessar Canal</button>
+                    <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
+                    <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
                 </div>
             `;
         });
 
         if (featuredHtml === '') {
-            featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">Nenhum canal exclusivo criado.</p>';
+            featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
         } else {
             featuredContainer.innerHTML = featuredHtml;
         }

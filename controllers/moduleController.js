@@ -137,7 +137,7 @@ const getModuleById = async (req, res) => {
 
         if (!module) return res.status(404).json({ error: 'Module not found' });
         
-        const isOwner = module.ownerMasterId === req.user.id || req.user.role === 'ADMIN';
+        const isOwner = String(module.ownerMasterId) === String(req.user.id) || req.user.role === 'ADMIN';
 
         // Logic check: Status rules
         if (module.status === 'ARCHIVED') {

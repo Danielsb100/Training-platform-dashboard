@@ -43,7 +43,7 @@ function isGlobalForumAdmin(user) {
 }
 
 function isModuleOwner(module, user) {
-    return Boolean(module && user && module.ownerMasterId === user.id);
+    return Boolean(module && user && String(module.ownerMasterId) === String(user.id));
 }
 
 function isEnrollmentActive(enrollment) {

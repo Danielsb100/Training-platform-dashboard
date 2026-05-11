@@ -7,7 +7,7 @@ function getAuthToken() {
 async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
     const token = getAuthToken();
     if (!token) {
-        alert('Sessão expirada. Faça login novamente.');
+        alert('Session expired. Please log in again.');
         window.location.href = 'index.html';
         throw new Error('No token');
     }
@@ -33,7 +33,7 @@ async function apiCall(endpoint, method = 'GET', body = null, isFormData = false
     const data = await res.json();
 
     if (!res.ok) {
-        throw new Error(data.error || data.message || 'Erro na requisição');
+        throw new Error(data.error || data.message || 'Request error');
     }
 
     return data.data || data;
@@ -55,7 +55,7 @@ async function fetchModulesFromDB() {
         const modules = await apiCall('/modules/my');
         dbModules = modules || [];
     } catch (error) {
-        console.error('Erro ao buscar módulos:', error);
+        console.error('Error fetching modules:', error);
     }
 }
 
@@ -87,7 +87,7 @@ function attachModuleToCourse(dbModuleId) {
     if (!window.courseModules) window.courseModules = [];
     
     if (window.courseModules.some(m => m.dbId === dbModuleId)) {
-        alert('Este módulo já está atrelado a este curso!');
+        alert('This module is already attached to this course!');
         return;
     }
 
@@ -104,12 +104,12 @@ function attachModuleToCourse(dbModuleId) {
                 status: module.status
             });
             renderAttachedModules();
-            alert('Módulo adicionado à trilha do curso!');
+            alert('Module added to the course track!');
         }).catch(err => {
-            alert('Erro ao vincular módulo: ' + err.message);
+            alert('Error linking module: ' + err.message);
         });
     } else {
-        alert('Salve o curso primeiro antes de vincular módulos.');
+        alert('Save the course first before linking modules.');
     }
 }
 
@@ -118,7 +118,7 @@ function renderAttachedModules() {
     const headerCount = document.getElementById('modules-count-header');
     
     if (!window.courseModules || window.courseModules.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px; grid-column: 1 / -1;">Nenhum módulo na trilha deste curso. Clique em "+ Criar Módulo".</p>';
+        container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px; grid-column: 1 / -1;">No module in this course track. Click on "+ Create Module".</p>';
         if (headerCount) headerCount.innerText = '0';
         return;
     }
@@ -132,14 +132,14 @@ function renderAttachedModules() {
              onclick="openModuleEditor(${m.dbId})">
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                    <span style="background:#f1f5f9; color:#64748b; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">MÓDULO ${index + 1}</span>
-                    <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;" title="Remover da Trilha"><i class="fas fa-trash"></i></button>
+                    <span style="background:#f1f5f9; color:#64748b; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold;">MODULE ${index + 1}</span>
+                    <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;" title="Remove from Track"><i class="fas fa-trash"></i></button>
                 </div>
                 <h3 style="margin:0 0 10px 0; color:#1e293b; font-size:1.2rem;">${m.title}</h3>
-                <p style="margin:0; color:#64748b; font-size:0.9rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'Sem descrição'}</p>
+                <p style="margin:0; color:#64748b; font-size:0.9rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
             </div>
             <div style="margin-top:20px; padding-top:15px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; color:#497aa7; font-size:0.85rem; font-weight:bold;">
-                <span><i class="fas fa-edit"></i> Editar Conteúdo</span>
+                <span><i class="fas fa-edit"></i> Edit Content</span>
             </div>
         </div>
     `).join('');
@@ -157,7 +157,7 @@ function removeModuleFromCourse(localId) {
                 renderAttachedModules();
                 document.getElementById('active-module-editor').style.display = 'none';
             })
-            .catch(err => alert('Erro ao remover módulo do curso: ' + err.message));
+            .catch(err => alert('Error removing module from course: ' + err.message));
     } else {
         window.courseModules = window.courseModules.filter(m => m.id !== localId);
         renderAttachedModules();
@@ -178,19 +178,19 @@ async function openModuleEditor(moduleId = null) {
     
     // Reset UI
     document.getElementById('module-basics-form').reset();
-    document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando vídeos...</p>';
-    document.getElementById('d-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando documentos...</p>';
-    document.getElementById('q-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Carregando quiz...</p>';
+    document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading videos...</p>';
+    document.getElementById('d-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading documents...</p>';
+    document.getElementById('q-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading quiz...</p>';
     document.getElementById('btn-delete-module').style.display = 'none';
     
     switchModuleTab('basics');
     document.getElementById('active-module-editor').style.display = 'block';
 
     if (!moduleId) {
-        document.getElementById('editor-title').innerText = 'Criar Novo Módulo';
+        document.getElementById('editor-title').innerText = 'Create New Module';
         try {
             const newModule = await apiCall('/modules', 'POST', {
-                title: 'Novo Módulo',
+                title: 'New Module',
                 description: '',
                 status: 'DRAFT'
             });
@@ -226,11 +226,11 @@ async function openModuleEditor(moduleId = null) {
             renderQuizzes([]);
             
         } catch (error) {
-            alert('Erro ao criar módulo base: ' + error.message);
+            alert('Error creating base module: ' + error.message);
             document.getElementById('active-module-editor').style.display = 'none';
         }
     } else {
-        document.getElementById('editor-title').innerText = 'Editar Módulo';
+        document.getElementById('editor-title').innerText = 'Edit Module';
         document.getElementById('btn-delete-module').style.display = 'block';
         loadModuleData(moduleId);
     }
@@ -277,7 +277,7 @@ async function loadModuleData(id) {
         renderQuizzes(quizzes);
         
     } catch (error) {
-        alert('Erro ao carregar módulo: ' + error.message);
+        alert('Error loading module: ' + error.message);
     }
 }
 
@@ -299,16 +299,16 @@ async function saveModuleBasics() {
             if(typeof saveDraft === 'function') saveDraft(true);
         }
         
-        alert('Alterações gerais salvas com sucesso!');
+        alert('General changes saved successfully!');
         fetchModulesFromDB(); // update list in background
     } catch (error) {
-        alert('Erro ao salvar: ' + error.message);
+        alert('Error saving: ' + error.message);
     }
 }
 
 async function deleteModuleFromDB() {
     if(!editingModuleId) return;
-    if(!confirm('Certeza que deseja deletar permanentemente este módulo do banco de dados? Ele sumirá de todos os cursos.')) return;
+    if(!confirm('Are you sure you want to permanently delete this module from the database? It will disappear from all courses.')) return;
     
     try {
         await apiCall(`/modules/${editingModuleId}`, 'DELETE');
@@ -317,10 +317,10 @@ async function deleteModuleFromDB() {
         window.courseModules = window.courseModules.filter(m => m.dbId !== editingModuleId);
         if(typeof saveDraft === 'function') saveDraft(true);
         
-        alert('Módulo deletado!');
+        alert('Module deleted!');
         closeModuleEditor();
     } catch (error) {
-        alert('Erro ao deletar: ' + error.message);
+        alert('Error deleting: ' + error.message);
     }
 }
 
@@ -337,12 +337,12 @@ async function handleVideoUpload(e) {
         formData.append('document', file);
         
         const btn = document.getElementById('btn-upload-video');
-        let oldText = '<i class="fas fa-upload"></i> Escolher Vídeo do Computador';
+        let oldText = '<i class="fas fa-upload"></i> Choose Video from Computer';
         const sizeMb = file.size ? (file.size / 1024 / 1024).toFixed(1) : null;
         
         if (btn) {
             oldText = btn.innerHTML;
-            const loadingMsg = sizeMb ? `Enviando ${sizeMb} MB...` : 'Enviando...';
+            const loadingMsg = sizeMb ? `Uploading ${sizeMb} MB...` : 'Uploading...';
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingMsg}`;
             btn.disabled = true;
         }
@@ -356,7 +356,7 @@ async function handleVideoUpload(e) {
         }
         
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-check"></i> Vídeo Carregado!';
+            btn.innerHTML = '<i class="fas fa-check"></i> Video Uploaded!';
             btn.style.borderColor = '#10b981';
             btn.style.color = '#10b981';
             setTimeout(() => {
@@ -367,10 +367,10 @@ async function handleVideoUpload(e) {
             }, 3000);
         }
     } catch (error) {
-        alert('Erro ao fazer upload do vídeo: ' + error.message);
+        alert('Error uploading video: ' + error.message);
         const btn = document.getElementById('btn-upload-video');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-upload"></i> Escolher Vídeo do Computador';
+            btn.innerHTML = '<i class="fas fa-upload"></i> Choose Video from Computer';
             btn.disabled = false;
         }
     }
@@ -382,7 +382,7 @@ async function submitAddVideo() {
     const description = document.getElementById('v-desc-input').value;
     const url = document.getElementById('v-url-input').value;
     
-    if(!title || !url) return alert('Título e URL são obrigatórios.');
+    if(!title || !url) return alert('Title and URL are required.');
     
     try {
         await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, description, url });
@@ -395,17 +395,17 @@ async function submitAddVideo() {
         }
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao adicionar vídeo: ' + error.message);
+        alert('Error adding video: ' + error.message);
     }
 }
 
 async function deleteVideo(videoId) {
-    if(!confirm('Deletar vídeo?')) return;
+    if(!confirm('Delete video?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/videos/${videoId}`, 'DELETE');
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao deletar vídeo: ' + error.message);
+        alert('Error deleting video: ' + error.message);
     }
 }
 
@@ -421,7 +421,7 @@ function getThumbnailUrl(url) {
 function renderVideos(videos) {
     const list = document.getElementById('v-list');
     if(!videos || videos.length === 0) {
-        list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum vídeo adicionado.</p>';
+        list.innerHTML = '<p style="color: #64748b; text-align: center;">No video added.</p>';
         return;
     }
     
@@ -443,12 +443,12 @@ function renderVideos(videos) {
         return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             ${thumbHtml}
-                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remover Vídeo"><i class="fas fa-trash"></i></button>
+                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remove Video"><i class="fas fa-trash"></i></button>
             </div>
             <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
                 <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${v.title}</strong>
                 <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:15px; flex:1; line-height:1.4;">${v.description || ''}</span>
-                <button onclick="playVideo('${safeUrl}', '${safeTitle}')" style="font-size:0.85rem; color:#497aa7; font-weight:bold; text-align:center; display:block; padding:8px; background:#e2e8f0; border:radius:6px; text-decoration:none; border:none; width:100%; cursor:pointer;"><i class="fas fa-play-circle"></i> Assistir Vídeo</button>
+                <button onclick="playVideo('${safeUrl}', '${safeTitle}')" style="font-size:0.85rem; color:#497aa7; font-weight:bold; text-align:center; display:block; padding:8px; background:#e2e8f0; border:radius:6px; text-decoration:none; border:none; width:100%; cursor:pointer;"><i class="fas fa-play-circle"></i> Watch Video</button>
             </div>
         </div>
         `;
@@ -462,7 +462,7 @@ function playVideo(url, title) {
     
     if (!modal || !container) return;
     
-    titleEl.innerText = title || 'Assistir Vídeo';
+    titleEl.innerText = title || 'Watch Video';
     
     let embedUrl = url;
     
@@ -515,7 +515,7 @@ async function handleDocUpload(e) {
         let oldText = '<i class="fas fa-file-alt"></i> + Doc';
         if (btn) {
             oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
             btn.disabled = true;
         }
 
@@ -535,7 +535,7 @@ async function handleDocUpload(e) {
         
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao fazer upload: ' + error.message);
+        alert('Error uploading: ' + error.message);
         const btn = document.getElementById('btn-add-doc');
         if (btn) {
             btn.innerHTML = '<i class="fas fa-file-alt"></i> + Doc';
@@ -545,12 +545,12 @@ async function handleDocUpload(e) {
 }
 
 async function deleteDoc(docId) {
-    if(!confirm('Remover este documento do módulo?')) return;
+    if(!confirm('Remove this document from the module?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/documents/${docId}`, 'DELETE');
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao deletar: ' + error.message);
+        alert('Error deleting: ' + error.message);
     }
 }
 
@@ -586,7 +586,7 @@ function renderDocs(docs) {
     if(!docs || docs.length === 0) {
         list.style.display = 'flex';
         grid.style.display = 'none';
-        list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum documento adicionado.</p>';
+        list.innerHTML = '<p style="color: #64748b; text-align: center;">No document added.</p>';
         return;
     }
     
@@ -597,7 +597,7 @@ function renderDocs(docs) {
     const others = [];
     
     docs.forEach(d => {
-        const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Documento';
+        const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Document';
         const fileUrl = (d.document ? d.document.fileUrl : d.fileUrl) || '';
         
         // Tentamos extrair a extensão do fileUrl primeiro, se não tiver, usamos o nome
@@ -636,10 +636,10 @@ function renderDocs(docs) {
     if (itemsToRenderList.length > 0 || filter !== 'image' && filter !== 'all') {
         list.style.display = 'flex';
         if (itemsToRenderList.length === 0) {
-            list.innerHTML = '<p style="color: #64748b; text-align: center;">Nenhum arquivo encontrado para este filtro.</p>';
+            list.innerHTML = '<p style="color: #64748b; text-align: center;">No file found for this filter.</p>';
         } else {
             list.innerHTML = itemsToRenderList.map(d => {
-                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Documento';
+                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Document';
                 const fileUrl = (d.document ? d.document.fileUrl : d.fileUrl) || '';
                 let stringToTest = fileUrl ? fileUrl.split('?')[0].toLowerCase() : name.toLowerCase();
                 if (!stringToTest.includes('.') && name.includes('.')) stringToTest = name.toLowerCase();
@@ -658,8 +658,8 @@ function renderDocs(docs) {
                             <strong style="color:#1e293b; font-size:0.95rem;">${name}</strong>
                         </div>
                         <div style="display:flex; gap:10px;">
-                            <a href="${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}" target="_blank" style="color:#10b981; background:#d1fae5; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Baixar Arquivo"><i class="fas fa-download"></i></a>
-                            <button onclick="deleteDoc(${d.documentId || d.id})" style="background:#fee2e2; border:none; color:#ef4444; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="Remover"><i class="fas fa-trash"></i></button>
+                            <a href="${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}" target="_blank" style="color:#10b981; background:#d1fae5; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Download File"><i class="fas fa-download"></i></a>
+                            <button onclick="deleteDoc(${d.id})" style="background:#fee2e2; border:none; color:#ef4444; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="Remove"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -674,21 +674,21 @@ function renderDocs(docs) {
     if (itemsToRenderGrid.length > 0 || filter === 'image') {
         grid.style.display = 'grid';
         if (itemsToRenderGrid.length === 0 && filter === 'image') {
-            grid.innerHTML = '<div style="grid-column: 1 / -1;"><p style="color: #64748b; text-align: center;">Nenhuma imagem encontrada.</p></div>';
+            grid.innerHTML = '<div style="grid-column: 1 / -1;"><p style="color: #64748b; text-align: center;">No image found.</p></div>';
         } else {
             grid.innerHTML = itemsToRenderGrid.map(d => {
-                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Imagem';
+                const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Image';
                 const url = `${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}&inline=true`;
                 return `
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                         <div style="height:100px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src=''; this.alt='Erro ao carregar'; this.style.padding='10px';">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src=''; this.alt='Error loading'; this.style.padding='10px';">
                         </div>
                         <div style="padding:10px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0;">
                             <span style="font-size:0.75rem; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;" title="${name}">${name}</span>
                             <div style="display:flex; gap:5px;">
-                                <a href="${url.replace('&inline=true', '')}" target="_blank" style="color:#10b981; font-size:0.9rem;" title="Baixar"><i class="fas fa-download"></i></a>
-                                <button onclick="deleteDoc(${d.documentId || d.id})" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem; padding:0;" title="Remover"><i class="fas fa-trash"></i></button>
+                                <a href="${url.replace('&inline=true', '')}" target="_blank" style="color:#10b981; font-size:0.9rem;" title="Download"><i class="fas fa-download"></i></a>
+                                <button onclick="deleteDoc(${d.id})" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem; padding:0;" title="Remove"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -733,12 +733,12 @@ function editQuizTitle(quizId) {
     const quiz = window.currentQuizDataList.find(q => q.id === quizId);
     if (!quiz) return;
     
-    const newTitle = prompt('Digite o novo título do Quiz:', quiz.title || '');
+    const newTitle = prompt('Enter the new title of the Quiz:', quiz.title || '');
     if (newTitle === null || newTitle.trim() === '') return;
     
     apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'PUT', { title: newTitle.trim() })
         .then(() => loadModuleData(editingModuleId))
-        .catch(err => alert('Erro ao atualizar título: ' + err.message));
+        .catch(err => alert('Error updating title: ' + err.message));
 }
 
 async function showCreateQuizForm() {
@@ -746,13 +746,13 @@ async function showCreateQuizForm() {
         const order = window.currentQuizDataList ? window.currentQuizDataList.length : 0;
         const defaultTitle = `Quiz ${order + 1}`;
         
-        const title = prompt('Digite o título para o novo Quiz:', defaultTitle);
+        const title = prompt('Enter the title for the new Quiz:', defaultTitle);
         if (title === null || title.trim() === '') return;
         
         await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: title.trim() });
         loadModuleData(editingModuleId);
     } catch (err) {
-        alert('Erro ao criar quiz: ' + err.message);
+        alert('Error creating quiz: ' + err.message);
     }
 }
 
@@ -798,10 +798,10 @@ function editQuestion(quizId, questionId) {
 async function createEmptyQuiz() {
     if (!editingModuleId) return;
     try {
-        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Quiz do Módulo' });
+        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Module Quiz' });
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao criar quiz: ' + error.message);
+        alert('Error creating quiz: ' + error.message);
     }
 }
 
@@ -814,11 +814,11 @@ async function submitManualQuizQuestion() {
     if (!currentQuizId) {
         // Create quiz first
         try {
-            const newQuiz = await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Quiz do Módulo' });
+            const newQuiz = await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Module Quiz' });
             currentQuizId = newQuiz.id;
             window.currentModuleQuizId = currentQuizId;
         } catch (error) {
-            alert('Erro ao criar quiz: ' + error.message);
+            alert('Error creating quiz: ' + error.message);
             return;
         }
     }
@@ -834,7 +834,7 @@ async function submitManualQuizQuestion() {
     })).filter(val => val.text !== '');
     
     if (!text || options.length < 2) {
-        alert('Por favor, digite a pergunta e pelo menos 2 opções.');
+        alert('Please type the question and at least 2 options.');
         return;
     }
     
@@ -859,7 +859,7 @@ async function submitManualQuizQuestion() {
         hideManualQuizForm();
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao adicionar pergunta: ' + error.message);
+        alert('Error adding question: ' + error.message);
     }
 }
 
@@ -869,40 +869,40 @@ async function submitAiQuiz() {
     const difficulty = document.getElementById('ai-q-difficulty').value || 'medium';
     
     const btn = document.getElementById('btn-submit-ai-quiz');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando com IA...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating with AI...';
     btn.disabled = true;
     
     try {
-        await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', { title: 'Quiz IA', questionCount, optionsPerQuestion: 4 });
-        alert('Quiz gerado com sucesso!');
+        await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', { title: 'AI Quiz', questionCount, optionsPerQuestion: 4 });
+        alert('Quiz generated successfully!');
         hideAiQuizForm();
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao gerar quiz: ' + error.message);
+        alert('Error generating quiz: ' + error.message);
     } finally {
-        btn.innerHTML = 'Gerar Perguntas Agora';
+        btn.innerHTML = 'Generate Questions Now';
         btn.disabled = false;
     }
 }
 
 async function deleteQuiz(quizId) {
-    if(!confirm('Deletar este quiz e todas as suas perguntas?')) return;
+    if(!confirm('Delete this quiz and all its questions?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'DELETE');
         window.currentModuleQuizId = null;
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao deletar quiz: ' + error.message);
+        alert('Error deleting quiz: ' + error.message);
     }
 }
 
 async function deleteQuestion(questionId) {
-    if(!confirm('Deletar esta pergunta?')) return;
+    if(!confirm('Delete this question?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Erro ao deletar pergunta: ' + error.message);
+        alert('Error deleting question: ' + error.message);
     }
 }
 
@@ -913,8 +913,8 @@ function renderQuizzes(quizzes) {
         window.currentQuizDataList = [];
         list.innerHTML = `
             <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px dashed #cbd5e1; text-align: center;">
-                <p style="color:#64748b; margin-bottom: 20px;">Nenhum quiz encontrado para este módulo.</p>
-                <button onclick="showCreateQuizForm()" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Criar Novo Quiz</button>
+                <p style="color:#64748b; margin-bottom: 20px;">No quiz found for this module.</p>
+                <button onclick="showCreateQuizForm()" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Create New Quiz</button>
             </div>
         `;
         return;
@@ -929,14 +929,14 @@ function renderQuizzes(quizzes) {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
                     <div>
                         <h4 style="margin: 0; font-size: 1.2rem; display:flex; align-items:center; gap:8px; color: #1e293b;">
-                            <i class="fas fa-list-ul" style="color: #497aa7;"></i> ${quiz.title || 'Quiz do Módulo'}
-                            <button onclick="editQuizTitle(${quiz.id})" style="background:transparent; border:none; color:#497aa7; cursor:pointer; font-size:1rem;" title="Editar Título do Quiz"><i class="fas fa-edit"></i></button>
+                            <i class="fas fa-list-ul" style="color: #497aa7;"></i> ${quiz.title || 'Module Quiz'}
+                            <button onclick="editQuizTitle(${quiz.id})" style="background:transparent; border:none; color:#497aa7; cursor:pointer; font-size:1rem;" title="Edit Quiz Title"><i class="fas fa-edit"></i></button>
                         </h4>
-                        <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; margin-top:5px; font-weight:bold;">${questions.length} perguntas</span>
+                        <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; margin-top:5px; font-weight:bold;">${questions.length} questions</span>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Pergunta</button>
-                        <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Deletar Todo o Quiz"><i class="fas fa-trash"></i></button>
+                        <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Question</button>
+                        <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Delete Entire Quiz"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
                 
@@ -949,8 +949,8 @@ function renderQuizzes(quizzes) {
                                     <strong style="font-size: 1rem; color: #1e293b;">${idx + 1}. ${q.text}</strong>
                                 </div>
                                 <div style="display:flex; gap:10px;" onclick="event.preventDefault();">
-                                    <button onclick="editQuestion(${quiz.id}, ${q.id})" style="background: transparent; border: none; color: #497aa7; cursor: pointer;" title="Editar"><i class="fas fa-edit"></i></button>
-                                    <button onclick="deleteQuestion(${q.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer;" title="Deletar"><i class="fas fa-trash"></i></button>
+                                    <button onclick="editQuestion(${quiz.id}, ${q.id})" style="background: transparent; border: none; color: #497aa7; cursor: pointer;" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button onclick="deleteQuestion(${q.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer;" title="Delete"><i class="fas fa-trash"></i></button>
                                 </div>
                             </summary>
                             <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px; padding-left: 20px; cursor: default;" onclick="event.preventDefault();">
@@ -964,7 +964,7 @@ function renderQuizzes(quizzes) {
                         </details>
                     `).join('')}
                     
-                    ${questions.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nenhuma pergunta neste quiz. Adicione manualmente ou gere com IA.</p>' : ''}
+                    ${questions.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">No questions in this quiz. Add manually or generate with AI.</p>' : ''}
                 </div>
                 <div id="forms-container-${quiz.id}"></div>
             </div>
@@ -1001,8 +1001,8 @@ function openSubModal(title, html, onConfirm) {
                 ${html}
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="document.getElementById('${modalId}').remove()" style="padding:10px 15px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:6px; cursor:pointer;">Cancelar</button>
-                <button id="sub-modal-confirm" style="padding:10px 15px; background:#6366f1; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Confirmar</button>
+                <button onclick="document.getElementById('${modalId}').remove()" style="padding:10px 15px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:6px; cursor:pointer;">Cancel</button>
+                <button id="sub-modal-confirm" style="padding:10px 15px; background:#6366f1; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Confirm</button>
             </div>
         </div>
     `;
@@ -1013,11 +1013,11 @@ function openSubModal(title, html, onConfirm) {
 
 
 async function deleteQuestion(questionId) {
-    if(!confirm('Deletar pergunta?')) return;
+    if(!confirm('Delete question?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
         loadModuleData(editingModuleId);
     } catch (err) {
-        alert('Erro ao excluir: ' + err.message);
+        alert('Error deleting: ' + err.message);
     }
 }

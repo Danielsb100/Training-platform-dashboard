@@ -27,16 +27,24 @@ exports.uploadDocument = async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
+        const asset = await assetStorage.saveUploadedFile({
+            tempPath: req.file.path,
+            originalName: req.file.originalname,
+            mimeType: req.file.mimetype
+        });
+
         const document = await prisma.document.create({
             data: {
                 userId: req.user.id,
                 name: req.file.originalname,
                 type: req.file.mimetype,
-                storageProvider: 'database',
-                sizeBytes: req.file.size,
-                data: req.file.buffer // Saving directly to DB
+                storageProvider: 'local',
+                sizeBytes: asset.sizeBytes,
+                storageKey: asset.storageKey
             }
         });
+
+        await cleanupTempUpload(req.file);
 
         res.status(201).json({
             message: 'Document uploaded successfully',
@@ -44,6 +52,7 @@ exports.uploadDocument = async (req, res) => {
         });
     } catch (err) {
         console.error('Upload error:', err);
+        await cleanupTempUpload(req.file);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -133,9 +142,15 @@ exports.downloadDocument = async (req, res) => {
             return res.send(document.data);
         }
 
-        if (document.data) {
-            res.set('Content-Length', document.data.length);
-            return res.send(document.data);
+        if (document.storageProvider === 'local' && document.storageKey) {
+            try {
+                const stat = await assetStorage.stat(document.storageKey);
+                res.set('Content-Length', stat.sizeBytes);
+                const stream = assetStorage.createReadStream(document.storageKey);
+                return stream.pipe(res);
+            } catch (err) {
+                return res.status(404).json({ error: 'Document file not found on disk' });
+            }
         }
 
         return res.status(404).json({ error: 'Document file not found' });
@@ -154,6 +169,10 @@ exports.deleteDocument = async (req, res) => {
 
         if (!document) return res.status(404).json({ error: 'Not found' });
         if (document.userId !== req.user.id) return res.status(403).json({ error: 'Unauthorized' });
+
+        if (document.storageProvider === 'local' && document.storageKey) {
+            await assetStorage.remove(document.storageKey).catch(e => console.error(e));
+        }
 
         await prisma.document.delete({ where: { id: parseInt(id) } });
         res.json({ message: 'Deleted' });

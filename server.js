@@ -52,6 +52,27 @@ const handleUploadError = (fieldName) => (req, res, next) => {
   });
 };
 
+const uploadToDisk = multer({
+  storage: multer.diskStorage({
+    destination: env.upload.tempDir
+  }),
+  limits: { fileSize: env.upload.maxFileSizeBytes }
+});
+
+const handleUploadToDiskError = (fieldName) => (req, res, next) => {
+  uploadToDisk.single(fieldName)(req, res, (error) => {
+    if (!error) return next();
+
+    if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        error: `File is too large. Maximum allowed size is ${env.upload.maxFileSizeMb} MB.`
+      });
+    }
+
+    return res.status(400).json({ error: error.message || 'File upload failed.' });
+  });
+};
+
 const app = express();
 const PORT = env.port;
 
@@ -256,7 +277,7 @@ app.get(
   reportController.getUserDetailedReport
 );
 
-app.post('/api/documents/upload', authenticateToken, handleUploadError('document'), documentController.uploadDocument);
+app.post('/api/documents/upload', authenticateToken, handleUploadToDiskError('document'), documentController.uploadDocument);
 app.get('/api/documents', authenticateToken, (req, res) => {
   req.params.username = req.user.username;
   documentController.getUserDocuments(req, res);

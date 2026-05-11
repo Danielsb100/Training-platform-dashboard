@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderCourseCard(course) {
         const statusColor = course.status === 'PUBLISHED' ? '#dcfce7' : '#f1f5f9';
-        const statusText = course.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho';
+        const statusText = course.status === 'PUBLISHED' ? 'Published' : 'Draft';
         const textColor = course.status === 'PUBLISHED' ? '#166534' : '#475569';
 
         const thumbUrl = course.coverImage || course.thumbnailUrl || course.custom_thumb;
@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h4 style="margin:0; color:#1e293b; font-size:1.1rem;">${course.title}</h4>
                         <span style="font-size:0.7rem; padding:3px 8px; border-radius:10px; background:${statusColor}; color:${textColor}; font-weight:bold;">${statusText}</span>
                     </div>
-                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || 'Sem descrição'}</p>
+                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || 'No description'}</p>
                     <div style="display:flex; gap:10px;">
-                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Editar</button>
-                        <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Ver Conteúdo</button>
+                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit</button>
+                        <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">View Content</button>
                     </div>
                 </div>
             </div>
@@ -65,9 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             userPagesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
                     <i class="fas fa-graduation-cap" style="font-size:3rem; color:#e2e8f0; margin-bottom:15px; display:block;"></i>
-                    <h3 style="color: #1e293b; margin-bottom: 10px;">Você ainda não tem nenhum Curso.</h3>
-                    <p style="color: #64748b; margin-bottom: 20px;">Crie seu primeiro curso agora mesmo e defina os módulos e a landing page!</p>
-                    <a href="course_builder.html" class="btn-primary" style="padding:12px 25px; border-radius:30px; background:#cf982e; color:white; text-decoration:none; font-weight:bold; display:inline-block;"><i class="fas fa-plus"></i> Criar Agora</a>
+                    <h3 style="color: #1e293b; margin-bottom: 10px;">You don't have any Courses yet.</h3>
+                    <p style="color: #64748b; margin-bottom: 20px;">Create your first course right now and set up the modules and landing page!</p>
+                    <a href="course_builder.html" class="btn-primary" style="padding:12px 25px; border-radius:30px; background:#cf982e; color:white; text-decoration:none; font-weight:bold; display:inline-block;"><i class="fas fa-plus"></i> Create Now</a>
                 </div>
             `;
         } else {
@@ -95,20 +95,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const user = actualData.user || {};
 
             // Preenche Header Visual
-            const nameToDisplay = profile.displayName || user.username || 'Sem Nome';
+            const nameToDisplay = profile.displayName || user.username || 'No Name';
             document.getElementById('settings-name').value = nameToDisplay;
             const headerName = document.querySelector('.profile-details h2');
             if (headerName) headerName.innerText = nameToDisplay;
 
             const headerRole = document.querySelector('.profile-role');
             if (headerRole) {
-                headerRole.innerText = profile.headline || 'Nenhum cargo definido';
+                headerRole.innerText = profile.headline || 'No role defined';
                 document.getElementById('settings-role').value = profile.headline || '';
             }
 
             const headerBio = document.querySelector('.profile-bio');
             if (headerBio) {
-                headerBio.innerText = profile.bio || 'Adicione uma biografia em Configurações.';
+                headerBio.innerText = profile.bio || 'Add a biography in Settings.';
                 document.getElementById('settings-bio').value = profile.bio || '';
                 document.getElementById('port-bio').value = profile.bio || '';
             }
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = 'login.html';
                 return;
             }
-            const nameToDisplay = 'Erro ao carregar perfil';
+            const nameToDisplay = 'Error loading profile';
             document.getElementById('settings-name').value = nameToDisplay;
             const headerName = document.querySelector('.profile-details h2');
             if (headerName) headerName.innerText = nameToDisplay;
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const listContainer = popup.querySelector('div:nth-child(2)');
                 if (listContainer) {
                     if (recent.length === 0) {
-                        listContainer.innerHTML = '<div style="padding:15px 20px; color:#64748b; font-size:13px;">Nenhuma notificação.</div>';
+                        listContainer.innerHTML = '<div style="padding:15px 20px; color:#64748b; font-size:13px;">No notifications.</div>';
                     } else {
                         listContainer.innerHTML = recent.map(n => `
                             <div style="padding:15px 20px; border-bottom:1px solid #f1f5f9; cursor:pointer; background: ${n.isRead ? 'transparent' : '#f8fafc'};">
@@ -248,14 +248,14 @@ window.saveSettingsProfile = async function() {
                     body: formData
                 });
             }
-            alert('Perfil salvo com sucesso!');
+            alert('Profile saved successfully!');
             location.reload();
         } else {
-            alert('Falha ao salvar o perfil.');
+            alert('Failed to save profile.');
         }
     } catch (err) {
         console.error(err);
-        alert('Erro ao salvar o perfil.');
+        alert('Error saving profile.');
     }
 };
 
@@ -322,13 +322,13 @@ window.saveAdvancedPortfolio = async function() {
         });
 
         if (res.ok) {
-            alert('Perfil Profissional e Redes salvos com sucesso!');
+            alert('Professional Profile and Networks saved successfully!');
         } else {
-            alert('Falha ao salvar portfólio.');
+            alert('Failed to save portfolio.');
         }
     } catch (err) {
         console.error(err);
-        alert('Erro ao salvar portfólio.');
+        alert('Error saving portfolio.');
     }
 };
 
@@ -480,14 +480,14 @@ function renderNotificationsSummary(summary) {
     if (elUrgentCount) elUrgentCount.textContent = `${summary.counts.urgent} urgent`;
     if (elInboxMeta) elInboxMeta.textContent = `${summary.inbox.length} itens`;
     if (elTodayMeta) elTodayMeta.textContent = `${summary.operational.today.length} pending`;
-    if (elUrgentMeta) elUrgentMeta.textContent = `${summary.operational.urgent.length} bloqueios`;
-    if (elWeekMeta) elWeekMeta.textContent = `${summary.weeklyGoals.length} objetivos`;
+    if (elUrgentMeta) elUrgentMeta.textContent = `${summary.operational.urgent.length} blocks`;
+    if (elWeekMeta) elWeekMeta.textContent = `${summary.weeklyGoals.length} goals`;
     if (elRemindersMeta) elRemindersMeta.textContent = `${summary.reminders.length} reminders`;
 
-    renderOperationItems('notifications-inbox', summary.inbox, renderNotificationItem, 'Nenhuma mensagem.');
-    renderOperationItems('operations-today', summary.operational.today, renderTaskQueueItem, 'Nada planejado.');
-    renderOperationItems('operations-urgent', summary.operational.urgent, renderTaskQueueItem, 'Sem bloqueios.');
-    renderOperationItems('operations-week', summary.weeklyGoals, renderTaskQueueItem, 'Defina suas metas.');
+    renderOperationItems('notifications-inbox', summary.inbox, renderNotificationItem, 'No messages.');
+    renderOperationItems('operations-today', summary.operational.today, renderTaskQueueItem, 'Nothing planned.');
+    renderOperationItems('operations-urgent', summary.operational.urgent, renderTaskQueueItem, 'No blocks.');
+    renderOperationItems('operations-week', summary.weeklyGoals, renderTaskQueueItem, 'Set your goals.');
     renderOperationItems('operations-reminders', summary.reminders, renderReminderItem, 'No open automatic reminders.');
 }
 
