@@ -71,42 +71,76 @@
                 return;
             }
 
-            const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-            const pages = JSON.parse(localStorage.getItem('published_pages') || '[]');
-            
-            let page = courses.find(c => c.id === pageId);
-            if (!page) {
-                page = pages.find(p => p.id === pageId);
+            function loadFromLocalStorage() {
+                const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
+                const pages = JSON.parse(localStorage.getItem('published_pages') || '[]');
+                
+                let page = courses.find(c => c.id === pageId) || pages.find(p => p.id === pageId);
+
+                if (page) {
+                    document.title = page.title || 'Course';
+                    const contentHtml = page.compiled_content || page.modular_content || page.content;
+                    
+                    if (contentHtml) {
+                        document.getElementById('page-content').innerHTML = contentHtml;
+                        initializeAnimations();
+                    } else {
+                        showNoLandingPage();
+                    }
+                } else {
+                    document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (Invalid or deleted ID).</h2></div>';
+                }
             }
 
-            if (page) {
-                document.title = page.title || 'Course';
-                // Use compiled_content se for um curso que tem LP nova, senão modular_content do curso, senão content se for legacy page
-                const contentHtml = page.compiled_content || page.modular_content || page.content;
-                
-                if (contentHtml) {
-                    document.getElementById('page-content').innerHTML = contentHtml;
-                    
-                    // Initialize any animations if needed
-                    const animObserver = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if(entry.isIntersecting) {
-                                entry.target.classList.add('is-visible');
-                            } else {
-                                entry.target.classList.remove('is-visible');
-                            }
-                        });
-                    }, { threshold: 0.1 });
-                    
-                    document.querySelectorAll('.anim-fade-in, .anim-slide-up').forEach(el => {
-                        animObserver.observe(el);
-                    });
-                } else {
-                    document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white; text-align:center;"><h2>This course does not have a Landing Page yet.</h2><br><a href="course_content.html?id=' + page.id + '" style="color:#cf9c33; text-decoration:underline;">Access Course Modules</a></div>';
-                }
-            } else {
-                document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (Invalid or deleted ID).</h2></div>';
+            function showNoLandingPage() {
+                document.getElementById('page-content').innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:white; text-align:center;"><h2>This course does not have a Landing Page yet.</h2><br><a href="course_content.html?id=' + pageId + '" style="color:#cf9c33; text-decoration:underline;">Access Course Modules</a></div>';
             }
+
+            function initializeAnimations() {
+                const animObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if(entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                        } else {
+                            entry.target.classList.remove('is-visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                document.querySelectorAll('.anim-fade-in, .anim-slide-up').forEach(el => {
+                    animObserver.observe(el);
+                });
+            }
+
+            fetch(`/api/landing-pages/course/${pageId}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('API_ERROR');
+                    }
+                    return res.json();
+                })
+                .then(page => {
+                    document.title = page.title || 'Course';
+                    
+                    if (page.compiledCss) {
+                        const style = document.createElement('style');
+                        style.textContent = page.compiledCss;
+                        document.head.appendChild(style);
+                    }
+                    
+                    const contentHtml = page.compiledHtml;
+                    
+                    if (contentHtml) {
+                        document.getElementById('page-content').innerHTML = contentHtml;
+                        initializeAnimations();
+                    } else {
+                        loadFromLocalStorage();
+                    }
+                })
+                .catch(err => {
+                    // Fallback to localStorage if API fails or 404
+                    loadFromLocalStorage();
+                });
         });
     </script>
 </body>

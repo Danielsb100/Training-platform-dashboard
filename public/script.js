@@ -415,30 +415,69 @@ document.addEventListener('DOMContentLoaded', () => {
         return { modularContent, compiledContent: clone.innerHTML };
     }
 
-    function saveDirectToCourse(thumbUrl, modularContent, compiledContent) {
-        let courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-        
-        // Ensure course exists or create draft
-        let courseIdx = courses.findIndex(c => c.id === courseIdParam);
-        if (courseIdx === -1) {
-            courses.push({
-                id: courseIdParam,
-                title: 'Curso sem título',
-                status: 'draft',
-                modules: [],
-                date: new Date().toISOString()
-            });
-            courseIdx = courses.length - 1;
-        }
-
-        courses[courseIdx].modular_content = modularContent;
-        courses[courseIdx].compiled_content = compiledContent;
-        courses[courseIdx].lp_thumb = thumbUrl; // Save Landing Page cover
-
-        localStorage.setItem('published_courses', JSON.stringify(courses));
+    async function saveDirectToCourse(thumbUrl, modularContent, compiledContent) {
         publishModal.classList.add('hidden');
-        alert('Design e Capa salvos no curso com sucesso!');
-        window.location.href = 'course_builder.html?id=' + courseIdParam;
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Not authenticated');
+
+            // 1. Check if a landing page already exists for this course
+            const getRes = await fetch(`/api/landing-pages/course/${courseIdParam}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            let method = 'POST';
+            let url = '/api/landing-pages';
+            
+            if (getRes.ok) {
+                const existingPage = await getRes.json();
+                if (existingPage && existingPage.id) {
+                    method = 'PUT';
+                    url = `/api/landing-pages/${existingPage.id}`;
+                }
+            }
+
+            // 2. Save to database
+            const payload = {
+                title: 'Landing Page for Course ' + courseIdParam,
+                content: { html: modularContent },
+                compiledHtml: compiledContent,
+                compiledCss: '',
+                courseId: courseIdParam
+            };
+
+            const saveRes = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!saveRes.ok) {
+                throw new Error('Failed to save landing page to database');
+            }
+
+            // 3. Update course cover image if needed
+            if (thumbUrl) {
+                await fetch(`/courses/${courseIdParam}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ coverImage: thumbUrl })
+                });
+            }
+
+            alert('Design e Capa salvos no curso com sucesso (PostgreSQL)!');
+            window.location.href = 'course_builder.html?id=' + courseIdParam;
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar Landing Page oficial: ' + error.message);
+        }
     }
 
     function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {

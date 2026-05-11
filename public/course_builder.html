@@ -497,8 +497,10 @@
                             const data = await res.json();
                             if (data && data.id) {
                                 course = data;
+                                window.apiCourseData = data;
                             } else if (data && data.data) {
                                 course = data.data;
+                                window.apiCourseData = data.data;
                             }
                         }
                     }
@@ -577,8 +579,14 @@
         function updateConstructionUI() {
             // Verifica se tem Landing Page (via storage para este ID)
             const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-            const course = courses.find(c => String(c.id) === String(window.editingCourseId));
+            let course = courses.find(c => String(c.id) === String(window.editingCourseId));
             
+            if (window.apiCourseData && window.apiCourseData.landingPage) {
+                if (!course) course = {};
+                course.modular_content = true;
+                course.lp_thumb = window.apiCourseData.landingPage.thumbUrl || window.apiCourseData.coverImage || '';
+            }
+
             const lpContainer = document.getElementById('lp-action-container');
             const modContainer = document.getElementById('modules-action-container');
             

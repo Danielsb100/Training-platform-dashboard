@@ -53,60 +53,134 @@
                 return;
             }
 
-            const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-            const course = courses.find(c => c.id === courseId);
-            
-            if (!course) {
-                container.innerHTML = '<div class="empty-state">Course not found.</div>';
+            const token = localStorage.getItem('token');
+            if (!token) {
+                container.innerHTML = '<div class="empty-state">Please log in to view this course.</div>';
                 return;
             }
 
-            const modules = course.modules || [];
+            fetch(`/courses/${courseId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Course not found');
+                return res.json();
+            })
+            .then(data => {
+                const course = data.data || data;
+                
+                if (!course) {
+                    container.innerHTML = '<div class="empty-state">Course not found.</div>';
+                    return;
+                }
 
-            let modulesHTML = '';
-            if (modules.length === 0) {
-                modulesHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
-                        <p style="color: #64748b;">This course does not have content modules yet.</p>
-                        <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
-                    </div>
-                `;
-            } else {
-                modules.forEach(m => {
-                    modulesHTML += `
-                        <div class="module-item">
-                            <button class="module-trigger" onclick="toggleModule(${m.id})">
-                                <span class="module-title">${m.title}</span>
-                                <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
-                            </button>
-                            <div class="module-content" id="content-${m.id}">
-                                ${m.content.replace(/\n/g, '<br>')}
-                            </div>
+                // Handle modules format from DB or Local
+                const rawModules = course.modules || [];
+                const modules = rawModules.map(m => ({
+                    id: m.courseModuleId || m.id,
+                    title: m.title || 'Untitled Module',
+                    content: m.description || m.content || ''
+                }));
+
+                let modulesHTML = '';
+                if (modules.length === 0) {
+                    modulesHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
+                            <p style="color: #64748b;">This course does not have content modules yet.</p>
+                            <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
                         </div>
                     `;
-                });
-            }
+                } else {
+                    modules.forEach(m => {
+                        modulesHTML += `
+                            <div class="module-item">
+                                <button class="module-trigger" onclick="toggleModule('${m.id}')">
+                                    <span class="module-title">${m.title}</span>
+                                    <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
+                                </button>
+                                <div class="module-content" id="content-${m.id}">
+                                    ${m.content.replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
 
-            container.innerHTML = `
-                <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1;">
-                        <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>
-                        <div class="course-info">
-                            <h1>${course.title}</h1>
-                            <p>${course.description || 'This course offers structured content for your professional development.'}</p>
+                container.innerHTML = `
+                    <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="flex:1;">
+                            <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>
+                            <div class="course-info">
+                                <h1>${course.title}</h1>
+                                <p>${course.description || 'This course offers structured content for your professional development.'}</p>
+                            </div>
                         </div>
-                    </div>
-                    <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        <i class="fas fa-edit"></i> Edit Course
-                    </button>
-                </header>
+                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                            <i class="fas fa-edit"></i> Edit Course
+                        </button>
+                    </header>
 
-                <main class="main-content">
-                    <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Course Content (${modules.length} modules)</h2>
-                    ${modulesHTML}
-                </main>
-            `;
+                    <main class="main-content">
+                        <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Course Content (${modules.length} modules)</h2>
+                        ${modulesHTML}
+                    </main>
+                `;
+            })
+            .catch(err => {
+                // Tenta carregar do localStorage como fallback para testes antigos
+                const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
+                const course = courses.find(c => String(c.id) === String(courseId));
+                
+                if (course) {
+                    // Copiar o mesmo código de renderização do then(...)
+                    const modules = course.modules || [];
+                    let modulesHTML = '';
+                    if (modules.length === 0) {
+                        modulesHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-book-open" style="font-size: 3rem; color: #e2e8f0; margin-bottom: 20px; display: block;"></i>
+                                <p style="color: #64748b;">This course does not have content modules yet.</p>
+                                <a href="course_builder.html?id=${course.id}" style="color: #cf9c33; font-weight: bold; text-decoration: none;">Add modules now</a>
+                            </div>
+                        `;
+                    } else {
+                        modules.forEach(m => {
+                            modulesHTML += `
+                                <div class="module-item">
+                                    <button class="module-trigger" onclick="toggleModule('${m.id}')">
+                                        <span class="module-title">${m.title}</span>
+                                        <i class="fas fa-chevron-down" id="icon-${m.id}" style="transition:0.3s; color:#94a3b8;"></i>
+                                    </button>
+                                    <div class="module-content" id="content-${m.id}">
+                                        ${m.content.replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    container.innerHTML = `
+                        <header class="course-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Back to my creations</a>
+                                <div class="course-info">
+                                    <h1>${course.title} (Local)</h1>
+                                    <p>${course.description || 'This course offers structured content for your professional development.'}</p>
+                                </div>
+                            </div>
+                            <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;">
+                                <i class="fas fa-edit"></i> Edit Course
+                            </button>
+                        </header>
+                        <main class="main-content">
+                            <h2 class="section-title"><i class="fas fa-list-ul" style="color: #cf9c33;"></i> Course Content (${modules.length} modules)</h2>
+                            ${modulesHTML}
+                        </main>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="empty-state">Course not found (API failed and not in Local Storage).</div>';
+                }
+            });
         });
     </script>
 </body>

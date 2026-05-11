@@ -1,4 +1,11 @@
-require('dotenv').config();
+const fs = require('fs');
+const dotenv = require('dotenv');
+
+if (fs.existsSync('.env.local')) {
+  dotenv.config({ path: '.env.local', override: true });
+} else {
+  dotenv.config();
+}
 const path = require('path');
 
 const DEFAULT_UPLOAD_MAX_FILE_SIZE_MB = 500;
