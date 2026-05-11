@@ -76,21 +76,35 @@ async function getLandingPageByCourseId(req, res) {
     if (!courseId) return res.status(400).json({ error: 'Invalid course ID' });
 
     const page = await prisma.landingPage.findUnique({
-      where: { courseId }
+      where: { courseId },
+      include: { course: { include: { editors: true } } }
     });
 
     if (!page) {
       return res.status(404).json({ error: 'No landing page linked to this course' });
     }
 
-    // Return the compiled version for viewers
-    return res.json({
-        id: page.id,
-        title: page.title,
-        compiledHtml: page.compiledHtml,
-        compiledCss: page.compiledCss,
-        courseId: page.courseId
-    });
+    let isAuthorized = false;
+    if (req.user) {
+        const isOwner = String(page.ownerMasterId) === String(req.user.id) || (page.course && String(page.course.ownerMasterId) === String(req.user.id));
+        const isEditor = page.course?.editors?.some(e => String(e.userId) === String(req.user.id));
+        const isSuperAdmin = getEffectiveUserRoles(req.user).has('SUPER_ADMIN');
+        isAuthorized = isOwner || isEditor || isSuperAdmin;
+    }
+
+    if (isAuthorized) {
+        // Return the full page for viewers and editors
+        return res.json(page);
+    } else {
+        // Return only the compiled version for regular viewers
+        return res.json({
+            id: page.id,
+            title: page.title,
+            compiledHtml: page.compiledHtml,
+            compiledCss: page.compiledCss,
+            courseId: page.courseId
+        });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Failed to retrieve course landing page' });

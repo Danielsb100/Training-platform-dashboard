@@ -132,10 +132,8 @@
                     document.head.appendChild(style);
                 }
 
-                // Check if current user is owner or editor
-                const isOwnerOrEditor = String(course.ownerMasterId) === String(currentUser.id) || 
-                                        (course.editors && course.editors.some(e => String(e.userId) === String(currentUser.id))) ||
-                                        (currentUser.roles && currentUser.roles.includes('SUPER_ADMIN'));
+                // Check if current user is owner or editor via the backend flag
+                const isOwnerOrEditor = course.canManage === true;
 
                 const editSettingsButtonHTML = isOwnerOrEditor ? `
                     <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
