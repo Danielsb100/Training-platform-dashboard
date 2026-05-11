@@ -62,8 +62,8 @@ const createLocalAssetStorage = ({ rootDir }) => {
       };
     },
 
-    createReadStream(storageKey) {
-      return fs.createReadStream(resolvePath(storageKey));
+    createReadStream(storageKey, options = {}) {
+      return fs.createReadStream(resolvePath(storageKey), options);
     },
 
     async stat(storageKey) {

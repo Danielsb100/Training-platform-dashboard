@@ -145,9 +145,38 @@ exports.downloadDocument = async (req, res) => {
         if (document.storageProvider === 'local' && document.storageKey) {
             try {
                 const stat = await assetStorage.stat(document.storageKey);
-                res.set('Content-Length', stat.sizeBytes);
-                const stream = assetStorage.createReadStream(document.storageKey);
-                return stream.pipe(res);
+                const fileSize = stat.sizeBytes;
+                const range = req.headers.range;
+
+                if (range) {
+                    const parts = range.replace(/bytes=/, "").split("-");
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                    
+                    if (start >= fileSize) {
+                        res.status(416).send(`Requested range not satisfiable\n${start} >= ${fileSize}`);
+                        return;
+                    }
+                    
+                    const chunksize = (end - start) + 1;
+                    res.status(206);
+                    res.set({
+                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': chunksize,
+                        'Content-Type': document.type,
+                    });
+                    
+                    const stream = assetStorage.createReadStream(document.storageKey, { start, end });
+                    return stream.pipe(res);
+                } else {
+                    res.set({
+                        'Content-Length': fileSize,
+                        'Accept-Ranges': 'bytes'
+                    });
+                    const stream = assetStorage.createReadStream(document.storageKey);
+                    return stream.pipe(res);
+                }
             } catch (err) {
                 return res.status(404).json({ error: 'Document file not found on disk' });
             }

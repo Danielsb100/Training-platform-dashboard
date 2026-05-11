@@ -435,20 +435,20 @@ function renderVideos(videos) {
         // Transform the title and url into safe strings for onclick
         const safeUrl = v.url.replace(/"/g, '&quot;');
         const safeTitle = (v.title || '').replace(/"/g, '&quot;');
-        
+        const playIconOverlay = `<div onclick="playVideo('${safeUrl}', '${safeTitle}')" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50px; height:50px; background:rgba(0,0,0,0.6); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid white; transition:background 0.2s;" onmouseover="this.style.background='rgba(207, 152, 46, 0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-play" style="color:white; font-size:1.2rem; margin-left:4px;"></i></div>`;
+
         const thumbHtml = thumb 
-            ? `<div style="height:140px; background:url('${thumb}') center/cover; position:relative;">`
-            : `<div style="height:140px; background:#1e293b; display:flex; align-items:center; justify-content:center; position:relative;"><i class="fas fa-video" style="font-size:3rem; color:#475569;"></i>`;
+            ? `<div style="height:140px; background:url('${thumb}') center/cover; position:relative;">${playIconOverlay}`
+            : `<div style="height:140px; background:#1e293b; display:flex; align-items:center; justify-content:center; position:relative;">${playIconOverlay}<i class="fas fa-video" style="font-size:3rem; color:#475569;"></i>`;
 
         return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             ${thumbHtml}
-                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remove Video"><i class="fas fa-trash"></i></button>
+                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Remove Video"><i class="fas fa-trash"></i></button>
             </div>
             <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
                 <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${v.title}</strong>
                 <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:15px; flex:1; line-height:1.4;">${v.description || ''}</span>
-                <button onclick="playVideo('${safeUrl}', '${safeTitle}')" style="font-size:0.85rem; color:#497aa7; font-weight:bold; text-align:center; display:block; padding:8px; background:#e2e8f0; border:radius:6px; text-decoration:none; border:none; width:100%; cursor:pointer;"><i class="fas fa-play-circle"></i> Watch Video</button>
             </div>
         </div>
         `;
