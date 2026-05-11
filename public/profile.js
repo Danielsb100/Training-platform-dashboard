@@ -143,7 +143,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (consents.profileDiscovery) document.getElementById('port-consent-discovery').checked = consents.profileDiscovery.granted;
             if (consents.worldProfileCard) document.getElementById('port-consent-world').checked = consents.worldProfileCard.granted;
 
-            // Foto de perfil precisa vir de User (que está vinculado)
+            // Global Navigation Visibility Rules
+            const navCreations = document.getElementById('nav-creations');
+            const navUsers = document.getElementById('nav-users');
+            const roles = user.roles || [];
+            
+            if (navCreations) {
+                const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
+                if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
+                    navCreations.style.display = 'none';
+                }
+            }
+            if (navUsers && user.role === 'MASTER') {
+                navUsers.style.display = 'flex';
+            }
+
+            // Also load the avatar properly            // Foto de perfil precisa vir de User (que está vinculado)
             if (user.profilePicture) {
                 document.getElementById('settings-profile-img-preview').src = user.profilePicture;
                 const headerPhoto = document.querySelector('.profile-photo');

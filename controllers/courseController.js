@@ -1,5 +1,6 @@
 const prisma = require('../config/db');
 const { deepDeleteModule } = require('./moduleController');
+const { createEnrollmentNotification, createEventInviteNotification } = require('../services/notificationService');
 
 function getEffectiveUserRoles(user) {
   return new Set([
@@ -765,6 +766,17 @@ async function enrollUser(req, res) {
       create: { courseId, userId, status: 'ENROLLED' }
     });
 
+    if (enrollment) {
+      await createEnrollmentNotification({
+        recipientUserId: userId,
+        title: `You have been enrolled in ${course.title}`,
+        message: `You were manually enrolled in this course by an instructor.`,
+        actorUserId: req.user.id,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+    }
+
     return res.status(201).json(enrollment);
   } catch (error) {
     console.error(error);
@@ -885,6 +897,29 @@ async function selfEnroll(req, res) {
       create: { courseId, userId, status: 'ENROLLED' }
     });
 
+    if (enrollment) {
+      // Notify the student
+      await createEnrollmentNotification({
+        recipientUserId: userId,
+        title: `You have subscribed to ${course.title}`,
+        message: `You successfully enrolled in ${course.title}.`,
+        actorUserId: userId,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+      // Notify the course owner
+      if (course.ownerMasterId && course.ownerMasterId !== userId) {
+        await createEnrollmentNotification({
+          recipientUserId: course.ownerMasterId,
+          title: `${req.user.username} has subscribed to ${course.title}`,
+          message: `${req.user.username} enrolled in your course.`,
+          actorUserId: userId,
+          sourceEntityType: 'Course',
+          sourceEntityId: course.id
+        });
+      }
+    }
+
     return res.status(201).json(enrollment);
   } catch (error) {
     console.error(error);
@@ -999,6 +1034,18 @@ async function addCourseEditor(req, res) {
       create: { courseId, userId: Number(userId) },
       include: { user: { select: { id: true, username: true, email: true } } }
     });
+
+    if (newEditor) {
+      await createEventInviteNotification({
+        recipientUserId: Number(userId),
+        title: `You have been added as a Co-Editor`,
+        message: `You are now a co-editor for ${course.title}`,
+        actorUserId: req.user.id,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+    }
+
     return res.status(201).json(newEditor);
   } catch (err) {
     console.error(err);

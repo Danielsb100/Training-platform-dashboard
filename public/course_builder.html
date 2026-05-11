@@ -83,11 +83,25 @@
                     <h3>Co-Editors & Instructors</h3>
                     <p>Assign other users to help you edit this course and its landing page.</p>
                 </div>
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <input type="number" id="new-editor-id" placeholder="User ID" style="flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;">
-                    <button type="button" class="btn-primary" onclick="addCoEditor()" style="background: #497aa7;">Add Editor</button>
+                <div class="form-group" style="position: relative;">
+                    <input type="text" id="new-editor-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'editor')" onfocus="searchUsersForRole(this.value, 'editor')">
+                    <div id="editor-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
                 </div>
                 <ul id="editors-list" style="list-style: none; padding: 0; margin-top: 15px;">
+                    <!-- Injected by JS -->
+                </ul>
+            </div>
+
+            <div class="card" id="students-section" style="display: none;">
+                <div class="card-header">
+                    <h3>Invite Students</h3>
+                    <p>Manually enroll users directly into this course.</p>
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <input type="text" id="new-student-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'student')" onfocus="searchUsersForRole(this.value, 'student')">
+                    <div id="student-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
+                </div>
+                <ul id="students-list" style="list-style: none; padding: 0; margin-top: 15px;">
                     <!-- Injected by JS -->
                 </ul>
             </div>
@@ -898,8 +912,52 @@
             }
         }
 
-        async function addCoEditor() {
-            const userId = document.getElementById('new-editor-id').value;
+        let searchTimeout;
+        async function searchUsersForRole(query, roleType) {
+            const resultsDiv = document.getElementById(`${roleType}-search-results`);
+            if (!query || query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+                        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const users = data.data?.users || data.users || [];
+                        if (users.length > 0) {
+                            resultsDiv.innerHTML = users.map(u => `
+                                <div style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display:flex; flex-direction:column;" onclick="selectUserForRole('${roleType}', ${u.id}, '${u.username}')">
+                                    <span style="font-weight: 600;">${u.username}</span>
+                                    <span style="font-size: 12px; color: #64748b;">${u.email}</span>
+                                </div>
+                            `).join('');
+                            resultsDiv.style.display = 'block';
+                        } else {
+                            resultsDiv.innerHTML = '<div style="padding: 10px 15px; color: #94a3b8;">No users found.</div>';
+                            resultsDiv.style.display = 'block';
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 300);
+        }
+
+        function selectUserForRole(roleType, userId, username) {
+            document.getElementById(`new-${roleType}-search`).value = username;
+            document.getElementById(`${roleType}-search-results`).style.display = 'none';
+            if (roleType === 'editor') {
+                addCoEditor(userId);
+            } else if (roleType === 'student') {
+                inviteStudent(userId);
+            }
+        }
+
+        async function addCoEditor(userId) {
             if (!userId) return;
             try {
                 const res = await fetch(`/api/courses/${window.editingCourseId}/editors`, {
@@ -911,7 +969,7 @@
                     body: JSON.stringify({ userId })
                 });
                 if (res.ok) {
-                    document.getElementById('new-editor-id').value = '';
+                    document.getElementById('new-editor-search').value = '';
                     loadCoEditors(window.editingCourseId);
                 } else {
                     const data = await res.json();
@@ -921,6 +979,34 @@
                 console.error(err);
                 alert('Error adding editor');
             }
+        }
+
+        async function inviteStudent(userId) {
+            if (!userId) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/enrollments`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                if (res.ok) {
+                    document.getElementById('new-student-search').value = '';
+                    loadStudents(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to invite student');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error inviting student');
+            }
+        }
+
+        async function loadStudents(courseId) {
+            // we will implement a fetch to get enrollments later if there's an API. For now, it will just notify.
         }
 
         async function removeCoEditor(userId) {

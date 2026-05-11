@@ -43,12 +43,13 @@ async function loadUsers() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        if (res.ok && data.data && data.data.users) {
+        const users = data.users || data.data?.users;
+        if (res.ok && users) {
             const tableBody = document.getElementById('users-table-body');
             tableBody.innerHTML = '';
             
-            data.data.users.forEach(u => {
-                const assignedRoles = (u.roleAssignments || []).map(r => r.role);
+            users.forEach(u => {
+                const assignedRoles = u.roles || [];
                 const roleDisplay = assignedRoles.length > 0 ? assignedRoles[0] : 'USER';
                 
                 tableBody.innerHTML += `
