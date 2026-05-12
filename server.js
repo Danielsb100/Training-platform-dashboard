@@ -150,6 +150,12 @@ app.get('/courses/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), 
 app.get('/courses/public', courseController.getPublicCourses);
 app.get('/courses/accessible', authenticateToken, courseController.getAccessibleCourses);
 app.get('/courses/:id', authenticateToken, courseController.getCourseDetail);
+app.get(
+  '/api/students/overview',
+  authenticateToken,
+  roleMiddleware(['MASTER', 'ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR', 'SUPER_ADMIN']),
+  courseController.getStudentsOverview
+);
 app.put('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourse);
 app.delete('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.deleteCourse);
 app.post('/courses/:id/modules', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.addModuleToCourse);

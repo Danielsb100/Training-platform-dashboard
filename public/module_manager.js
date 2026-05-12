@@ -505,23 +505,91 @@ function renderVideos(videos) {
     }).join('');
 }
 
+function escapeVideoAttr(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function isOneDriveUrl(url) {
+    try {
+        const host = new URL(url, window.location.origin).hostname.toLowerCase();
+        return host.includes('1drv.ms') || host.includes('onedrive.live.com') || host.includes('sharepoint.com');
+    } catch (error) {
+        return /(?:1drv\.ms|onedrive\.live\.com|sharepoint\.com)/i.test(url || '');
+    }
+}
+
+function buildOneDriveEmbedUrl(rawUrl) {
+    const url = String(rawUrl || '').trim();
+    if (!url) return url;
+
+    try {
+        const parsed = new URL(url, window.location.origin);
+        const host = parsed.hostname.toLowerCase();
+
+        // 1drv.ms short links and modern SharePoint sharing links already carry the
+        // public access token in their original URL. Stripping the query string was
+        // the source of broken public OneDrive playback, so preserve it and only add
+        // a non-destructive embed hint.
+        if (host.includes('1drv.ms') || host.includes('sharepoint.com')) {
+            if (!parsed.searchParams.has('web') && !parsed.searchParams.has('embed')) {
+                parsed.searchParams.set('web', '1');
+            }
+            return parsed.toString();
+        }
+
+        if (host.includes('onedrive.live.com')) {
+            const resid = parsed.searchParams.get('resid');
+            const authkey = parsed.searchParams.get('authkey');
+            if (resid) {
+                const embed = new URL('https://onedrive.live.com/embed');
+                embed.searchParams.set('resid', resid);
+                if (authkey) embed.searchParams.set('authkey', authkey);
+                embed.searchParams.set('em', '2');
+                return embed.toString();
+            }
+        }
+    } catch (error) {
+        // Keep the original URL as the safest fallback for public sharing links.
+    }
+
+    return url;
+}
+
+function renderOneDrivePlayer(container, url) {
+    const embedUrl = buildOneDriveEmbedUrl(url);
+    const safeEmbedUrl = escapeVideoAttr(embedUrl);
+    const safeOriginalUrl = escapeVideoAttr(url);
+    container.innerHTML = `
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; background:#020617;">
+            <iframe src="${safeEmbedUrl}" style="flex:1; width:100%; border:none; background:white;" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div style="display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 16px; background:#0f172a; color:white; font-size:0.9rem;">
+                <span>If OneDrive blocks embedded playback, open the public video link in a new tab.</span>
+                <a href="${safeOriginalUrl}" target="_blank" rel="noopener noreferrer" style="color:white; background:#497aa7; padding:8px 14px; border-radius:999px; text-decoration:none; font-weight:700; white-space:nowrap;">Open in OneDrive</a>
+            </div>
+        </div>`;
+}
+
 function playVideo(url, title) {
     const modal = document.getElementById('video-player-modal');
     const container = document.getElementById('video-player-container');
     const titleEl = document.getElementById('video-player-title');
-    
+
     if (!modal || !container) return;
-    
+
     titleEl.innerText = title || 'Watch Video';
-    
+
     let embedUrl = url;
-    
+
     // Transform YouTube URL to embed
     let ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
     if (ytMatch && ytMatch[1]) {
         embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
     }
-    
+
     // Transform Vimeo URL to embed
     let vimeoMatch = url.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i);
     if (vimeoMatch && vimeoMatch[1]) {
@@ -529,23 +597,19 @@ function playVideo(url, title) {
     }
 
     let isDirectVideo = false;
-    if (url.includes('/api/documents/download/') || url.match(/\.(mp4|webm|ogg)$/i)) {
+    if (url.includes('/api/documents/download/') || url.match(/\.(mp4|webm|ogg)(?:$|[?#])/i)) {
         isDirectVideo = true;
         if (url.includes('/api/documents/download/')) {
             embedUrl = url + (url.includes('?') ? '&' : '?') + 'inline=true';
         }
     }
-    
-    // Transform Sharepoint/OneDrive URL to embed
-    if (!isDirectVideo && (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('1drv.ms'))) {
-        let baseUrl = embedUrl.split('?')[0];
-        embedUrl = baseUrl + '?action=embedview&wdAllowInteractivity=False&wdVideoPlayback=1';
-    }
 
-    if (isDirectVideo) {
-        container.innerHTML = `<video src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay></video>`;
+    if (!isDirectVideo && isOneDriveUrl(url)) {
+        renderOneDrivePlayer(container, url);
+    } else if (isDirectVideo) {
+        container.innerHTML = `<video src="${escapeVideoAttr(embedUrl)}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay></video>`;
     } else {
-        container.innerHTML = `<iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        container.innerHTML = `<iframe src="${escapeVideoAttr(embedUrl)}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
     }
     modal.style.display = 'flex';
 }

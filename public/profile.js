@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Global Navigation Visibility Rules
             const navCreations = document.getElementById('nav-creations');
+            const navStudents = document.getElementById('nav-students');
             const navUsers = document.getElementById('nav-users');
             const roles = user.roles || [];
             
@@ -154,6 +155,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
                     navCreations.style.display = 'none';
                 }
+            }
+            const canManageStudents = roles.some(r => ['TEACHER', 'TUTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role);
+            if (navStudents && canManageStudents) {
+                navStudents.style.display = 'flex';
             }
             if (navUsers && user.role === 'MASTER') {
                 navUsers.style.display = 'flex';

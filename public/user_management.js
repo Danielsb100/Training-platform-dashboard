@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Show Master UI Elements
         document.getElementById('nav-user-avatar').style.display = 'flex';
+        const navStudents = document.getElementById('nav-students');
+        if (navStudents) navStudents.style.display = 'flex';
         document.getElementById('nav-users').style.display = 'flex';
 
         // Set avatar

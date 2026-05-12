@@ -997,6 +997,206 @@ async function unsubscribe(req, res) {
   }
 }
 
+
+function buildStudentAiTip({ progressPercent, currentStage, quizScores, status }) {
+  const lowScores = quizScores.filter((score) => typeof score.bestScore === 'number' && score.bestScore < 70);
+  const pendingQuizzes = quizScores.filter((score) => score.hasQuiz && score.attempts === 0);
+
+  if (status === 'COMPLETED' || progressPercent >= 100) {
+    return 'Course completed. Invite this student to an advanced activity or collect feedback while the content is still fresh.';
+  }
+  if (lowScores.length) {
+    return `Review ${lowScores[0].moduleTitle}: the best quiz score is ${Math.round(lowScores[0].bestScore)}%, below the recommended threshold.`;
+  }
+  if (pendingQuizzes.length) {
+    return `Ask the student to complete the quiz for ${pendingQuizzes[0].moduleTitle} so progress can be assessed.`;
+  }
+  if (progressPercent === 0) {
+    return 'Student has not started yet. Send a welcome reminder and point them to the first module.';
+  }
+  if (progressPercent < 50) {
+    return `Student is in progress at ${currentStage || 'the next module'}. Check if they need support before the next milestone.`;
+  }
+  return 'Student is progressing well. Encourage completion of the next module and keep monitoring quiz performance.';
+}
+
+function buildCourseStudentsInclude() {
+  return {
+    owner: { select: { id: true, username: true, email: true, profile: { select: { displayName: true } } } },
+    editors: true,
+    enrollments: {
+      where: { status: { not: 'CANCELLED' } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            profilePicture: true,
+            profile: {
+              select: {
+                displayName: true,
+                headline: true,
+                organization: true,
+                location: true,
+                course: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    },
+    completions: true,
+    courseModules: {
+      orderBy: { orderIndex: 'asc' },
+      include: {
+        placement: true,
+        module: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            coverImage: true,
+            titleFont: true,
+            textColor: true,
+            quizzes: { select: { id: true, title: true } },
+            submissions: {
+              select: {
+                id: true,
+                userId: true,
+                score: true,
+                attemptNumber: true,
+                createdAt: true
+              },
+              orderBy: { createdAt: 'desc' }
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
+async function getStudentsOverview(req, res) {
+  try {
+    const roles = getEffectiveUserRoles(req.user);
+    const canViewAll = roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
+    const where = canViewAll
+      ? {}
+      : {
+          OR: [
+            { ownerMasterId: req.user.id },
+            { editors: { some: { userId: req.user.id } } }
+          ]
+        };
+
+    const courses = await prisma.course.findMany({
+      where,
+      include: buildCourseStudentsInclude(),
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    const courseSummaries = courses.map((course) => {
+      const students = (course.enrollments || []).map((enrollment) => {
+        const progress = buildCourseProgress(course, enrollment.userId, true);
+        const firstIncomplete = progress.modules.find((module) => !module.completed);
+        const currentStage = firstIncomplete?.title || (progress.modules.length ? 'Course completed' : 'No modules yet');
+        const quizScores = progress.modules
+          .filter((module) => module.hasQuiz)
+          .map((module) => ({
+            moduleId: module.moduleId,
+            moduleTitle: module.title,
+            latestScore: module.latestQuizScore,
+            bestScore: module.bestQuizScore,
+            attempts: module.quizAttemptCount,
+            minimumQuizScore: module.minimumQuizScore,
+            quizPassed: module.quizPassed,
+            hasQuiz: module.hasQuiz
+          }));
+        const student = enrollment.user || {};
+        const profile = student.profile || {};
+        const aiTip = buildStudentAiTip({
+          progressPercent: progress.progressPercent,
+          currentStage,
+          quizScores,
+          status: enrollment.status
+        });
+
+        return {
+          enrollmentId: enrollment.id,
+          userId: enrollment.userId,
+          username: student.username,
+          email: student.email,
+          displayName: profile.displayName || student.username || student.email || 'Student',
+          profilePicture: student.profilePicture,
+          headline: profile.headline,
+          organization: profile.organization,
+          location: profile.location,
+          profileCourse: profile.course,
+          enrollmentStatus: enrollment.status,
+          progressPercent: progress.progressPercent,
+          completedCount: progress.completedCount,
+          moduleCount: progress.modules.length,
+          currentStage,
+          quizScores,
+          aiTip,
+          modules: progress.modules.map((module) => ({
+            moduleId: module.moduleId,
+            title: module.title,
+            orderIndex: module.orderIndex,
+            completed: module.completed,
+            unlocked: module.unlocked,
+            hasQuiz: module.hasQuiz,
+            latestQuizScore: module.latestQuizScore,
+            bestQuizScore: module.bestQuizScore,
+            quizAttemptCount: module.quizAttemptCount,
+            quizPassed: module.quizPassed
+          })),
+          enrolledAt: enrollment.createdAt,
+          updatedAt: enrollment.updatedAt
+        };
+      });
+
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        status: course.status,
+        coverImage: course.coverImage,
+        owner: course.owner ? {
+          id: course.owner.id,
+          username: course.owner.username,
+          email: course.owner.email,
+          displayName: course.owner.profile?.displayName || course.owner.username
+        } : null,
+        moduleCount: course.courseModules.length,
+        studentCount: students.length,
+        students
+      };
+    });
+
+    const flatStudents = courseSummaries.flatMap((course) => course.students.map((student) => ({
+      ...student,
+      courseId: course.id,
+      courseTitle: course.title,
+      courseStatus: course.status,
+      courseModuleCount: course.moduleCount
+    })));
+
+    return res.json({
+      courses: courseSummaries,
+      students: flatStudents,
+      totalCourses: courseSummaries.length,
+      totalStudents: flatStudents.length
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to load students overview.' });
+  }
+}
+
 async function getCourseEditors(req, res) {
   try {
     const courseId = Number(req.params.id);
@@ -1075,6 +1275,7 @@ async function removeCourseEditor(req, res) {
 module.exports = {
   addCourseEditor,
   removeCourseEditor,
+  getStudentsOverview,
   getCourseEditors,
   getEffectiveUserRoles,
   isCourseManager,
