@@ -92,7 +92,7 @@
                 // Handle modules format from DB or Local
                 const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
                 const modules = rawModules.map((m, i) => ({
-                    id: m.courseModuleId || m.id,
+                    id: m.id,
                     title: m.title || `Module ${i+1}`,
                     content: m.description || m.content || 'No description available for this module.',
                     coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',

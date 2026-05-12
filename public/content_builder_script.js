@@ -441,7 +441,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.editable-image-wrapper').forEach(w => w.style.outline = 'none');
         
         const container = document.getElementById('template-container');
-        const modularContent = container.innerHTML;
+        const cloneModular = container.cloneNode(true);
+        cloneModular.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+        const modularContent = cloneModular.innerHTML;
         
         const clone = container.cloneNode(true);
         clone.querySelectorAll('.bg-edit-btn').forEach(btn => btn.remove());
@@ -879,7 +881,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('bg-grad-controls').classList.toggle('hidden', bgTypeSelect.value !== 'gradient' && bgTypeSelect.value !== 'radial');
 
             if (bgTypeSelect.value === 'image') {
-                if (bgSizeSelect) bgSizeSelect.value = computed.backgroundSize || 'cover';
+                if (bgSizeSelect) {
+                    let cSize = computed.backgroundSize || 'cover';
+                    if (cSize !== 'cover' && cSize !== 'contain' && cSize !== 'auto' && cSize !== '100% 100%') {
+                        bgSizeSelect.value = 'custom';
+                        const scaleRow = document.getElementById('bg-scale-row');
+                        if (scaleRow) scaleRow.style.display = 'flex';
+                        const slider = document.getElementById('bg-scale-slider');
+                        const valLabel = document.getElementById('bg-scale-val');
+                        let parsedScale = parseInt(cSize);
+                        if (!isNaN(parsedScale) && slider) {
+                            slider.value = parsedScale;
+                            if(valLabel) valLabel.innerText = `${parsedScale}%`;
+                        }
+                    } else {
+                        bgSizeSelect.value = cSize;
+                        const scaleRow = document.getElementById('bg-scale-row');
+                        if (scaleRow) scaleRow.style.display = 'none';
+                    }
+                }
                 if (bgRepeatSelect) bgRepeatSelect.value = computed.backgroundRepeat || 'no-repeat';
             }
 
@@ -1192,7 +1212,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bgSizeSelect) {
         bgSizeSelect.addEventListener('change', e => {
             if (!activeElement || activeElementType !== 'bg') return;
-            activeElement.style.backgroundSize = e.target.value;
+            const bgScaleRow = document.getElementById('bg-scale-row');
+            if (e.target.value === 'custom') {
+                if(bgScaleRow) bgScaleRow.style.display = 'flex';
+                const slider = document.getElementById('bg-scale-slider');
+                if(slider) activeElement.style.backgroundSize = `${slider.value}%`;
+            } else {
+                if(bgScaleRow) bgScaleRow.style.display = 'none';
+                activeElement.style.backgroundSize = e.target.value;
+            }
+        });
+    }
+
+    const bgScaleSlider = document.getElementById('bg-scale-slider');
+    const bgScaleVal = document.getElementById('bg-scale-val');
+    if (bgScaleSlider) {
+        bgScaleSlider.addEventListener('input', e => {
+            if (bgScaleVal) bgScaleVal.innerText = `${e.target.value}%`;
+            if (!activeElement || activeElementType !== 'bg') return;
+            if (bgSizeSelect && bgSizeSelect.value === 'custom') {
+                activeElement.style.backgroundSize = `${e.target.value}%`;
+            }
         });
     }
 
@@ -1346,30 +1386,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('template-container');
         if (!container) return;
 
-        // Find the first module-content to append to, or create a generic container
-        let targetSection = container.querySelector('.module-section .module-content');
-        if (!targetSection) {
-            alert('Não foi possível encontrar uma seção para adicionar o botão. Escolha um template primeiro.');
-            return;
-        }
-
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = 'display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; margin:20px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none; transition:transform 0.2s;';
+        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; transform:translate(-50%, -50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Inscreva-se Agora';
-        // Add course trigger metadata
         btnWrap.dataset.isSubscribeBtn = "true";
 
-        targetSection.appendChild(btnWrap);
+        container.appendChild(btnWrap);
         
-        // Ativar eventos de edição no novo elemento
         if(typeof initDynamicEvents === 'function') {
             initDynamicEvents();
         }
-        
-        // Focar no elemento recém criado
         btnWrap.click();
-        btnWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
 });

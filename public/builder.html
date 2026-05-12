@@ -272,7 +272,14 @@
                             <option value="cover">Cover (Fill)</option>
                             <option value="contain">Contain (Fit)</option>
                             <option value="auto">Original Size</option>
+                            <option value="100% 100%">Extended (Stretch)</option>
+                            <option value="custom">Custom Scale</option>
                         </select>
+                    </div>
+                    <div class="prop-row" id="bg-scale-row" style="display:none; align-items:center;">
+                        <label style="flex:1;">Scale %</label>
+                        <input type="range" id="bg-scale-slider" min="10" max="300" value="100" style="flex:2;">
+                        <span id="bg-scale-val" style="width:40px; text-align:right; font-size:0.8rem; color:#94a3b8;">100%</span>
                     </div>
                     <div class="prop-row">
                         <label>Image Repeat</label>
