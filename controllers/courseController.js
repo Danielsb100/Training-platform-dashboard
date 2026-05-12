@@ -515,7 +515,10 @@ async function getCourseDetail(req, res) {
 async function updateCourse(req, res) {
   try {
     const courseId = Number(req.params.id);
-    const existing = await prisma.course.findUnique({ where: { id: courseId } });
+    const existing = await prisma.course.findUnique({ 
+      where: { id: courseId },
+      include: { editors: true }
+    });
     if (!existing) {
       return res.status(404).json({ error: 'Course not found.' });
     }
