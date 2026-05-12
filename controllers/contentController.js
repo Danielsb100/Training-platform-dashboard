@@ -92,13 +92,18 @@ const updateVideo = async (req, res) => {
         });
 
         if (!video) return res.status(404).json({ error: 'Video not found' });
-        if (video.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
+        if (!isModuleManager(req.user, video.module)) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
+        const dataToUpdate = {};
+        if (title !== undefined) dataToUpdate.title = title;
+        if (url !== undefined) dataToUpdate.url = url;
+        if (order !== undefined) dataToUpdate.order = parseInt(order);
+
         const updated = await prisma.moduleVideo.update({
             where: { id: parseInt(videoId) },
-            data: { title, url, order: parseInt(order) }
+            data: dataToUpdate
         });
         queueAiKnowledgeRefresh('training content updated');
         res.json({ ...updated, aiKnowledgeSyncQueued: true });

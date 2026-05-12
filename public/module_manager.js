@@ -85,7 +85,7 @@ function attachModuleToCourse(dbModuleId) {
     if (!module) return;
 
     if (!window.courseModules) window.courseModules = [];
-    
+
     if (window.courseModules.some(m => m.dbId === dbModuleId)) {
         alert('This module is already attached to this course!');
         return;
@@ -116,34 +116,34 @@ function attachModuleToCourse(dbModuleId) {
 function renderAttachedModules() {
     const container = document.getElementById('modules-grid-container');
     const headerCount = document.getElementById('modules-count-header');
-    
+
     if (!window.courseModules || window.courseModules.length === 0) {
         container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px; grid-column: 1 / -1;">No module in this course track. Click on "+ Create Module".</p>';
         if (headerCount) headerCount.innerText = '0';
         return;
     }
-    
+
     if (headerCount) headerCount.innerText = window.courseModules.length;
-    
+
     container.innerHTML = window.courseModules.map((m, index) => {
         const bgImg = m.coverImage ? `url('${m.coverImage}')` : 'none';
         const bgColor = m.coverImage ? '#1e293b' : 'linear-gradient(135deg, #1e293b, #4c1d95)';
         const font = m.titleFont && m.titleFont !== 'inherit' ? m.titleFont : 'inherit';
         const color = m.textColor || '#ffffff';
-        
+
         return `
         <div style="background: ${bgColor}; background-image: ${bgImg}; background-size: cover; background-position: center; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); aspect-ratio: 1; position: relative; overflow: hidden;"
              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.2)';"
              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"
              onclick="openModuleEditor(${m.dbId})">
-            
+
             <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0; pointer-events: none;"></div>
-            
+
             <div style="position: relative; z-index: 10; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
                 <span style="background: rgba(255,255,255,0.2); color: #fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; backdrop-filter: blur(4px);">MODULE ${index + 1}</span>
                 <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:rgba(255,255,255,0.2); border:none; color:#ef4444; padding: 4px 8px; border-radius: 4px; cursor:pointer; backdrop-filter: blur(4px);" title="Remove from Track"><i class="fas fa-trash"></i></button>
             </div>
-            
+
             <div style="position: relative; z-index: 10; margin-top: auto;">
                 <h3 style="margin:0 0 5px 0; font-size:1.2rem; color: ${color}; font-family: ${font};">${m.title}</h3>
                 <p style="margin:0; font-size:0.85rem; color: rgba(255,255,255,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
@@ -178,7 +178,7 @@ function removeModuleFromCourse(localId) {
     }
 }
 
-window.removeModule = removeModuleFromCourse; 
+window.removeModule = removeModuleFromCourse;
 
 
 
@@ -188,14 +188,14 @@ window.removeModule = removeModuleFromCourse;
 
 async function openModuleEditor(moduleId = null) {
     editingModuleId = moduleId;
-    
+
     // Reset UI
     document.getElementById('module-basics-form').reset();
     document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading videos...</p>';
     document.getElementById('d-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading documents...</p>';
     document.getElementById('q-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading quiz...</p>';
     document.getElementById('btn-delete-module').style.display = 'none';
-    
+
     switchModuleTab('basics');
     document.getElementById('active-module-editor').style.display = 'block';
 
@@ -208,18 +208,18 @@ async function openModuleEditor(moduleId = null) {
                 status: 'DRAFT'
             });
             editingModuleId = newModule.id;
-            
+
             document.getElementById('m-title').value = newModule.title;
             document.getElementById('m-status').value = newModule.status;
             document.getElementById('btn-delete-module').style.display = 'block';
-            
+
             if (window.editingCourseId && !window.editingCourseId.toString().startsWith('course_')) {
                 try {
                     const cmRes = await apiCall(`/courses/${window.editingCourseId}/modules`, 'POST', {
                         moduleId: newModule.id,
                         requireQuizPass: false
                     });
-                    
+
                     if (!window.courseModules) window.courseModules = [];
                     window.courseModules.push({
                         id: cmRes.id,
@@ -233,11 +233,11 @@ async function openModuleEditor(moduleId = null) {
                     console.error('Failed to link new module to course', err);
                 }
             }
-            
+
             renderVideos([]);
             renderDocs([]);
             renderQuizzes([]);
-            
+
         } catch (error) {
             alert('Error creating base module: ' + error.message);
             document.getElementById('active-module-editor').style.display = 'none';
@@ -255,16 +255,16 @@ function switchModuleTab(tabName) {
         b.style.color = '#64748b';
         b.style.borderBottomColor = 'transparent';
     });
-    
+
     document.querySelectorAll('.module-tab-pane').forEach(p => p.style.display = 'none');
-    
+
     const activeBtn = document.querySelector(`.module-tab-btn[data-tab="${tabName}"]`);
     if(activeBtn) {
         activeBtn.classList.add('active');
         activeBtn.style.color = '#cf982e';
         activeBtn.style.borderBottomColor = '#cf982e';
     }
-    
+
     const activePane = document.getElementById(`pane-${tabName}`);
     if(activePane) activePane.style.display = 'block';
 }
@@ -273,30 +273,30 @@ async function loadModuleData(id) {
     try {
         const module = await apiCall(`/modules/${id}`);
         window.currentModuleData = module;
-        
+
         // Basics
         document.getElementById('m-title').value = module.title || '';
         document.getElementById('m-description').value = module.description || '';
         document.getElementById('m-status').value = module.status || 'DRAFT';
-        
+
         // Cover
         document.getElementById('m-coverImage').value = module.coverImage || '';
         document.getElementById('m-titleFont').value = module.titleFont || 'inherit';
         document.getElementById('m-textColor').value = module.textColor || '#ffffff';
-        
+
         // Videos
         renderVideos(module.videos || []);
-        
+
         // Docs
         renderDocs(module.documents || []);
-        
+
         // Quizzes
         const quizzes = module.quizzes || (module.quiz ? [module.quiz] : []);
         renderQuizzes(quizzes);
-        
+
         // Update the cover preview based on loaded data
         updateCoverPreview();
-        
+
     } catch (error) {
         alert('Error loading module: ' + error.message);
     }
@@ -308,9 +308,9 @@ async function saveModuleBasics() {
         const title = document.getElementById('m-title').value;
         const description = document.getElementById('m-description').value;
         const status = document.getElementById('m-status').value;
-        
+
         await apiCall(`/modules/${editingModuleId}`, 'PUT', { title, description, status });
-        
+
         // Atualiza o local window.courseModules se este módulo estiver atrelado
         const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
         if(localMod) {
@@ -319,7 +319,7 @@ async function saveModuleBasics() {
             localMod.status = status;
             if(typeof saveDraft === 'function') saveDraft(true);
         }
-        
+
         alert('General changes saved successfully!');
         fetchModulesFromDB(); // update list in background
     } catch (error) {
@@ -333,9 +333,9 @@ async function saveModuleCover(silent = false) {
         const coverImage = document.getElementById('m-coverImage').value;
         const titleFont = document.getElementById('m-titleFont').value;
         const textColor = document.getElementById('m-textColor').value;
-        
+
         await apiCall(`/modules/${editingModuleId}`, 'PUT', { coverImage, titleFont, textColor });
-        
+
         // Update local memory
         const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
         if(localMod) {
@@ -343,9 +343,9 @@ async function saveModuleCover(silent = false) {
             localMod.titleFont = titleFont;
             localMod.textColor = textColor;
         }
-        
+
         renderAttachedModules();
-        
+
         if (!silent) alert('Cover layout saved successfully!');
         fetchModulesFromDB();
     } catch (error) {
@@ -362,14 +362,14 @@ async function removeCoverImage() {
 async function deleteModuleFromDB() {
     if(!editingModuleId) return;
     if(!confirm('Are you sure you want to permanently delete this module from the database? It will disappear from all courses.')) return;
-    
+
     try {
         await apiCall(`/modules/${editingModuleId}`, 'DELETE');
-        
+
         // Remove do curso local se estiver atrelado
         window.courseModules = window.courseModules.filter(m => m.dbId !== editingModuleId);
         if(typeof saveDraft === 'function') saveDraft(true);
-        
+
         alert('Module deleted!');
         closeModuleEditor();
     } catch (error) {
@@ -379,7 +379,51 @@ async function deleteModuleFromDB() {
 
 // --- VIDEOS ---
 function showAddVideoForm() { document.getElementById('add-video-form').style.display = 'block'; }
-function hideAddVideoForm() { document.getElementById('add-video-form').style.display = 'none'; }
+function hideAddVideoForm() {
+    document.getElementById('add-video-form').style.display = 'none';
+    window.editingVideoId = null;
+    document.getElementById('v-title-input').value = '';
+    document.getElementById('v-desc-input').value = '';
+    document.getElementById('v-url-input').value = '';
+    document.getElementById('v-url-input').disabled = false;
+    document.getElementById('btn-upload-video').style.display = 'block';
+
+    // Change button text back to Save
+    const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
+    if(submitBtn) submitBtn.innerText = 'Save Video';
+
+    const h4 = document.querySelector('#add-video-form h4');
+    if(h4) h4.innerText = 'New Video';
+}
+
+function openEditVideoForm(videoId) {
+    const video = window.currentModuleData.videos.find(v => v.id === videoId);
+    if (!video) return;
+
+    window.editingVideoId = videoId;
+    document.getElementById('v-title-input').value = video.title;
+    document.getElementById('v-desc-input').value = video.description || '';
+    document.getElementById('v-url-input').value = video.url;
+
+    // Disable URL changing if it's an uploaded internal file (as requested by user)
+    if (video.url.startsWith('/api/documents/') || video.url.startsWith('/uploads/')) {
+        document.getElementById('v-url-input').disabled = true;
+        document.getElementById('btn-upload-video').style.display = 'none';
+    } else {
+        document.getElementById('v-url-input').disabled = false;
+        document.getElementById('btn-upload-video').style.display = 'block';
+    }
+
+    // Change button text
+    const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
+    if(submitBtn) submitBtn.innerText = 'Save Changes';
+
+    const h4 = document.querySelector('#add-video-form h4');
+    if(h4) h4.innerText = 'Edit Video';
+
+    document.getElementById('add-video-form').style.display = 'block';
+    document.getElementById('add-video-form').scrollIntoView({ behavior: 'smooth' });
+}
 
 async function handleVideoUpload(e) {
     const file = e.target.files[0];
@@ -388,11 +432,11 @@ async function handleVideoUpload(e) {
     try {
         const formData = new FormData();
         formData.append('document', file);
-        
+
         const btn = document.getElementById('btn-upload-video');
         let oldText = '<i class="fas fa-upload"></i> Choose Video from Computer';
         const sizeMb = file.size ? (file.size / 1024 / 1024).toFixed(1) : null;
-        
+
         if (btn) {
             oldText = btn.innerHTML;
             const loadingMsg = sizeMb ? `Uploading ${sizeMb} MB...` : 'Uploading...';
@@ -401,13 +445,13 @@ async function handleVideoUpload(e) {
         }
 
         const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
-        
+
         // Auto-fill inputs
         document.getElementById('v-url-input').value = `/api/documents/download/${docRes.id}`;
         if (!document.getElementById('v-title-input').value) {
             document.getElementById('v-title-input').value = file.name;
         }
-        
+
         if (btn) {
             btn.innerHTML = '<i class="fas fa-check"></i> Video Uploaded!';
             btn.style.borderColor = '#10b981';
@@ -432,23 +476,24 @@ async function handleVideoUpload(e) {
 async function submitAddVideo() {
     if (!editingModuleId) return;
     const title = document.getElementById('v-title-input').value;
-    const description = document.getElementById('v-desc-input').value;
     const url = document.getElementById('v-url-input').value;
-    
+
     if(!title || !url) return alert('Title and URL are required.');
-    
+
     try {
-        await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, description, url });
+        if (window.editingVideoId) {
+            await apiCall(`/modules/${editingModuleId}/videos/${window.editingVideoId}`, 'PUT', { title, url });
+        } else {
+            await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, url });
+        }
+
         hideAddVideoForm();
-        document.getElementById('v-title-input').value = '';
-        document.getElementById('v-desc-input').value = '';
-        document.getElementById('v-url-input').value = '';
         if (document.getElementById('v-upload-input')) {
             document.getElementById('v-upload-input').value = '';
         }
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Error adding video: ' + error.message);
+        alert('Error saving video: ' + error.message);
     }
 }
 
@@ -633,12 +678,12 @@ function renderVideos(videos) {
         list.innerHTML = '<p style="color: #64748b; text-align: center;">No video added.</p>';
         return;
     }
-    
+
     // Configura o grid
     list.style.display = 'grid';
     list.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
     list.style.gap = '15px';
-    
+
     list.innerHTML = videos.map(v => {
         const player = buildVideoPlayerSource(v.url);
         const thumb = getThumbnailUrl(v.url);
@@ -666,7 +711,10 @@ function renderVideos(videos) {
         return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             ${thumbHtml}
-                <button onclick="deleteVideo(${Number(v.id)})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Remove Video"><i class="fas fa-trash"></i></button>
+                <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; z-index:10;">
+                    <button onclick="openEditVideoForm(${Number(v.id)})" style="background:white; border:none; color:#cf982e; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Edit Video"><i class="fas fa-pencil-alt"></i></button>
+                    <button onclick="deleteVideo(${Number(v.id)})" style="background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remove Video"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
             <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
                 <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${escapeHtml(v.title)}</strong>
@@ -715,42 +763,48 @@ function closeVideoPlayer() {
 
 // --- DOCS ---
 async function handleDocUpload(e) {
-    const file = e.target.files[0];
-    if (!file || !editingModuleId) return;
+    const files = e.target.files;
+    if (!files || files.length === 0 || !editingModuleId) return;
+
+    const btn = document.getElementById('btn-add-doc');
+    let oldText = '<i class="fas fa-file-alt"></i> + Doc';
+    if (btn) {
+        oldText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${files.length} file(s)...`;
+        btn.disabled = true;
+    }
 
     try {
-        // 1. Fazer upload do documento para a API de Documentos
-        const formData = new FormData();
-        formData.append('document', file);
-        
-        const btn = document.getElementById('btn-add-doc');
-        let oldText = '<i class="fas fa-file-alt"></i> + Doc';
-        if (btn) {
-            oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            btn.disabled = true;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            // 1. Fazer upload do documento para a API de Documentos
+            const formData = new FormData();
+            formData.append('document', file);
+
+            const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
+            const docId = docRes.id;
+
+            // 2. Vincular o Documento ao Módulo
+            await apiCall(`/modules/${editingModuleId}/documents`, 'POST', {
+                documentId: docId,
+                title: file.name
+            });
         }
 
-        const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
-        const docId = docRes.id;
-        
-        // 2. Vincular o Documento ao Módulo
-        await apiCall(`/modules/${editingModuleId}/documents`, 'POST', { 
-            documentId: docId,
-            title: file.name 
-        });
-        
         if (btn) {
             btn.innerHTML = oldText;
             btn.disabled = false;
         }
-        
+
+        // Clear the input so the same files can be selected again if needed
+        e.target.value = '';
+
         loadModuleData(editingModuleId);
     } catch (error) {
         alert('Error uploading: ' + error.message);
-        const btn = document.getElementById('btn-add-doc');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-file-alt"></i> + Doc';
+            btn.innerHTML = oldText;
             btn.disabled = false;
         }
     }
@@ -763,7 +817,7 @@ async function handleCoverUpload(e) {
     try {
         const formData = new FormData();
         formData.append('document', file);
-        
+
         const btn = document.getElementById('btn-upload-cover');
         let oldText = '<i class="fas fa-upload"></i> Upload';
         if (btn) {
@@ -773,15 +827,15 @@ async function handleCoverUpload(e) {
         }
 
         const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
-        
+
         if (docRes && docRes.downloadUrl) {
             document.getElementById('m-coverImage').value = docRes.downloadUrl;
             updateCoverPreview();
-            
+
             // Auto-save the cover silently
             await saveModuleCover(true);
         }
-        
+
         if (btn) {
             btn.innerHTML = oldText;
             btn.disabled = false;
@@ -801,14 +855,14 @@ function updateCoverPreview() {
     const font = document.getElementById('m-titleFont').value;
     const color = document.getElementById('m-textColor').value;
     const moduleTitle = document.getElementById('m-title').value || 'Preview Title';
-    
+
     const previewBox = document.getElementById('cover-preview-box');
     const previewTitle = document.getElementById('cover-preview-title');
-    
+
     if (previewBox) {
         previewBox.style.backgroundImage = bgUrl ? `url('${bgUrl}')` : 'none';
     }
-    
+
     if (previewTitle) {
         previewTitle.textContent = moduleTitle;
         previewTitle.style.fontFamily = font !== 'inherit' ? font : 'inherit';
@@ -830,7 +884,7 @@ window.currentDocFilter = 'all';
 
 function setDocFilter(filter) {
     window.currentDocFilter = filter;
-    
+
     // Update active button styling
     document.querySelectorAll('.doc-filter-btn').forEach(btn => {
         if(btn.dataset.filter === filter) {
@@ -845,7 +899,7 @@ function setDocFilter(filter) {
             btn.style.border = '1px solid #e2e8f0';
         }
     });
-    
+
     if(window.currentModuleData && window.currentModuleData.documents) {
         renderDocs(window.currentModuleData.documents);
     }
@@ -854,27 +908,27 @@ function setDocFilter(filter) {
 function renderDocs(docs) {
     const list = document.getElementById('d-list');
     const grid = document.getElementById('d-grid');
-    
+
     if(!docs || docs.length === 0) {
         list.style.display = 'flex';
         grid.style.display = 'none';
         list.innerHTML = '<p style="color: #64748b; text-align: center;">No document added.</p>';
         return;
     }
-    
+
     const pdfs = [];
     const words = [];
     const ppts = [];
     const images = [];
     const others = [];
-    
+
     docs.forEach(d => {
         const name = d.title || (d.document ? d.document.originalName : d.originalName) || 'Document';
         const fileUrl = (d.document ? d.document.fileUrl : d.fileUrl) || '';
-        
+
         // Tentamos extrair a extensão do fileUrl primeiro, se não tiver, usamos o nome
         let stringToTest = fileUrl ? fileUrl.split('?')[0].toLowerCase() : name.toLowerCase();
-        
+
         // Fallback se a URL não tiver extensão mas o nome tiver
         if (!stringToTest.includes('.') && name.includes('.')) {
             stringToTest = name.toLowerCase();
@@ -918,7 +972,7 @@ function renderDocs(docs) {
 
                 let icon = 'fas fa-file';
                 let color = '#64748b';
-                
+
                 if (stringToTest.endsWith('.pdf')) { icon = 'fas fa-file-pdf'; color = '#ef4444'; }
                 else if (stringToTest.endsWith('.doc') || stringToTest.endsWith('.docx')) { icon = 'fas fa-file-word'; color = '#2563eb'; }
                 else if (stringToTest.endsWith('.ppt') || stringToTest.endsWith('.pptx')) { icon = 'fas fa-file-powerpoint'; color = '#d97706'; }
@@ -974,9 +1028,9 @@ function renderDocs(docs) {
 }
 
 // --- QUIZ & IA ---
-function showGenerateAiQuizForm() { 
+function showGenerateAiQuizForm() {
     hideManualQuizForm();
-    document.getElementById('ai-quiz-form').style.display = 'block'; 
+    document.getElementById('ai-quiz-form').style.display = 'block';
 }
 function hideAiQuizForm() { document.getElementById('ai-quiz-form').style.display = 'none'; }
 
@@ -984,13 +1038,13 @@ function showManualQuizForm(quizId) {
     window.currentModuleQuizId = quizId;
     window.editingQuestionId = null;
     hideAiQuizForm();
-    
+
     const form = document.getElementById('manual-quiz-form');
     const container = document.getElementById(`forms-container-${quizId}`);
     if (container && form) {
         container.appendChild(form);
     }
-    
+
     form.style.display = 'block';
     document.getElementById('manual-q-text').value = '';
     document.querySelectorAll('.manual-q-opt').forEach(opt => opt.value = '');
@@ -1004,10 +1058,10 @@ function hideManualQuizForm() {
 function editQuizTitle(quizId) {
     const quiz = window.currentQuizDataList.find(q => q.id === quizId);
     if (!quiz) return;
-    
+
     const newTitle = prompt('Enter the new title of the Quiz:', quiz.title || '');
     if (newTitle === null || newTitle.trim() === '') return;
-    
+
     apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'PUT', { title: newTitle.trim() })
         .then(() => loadModuleData(editingModuleId))
         .catch(err => alert('Error updating title: ' + err.message));
@@ -1017,10 +1071,10 @@ async function showCreateQuizForm() {
     try {
         const order = window.currentQuizDataList ? window.currentQuizDataList.length : 0;
         const defaultTitle = `Quiz ${order + 1}`;
-        
+
         const title = prompt('Enter the title for the new Quiz:', defaultTitle);
         if (title === null || title.trim() === '') return;
-        
+
         await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: title.trim() });
         loadModuleData(editingModuleId);
     } catch (err) {
@@ -1046,7 +1100,7 @@ function editQuestion(quizId, questionId) {
 
     document.getElementById('manual-q-text').value = question.text;
     const optionsInputs = Array.from(document.querySelectorAll('.manual-q-opt'));
-    
+
     // Clear first
     optionsInputs.forEach(opt => opt.value = '');
     document.querySelector('input[name="manual-q-correct"][value="0"]').checked = true;
@@ -1079,10 +1133,10 @@ async function createEmptyQuiz() {
 
 async function submitManualQuizQuestion() {
     if (!editingModuleId) return;
-    
+
     // First, verify if a quiz exists
     let currentQuizId = window.currentModuleQuizId;
-    
+
     if (!currentQuizId) {
         // Create quiz first
         try {
@@ -1094,22 +1148,22 @@ async function submitManualQuizQuestion() {
             return;
         }
     }
-    
+
     const text = document.getElementById('manual-q-text').value;
     const optionsInputs = Array.from(document.querySelectorAll('.manual-q-opt'));
     const correctOptionRadio = document.querySelector('input[name="manual-q-correct"]:checked');
     const correctOptionIndex = correctOptionRadio ? parseInt(correctOptionRadio.value) : 0;
-    
+
     const options = optionsInputs.map((opt, i) => ({
         text: opt.value.trim(),
         isCorrect: i === correctOptionIndex
     })).filter(val => val.text !== '');
-    
+
     if (!text || options.length < 2) {
         alert('Please type the question and at least 2 options.');
         return;
     }
-    
+
     try {
         if (window.editingQuestionId) {
             await apiCall(`/quizzes/${currentQuizId}/questions/${window.editingQuestionId}`, 'PUT', {
@@ -1127,7 +1181,7 @@ async function submitManualQuizQuestion() {
                 explanation: ''
             });
         }
-        
+
         hideManualQuizForm();
         loadModuleData(editingModuleId);
     } catch (error) {
@@ -1139,11 +1193,11 @@ async function submitAiQuiz() {
     if (!editingModuleId) return;
     const questionCount = parseInt(document.getElementById('ai-q-count').value) || 5;
     const difficulty = document.getElementById('ai-q-difficulty').value || 'medium';
-    
+
     const btn = document.getElementById('btn-submit-ai-quiz');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating with AI...';
     btn.disabled = true;
-    
+
     try {
         await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', { title: 'AI Quiz', questionCount, optionsPerQuestion: 4 });
         alert('Quiz generated successfully!');
@@ -1180,14 +1234,14 @@ async function deleteQuestion(questionId) {
 
 function renderQuizzes(quizzes) {
     const list = document.getElementById('q-list');
-    
+
     // SAFEGUARD: Move forms out of q-list before destroying its contents
     const manualForm = document.getElementById('manual-quiz-form');
     const aiForm = document.getElementById('ai-quiz-form');
     const paneQuiz = document.getElementById('pane-quiz');
     if (manualForm && paneQuiz) paneQuiz.appendChild(manualForm);
     if (aiForm && paneQuiz) paneQuiz.appendChild(aiForm);
-    
+
     if(!quizzes || quizzes.length === 0) {
         window.currentQuizDataList = [];
         list.innerHTML = `
@@ -1198,9 +1252,9 @@ function renderQuizzes(quizzes) {
         `;
         return;
     }
-    
+
     window.currentQuizDataList = quizzes;
-    
+
     list.innerHTML = quizzes.map(quiz => {
         const questions = quiz.questions || [];
         return `
@@ -1218,7 +1272,7 @@ function renderQuizzes(quizzes) {
                         <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Delete Entire Quiz"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     ${questions.map((q, idx) => `
                         <details style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; cursor: pointer; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
@@ -1242,14 +1296,14 @@ function renderQuizzes(quizzes) {
                             </div>
                         </details>
                     `).join('')}
-                    
+
                     ${questions.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">No questions in this quiz. Add manually or generate with AI.</p>' : ''}
                 </div>
                 <div id="forms-container-${quiz.id}"></div>
             </div>
         `;
     }).join('');
-    
+
     // Make sure forms are attached to the DOM but hidden by default
     const firstContainer = document.getElementById(`forms-container-${quizzes[0].id}`);
     if (firstContainer && manualForm) {
@@ -1267,7 +1321,7 @@ function openSubModal(title, html, onConfirm) {
     const modalId = 'dynamic-sub-modal';
     let modal = document.getElementById(modalId);
     if(modal) modal.remove();
-    
+
     modal = document.createElement('div');
     modal.id = modalId;
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center;';
