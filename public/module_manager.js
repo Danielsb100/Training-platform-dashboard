@@ -379,7 +379,51 @@ async function deleteModuleFromDB() {
 
 // --- VIDEOS ---
 function showAddVideoForm() { document.getElementById('add-video-form').style.display = 'block'; }
-function hideAddVideoForm() { document.getElementById('add-video-form').style.display = 'none'; }
+function hideAddVideoForm() {
+    document.getElementById('add-video-form').style.display = 'none';
+    window.editingVideoId = null;
+    document.getElementById('v-title-input').value = '';
+    document.getElementById('v-desc-input').value = '';
+    document.getElementById('v-url-input').value = '';
+    document.getElementById('v-url-input').disabled = false;
+    document.getElementById('btn-upload-video').style.display = 'block';
+    
+    // Change button text back to Save
+    const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
+    if(submitBtn) submitBtn.innerText = 'Save Video';
+    
+    const h4 = document.querySelector('#add-video-form h4');
+    if(h4) h4.innerText = 'New Video';
+}
+
+function openEditVideoForm(videoId) {
+    const video = window.currentModuleData.videos.find(v => v.id === videoId);
+    if (!video) return;
+    
+    window.editingVideoId = videoId;
+    document.getElementById('v-title-input').value = video.title;
+    document.getElementById('v-desc-input').value = video.description || '';
+    document.getElementById('v-url-input').value = video.url;
+    
+    // Disable URL changing if it's an uploaded internal file (as requested by user)
+    if (video.url.startsWith('/api/documents/') || video.url.startsWith('/uploads/')) {
+        document.getElementById('v-url-input').disabled = true;
+        document.getElementById('btn-upload-video').style.display = 'none';
+    } else {
+        document.getElementById('v-url-input').disabled = false;
+        document.getElementById('btn-upload-video').style.display = 'block';
+    }
+    
+    // Change button text
+    const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
+    if(submitBtn) submitBtn.innerText = 'Save Changes';
+    
+    const h4 = document.querySelector('#add-video-form h4');
+    if(h4) h4.innerText = 'Edit Video';
+    
+    document.getElementById('add-video-form').style.display = 'block';
+    document.getElementById('add-video-form').scrollIntoView({ behavior: 'smooth' });
+}
 
 async function handleVideoUpload(e) {
     const file = e.target.files[0];
@@ -438,17 +482,19 @@ async function submitAddVideo() {
     if(!title || !url) return alert('Title and URL are required.');
     
     try {
-        await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, description, url });
+        if (window.editingVideoId) {
+            await apiCall(`/modules/${editingModuleId}/videos/${window.editingVideoId}`, 'PUT', { title, description, url });
+        } else {
+            await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, description, url });
+        }
+        
         hideAddVideoForm();
-        document.getElementById('v-title-input').value = '';
-        document.getElementById('v-desc-input').value = '';
-        document.getElementById('v-url-input').value = '';
         if (document.getElementById('v-upload-input')) {
             document.getElementById('v-upload-input').value = '';
         }
         loadModuleData(editingModuleId);
     } catch (error) {
-        alert('Error adding video: ' + error.message);
+        alert('Error saving video: ' + error.message);
     }
 }
 
@@ -499,7 +545,10 @@ function renderVideos(videos) {
         return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             ${thumbHtml}
-                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Remove Video"><i class="fas fa-trash"></i></button>
+                <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; z-index:10;">
+                    <button onclick="openEditVideoForm(${v.id})" style="background:white; border:none; color:#cf982e; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Edit Video"><i class="fas fa-pencil-alt"></i></button>
+                    <button onclick="deleteVideo(${v.id})" style="background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Remove Video"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
             <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
                 <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${v.title}</strong>
@@ -628,42 +677,48 @@ function closeVideoPlayer() {
 
 // --- DOCS ---
 async function handleDocUpload(e) {
-    const file = e.target.files[0];
-    if (!file || !editingModuleId) return;
+    const files = e.target.files;
+    if (!files || files.length === 0 || !editingModuleId) return;
+
+    const btn = document.getElementById('btn-add-doc');
+    let oldText = '<i class="fas fa-file-alt"></i> + Doc';
+    if (btn) {
+        oldText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${files.length} file(s)...`;
+        btn.disabled = true;
+    }
 
     try {
-        // 1. Fazer upload do documento para a API de Documentos
-        const formData = new FormData();
-        formData.append('document', file);
-        
-        const btn = document.getElementById('btn-add-doc');
-        let oldText = '<i class="fas fa-file-alt"></i> + Doc';
-        if (btn) {
-            oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            btn.disabled = true;
-        }
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // 1. Fazer upload do documento para a API de Documentos
+            const formData = new FormData();
+            formData.append('document', file);
 
-        const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
-        const docId = docRes.id;
-        
-        // 2. Vincular o Documento ao Módulo
-        await apiCall(`/modules/${editingModuleId}/documents`, 'POST', { 
-            documentId: docId,
-            title: file.name 
-        });
+            const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
+            const docId = docRes.id;
+            
+            // 2. Vincular o Documento ao Módulo
+            await apiCall(`/modules/${editingModuleId}/documents`, 'POST', { 
+                documentId: docId,
+                title: file.name 
+            });
+        }
         
         if (btn) {
             btn.innerHTML = oldText;
             btn.disabled = false;
         }
         
+        // Clear the input so the same files can be selected again if needed
+        e.target.value = '';
+        
         loadModuleData(editingModuleId);
     } catch (error) {
         alert('Error uploading: ' + error.message);
-        const btn = document.getElementById('btn-add-doc');
         if (btn) {
-            btn.innerHTML = '<i class="fas fa-file-alt"></i> + Doc';
+            btn.innerHTML = oldText;
             btn.disabled = false;
         }
     }

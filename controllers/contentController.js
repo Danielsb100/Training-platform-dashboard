@@ -49,7 +49,7 @@ const normalizeQuizOptions = (options) => {
 const addVideo = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, url, order } = req.body;
+        const { title, url, description, order } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -57,11 +57,12 @@ const addVideo = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
-        console.log(`[DEBUG] Adding video to module ${id}:`, { title, url, order });
+        console.log(`[DEBUG] Adding video to module ${id}:`, { title, description, url, order });
         const video = await prisma.moduleVideo.create({
             data: {
                 moduleId: parseInt(id),
                 title,
+                description,
                 url,
                 order: parseInt(order) || 0
             }
@@ -76,7 +77,7 @@ const addVideo = async (req, res) => {
 const updateVideo = async (req, res) => {
     try {
         const { videoId } = req.params;
-        const { title, url, order } = req.body;
+        const { title, description, url, order } = req.body;
 
         const video = await prisma.moduleVideo.findUnique({ 
             where: { id: parseInt(videoId) },
@@ -84,13 +85,19 @@ const updateVideo = async (req, res) => {
         });
 
         if (!video) return res.status(404).json({ error: 'Video not found' });
-        if (video.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
+        if (!isModuleManager(req.user, video.module)) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
+        const dataToUpdate = {};
+        if (title !== undefined) dataToUpdate.title = title;
+        if (description !== undefined) dataToUpdate.description = description;
+        if (url !== undefined) dataToUpdate.url = url;
+        if (order !== undefined) dataToUpdate.order = parseInt(order);
+
         const updated = await prisma.moduleVideo.update({
             where: { id: parseInt(videoId) },
-            data: { title, url, order: parseInt(order) }
+            data: dataToUpdate
         });
         res.json(updated);
     } catch (error) {

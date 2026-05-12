@@ -324,9 +324,10 @@ model ModuleCompletion {
 model ModuleVideo {
   id        Int                   @id @default(autoincrement())
   moduleId  Int
-  title     String
-  url       String
-  order     Int
+  title       String
+  description String?
+  url         String
+  order       Int
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
   module    TrainingModule        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
