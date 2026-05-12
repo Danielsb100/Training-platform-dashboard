@@ -113,7 +113,7 @@
                     modulesHTML = `<div class="modules-grid">`;
                     modules.forEach(m => {
                         modulesHTML += `
-                            <div class="module-card" onclick="alert('Module access flow to be implemented')">
+                            <div class="module-card" onclick="window.location.href='module_viewer.html?moduleId=${m.id}&courseId=${course.id}'">
                                 <div class="module-cover" style="background-image: url('${m.coverImage}');"></div>
                                 <div class="module-overlay">
                                     <h3 class="module-title" style="font-family: ${m.titleFont}; color: ${m.textColor};">${m.title}</h3>
