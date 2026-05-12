@@ -457,13 +457,169 @@ async function deleteVideo(videoId) {
     }
 }
 
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getYouTubeVideoId(url) {
+    const match = String(url || '').match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return match && match[1] ? match[1] : null;
+}
+
 function getThumbnailUrl(url) {
-    if (!url) return null;
-    let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-    if (match && match[1]) {
-        return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    const youtubeId = getYouTubeVideoId(url);
+    if (youtubeId) {
+        return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     }
     return null;
+}
+
+function appendQueryParam(url, key, value) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+}
+
+function getVideoHost(url) {
+    try {
+        return new URL(url, window.location.origin).hostname.toLowerCase();
+    } catch (error) {
+        return '';
+    }
+}
+
+function buildOneDriveEmbedUrl(url) {
+    try {
+        const parsed = new URL(url, window.location.origin);
+        const host = parsed.hostname.toLowerCase();
+
+        if (host.includes('onedrive.live.com')) {
+            if (parsed.pathname.includes('/embed')) {
+                return url;
+            }
+
+            const remoteId = parsed.searchParams.get('resid') || parsed.searchParams.get('id');
+            if (remoteId) {
+                const embedUrl = new URL('https://onedrive.live.com/embed');
+                embedUrl.searchParams.set('resid', remoteId);
+
+                ['authkey', 'cid', 'em', 'ithint'].forEach((param) => {
+                    const value = parsed.searchParams.get(param);
+                    if (value) embedUrl.searchParams.set(param, value);
+                });
+
+                embedUrl.searchParams.set('wdVideoPlayback', '1');
+                return embedUrl.toString();
+            }
+        }
+
+        // Short 1drv.ms links cannot be resolved client-side without hitting the redirect,
+        // but they can still be opened inside the modal as a Microsoft viewer iframe.
+        if (host.includes('1drv.ms')) {
+            return appendQueryParam(url, 'wdVideoPlayback', '1');
+        }
+
+        if (host.includes('sharepoint.com')) {
+            const withWebView = appendQueryParam(url, 'web', '1');
+            return appendQueryParam(withWebView, 'wdVideoPlayback', '1');
+        }
+    } catch (error) {
+        // Fall back to the original link below.
+    }
+
+    return appendQueryParam(url, 'action', 'embedview');
+}
+
+function isSharePointEmbedUrl(url) {
+    try {
+        const parsed = new URL(url, window.location.origin);
+        const path = parsed.pathname.toLowerCase();
+        return parsed.hostname.toLowerCase().includes('sharepoint.com') && (
+            path.includes('/_layouts/15/embed.aspx') ||
+            path.includes('/_layouts/15/doc.aspx') ||
+            parsed.searchParams.has('embed')
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+function buildVideoPlayerSource(url) {
+    const rawUrl = String(url || '').trim();
+    const host = getVideoHost(rawUrl);
+    const youtubeId = getYouTubeVideoId(rawUrl);
+
+    if (youtubeId) {
+        return {
+            type: 'iframe',
+            src: `https://www.youtube.com/embed/${youtubeId}?autoplay=1`,
+            provider: 'YouTube',
+            fallbackUrl: rawUrl
+        };
+    }
+
+    const vimeoMatch = rawUrl.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i);
+    if (vimeoMatch && vimeoMatch[1]) {
+        return {
+            type: 'iframe',
+            src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`,
+            provider: 'Vimeo',
+            fallbackUrl: rawUrl
+        };
+    }
+
+    const isOneDrive = host.includes('onedrive.live.com') || host.includes('1drv.ms');
+    if (isOneDrive) {
+        return {
+            type: 'iframe',
+            src: buildOneDriveEmbedUrl(rawUrl),
+            provider: 'OneDrive',
+            fallbackUrl: rawUrl
+        };
+    }
+
+    if (host.includes('sharepoint.com')) {
+        if (isSharePointEmbedUrl(rawUrl)) {
+            return {
+                type: 'iframe',
+                src: buildOneDriveEmbedUrl(rawUrl),
+                provider: 'SharePoint',
+                fallbackUrl: rawUrl
+            };
+        }
+
+        return {
+            type: 'external',
+            src: rawUrl,
+            provider: 'SharePoint',
+            fallbackUrl: rawUrl,
+            message: 'SharePoint refused embedded playback for this sharing link. Open it in SharePoint, or paste the SharePoint embed URL if you want it to play inside the platform.'
+        };
+    }
+
+    const isDirectVideo = rawUrl.includes('/api/documents/download/') || /\.(mp4|webm|ogg|mov)(?:$|[?#])/i.test(rawUrl);
+    if (isDirectVideo) {
+        const src = rawUrl.includes('/api/documents/download/')
+            ? appendQueryParam(rawUrl, 'inline', 'true')
+            : rawUrl;
+        return {
+            type: 'video',
+            src,
+            provider: 'Video file',
+            fallbackUrl: rawUrl
+        };
+    }
+
+    return {
+        type: 'iframe',
+        src: rawUrl,
+        provider: 'External video',
+        fallbackUrl: rawUrl
+    };
 }
 
 function renderVideos(videos) {
@@ -479,26 +635,38 @@ function renderVideos(videos) {
     list.style.gap = '15px';
     
     list.innerHTML = videos.map(v => {
+        const player = buildVideoPlayerSource(v.url);
         const thumb = getThumbnailUrl(v.url);
-        // Transform the title and url into safe strings for onclick
-        const safeUrl = v.url.replace(/"/g, '&quot;');
-        const safeTitle = (v.title || '').replace(/"/g, '&quot;');
-        const playIconOverlay = `<div onclick="playVideo('${safeUrl}', '${safeTitle}')" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50px; height:50px; background:rgba(0,0,0,0.6); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid white; transition:background 0.2s;" onmouseover="this.style.background='rgba(207, 152, 46, 0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-play" style="color:white; font-size:1.2rem; margin-left:4px;"></i></div>`;
+        const encodedUrl = encodeURIComponent(v.url || '');
+        const encodedTitle = encodeURIComponent(v.title || '');
+        const playIconOverlay = `<button type="button" onclick="playVideo(decodeURIComponent('${encodedUrl}'), decodeURIComponent('${encodedTitle}'))" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50px; height:50px; background:rgba(0,0,0,0.6); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid white; transition:background 0.2s;" onmouseover="this.style.background='rgba(207, 152, 46, 0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'" aria-label="Play ${escapeHtml(v.title || 'video')}"><i class="fas fa-play" style="color:white; font-size:1.2rem; margin-left:4px;"></i></button>`;
 
-        const thumbHtml = thumb 
-            ? `<div style="height:140px; background:url('${thumb}') center/cover; position:relative;">${playIconOverlay}`
-            : `<div style="height:140px; background:#1e293b; position:relative; overflow:hidden;">
-                   <video src="${safeUrl}#t=0.1" preload="metadata" style="width:100%; height:100%; object-fit:cover; display:block;" muted playsinline></video>
+        let thumbHtml;
+        if (thumb) {
+            thumbHtml = `<div style="height:140px; background:url('${thumb}') center/cover; position:relative;">${playIconOverlay}`;
+        } else if (player.provider === 'OneDrive' || player.provider === 'SharePoint') {
+            thumbHtml = `<div style="height:140px; background:linear-gradient(135deg, #1e3a8a, #0f172a); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; color:white;">
+                <div style="text-align:center; opacity:0.88;">
+                    <i class="fas fa-cloud" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+                    <span style="font-size:0.85rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;">${player.provider} video</span>
+                </div>
+                ${playIconOverlay}`;
+        } else {
+            const previewSrc = player.type === 'video' ? `${escapeHtml(player.src)}#t=0.1` : escapeHtml(v.url || '');
+            thumbHtml = `<div style="height:140px; background:#1e293b; position:relative; overflow:hidden;">
+                   ${player.type === 'video' ? `<video src="${previewSrc}" preload="metadata" style="width:100%; height:100%; object-fit:cover; display:block;" muted playsinline></video>` : ''}
                    ${playIconOverlay}`;
+        }
 
         return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             ${thumbHtml}
-                <button onclick="deleteVideo(${v.id})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Remove Video"><i class="fas fa-trash"></i></button>
+                <button onclick="deleteVideo(${Number(v.id)})" style="position:absolute; top:10px; right:10px; background:white; border:none; color:#ef4444; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Remove Video"><i class="fas fa-trash"></i></button>
             </div>
             <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
-                <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${v.title}</strong>
-                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:15px; flex:1; line-height:1.4;">${v.description || ''}</span>
+                <strong style="color:#1e293b; display:block; margin-bottom:5px; font-size:1rem; line-height:1.3;">${escapeHtml(v.title)}</strong>
+                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:10px; flex:1; line-height:1.4;">${escapeHtml(v.description || '')}</span>
+                <span style="font-size:0.75rem; color:#64748b; background:#e2e8f0; align-self:flex-start; padding:3px 8px; border-radius:999px;">${escapeHtml(player.provider)}</span>
             </div>
         </div>
         `;
@@ -513,39 +681,22 @@ function playVideo(url, title) {
     if (!modal || !container) return;
     
     titleEl.innerText = title || 'Watch Video';
-    
-    let embedUrl = url;
-    
-    // Transform YouTube URL to embed
-    let ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-    if (ytMatch && ytMatch[1]) {
-        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
-    }
-    
-    // Transform Vimeo URL to embed
-    let vimeoMatch = url.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i);
-    if (vimeoMatch && vimeoMatch[1]) {
-        embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+    const player = buildVideoPlayerSource(url);
+    const safeSrc = escapeHtml(player.src);
+    const safeFallback = escapeHtml(player.fallbackUrl || url);
+
+    if (player.type === 'external') {
+        window.open(player.fallbackUrl || player.src || url, '_blank', 'noopener,noreferrer');
+        return;
     }
 
-    let isDirectVideo = false;
-    if (url.includes('/api/documents/download/') || url.match(/\.(mp4|webm|ogg)$/i)) {
-        isDirectVideo = true;
-        if (url.includes('/api/documents/download/')) {
-            embedUrl = url + (url.includes('?') ? '&' : '?') + 'inline=true';
-        }
-    }
-    
-    // Transform Sharepoint/OneDrive URL to embed
-    if (!isDirectVideo && (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('1drv.ms'))) {
-        let baseUrl = embedUrl.split('?')[0];
-        embedUrl = baseUrl + '?action=embedview&wdAllowInteractivity=False&wdVideoPlayback=1';
-    }
-
-    if (isDirectVideo) {
-        container.innerHTML = `<video src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay></video>`;
+    if (player.type === 'video') {
+        container.innerHTML = `<video src="${safeSrc}" style="position:absolute; top:0; left:0; width:100%; height:100%; outline:none; background:black;" controls autoplay playsinline></video>`;
     } else {
-        container.innerHTML = `<iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        container.innerHTML = `
+            <iframe src="${safeSrc}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            <a href="${safeFallback}" target="_blank" rel="noopener noreferrer" style="position:absolute; right:12px; bottom:12px; background:rgba(15,23,42,0.82); color:white; text-decoration:none; padding:8px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; border:1px solid rgba(255,255,255,0.25);">Open original if blocked</a>
+        `;
     }
     modal.style.display = 'flex';
 }

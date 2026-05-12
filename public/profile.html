@@ -20,6 +20,8 @@
                 <span class="global-nav-bell-badge" style="display:none; position:absolute; top:8px; right:8px; background:#ef4444; color:white; font-size:10px; font-weight:bold; padding:2px 5px; border-radius:10px;"></span>
             </div>
             <div class="nav-item" onclick="switchProfilePane('creations')" id="nav-creations" title="My Creations"><i class="fas fa-file-alt"></i></div>
+            <div class="nav-item" onclick="window.location.href='students.html'" id="nav-students" title="Students" style="display:none;"><i class="fas fa-user-graduate"></i></div>
+            <div class="nav-item" onclick="switchProfilePane('sync')" id="nav-sync" title="Eurobot Sync"><i class="fas fa-sync-alt"></i></div>
             <div class="nav-item" onclick="window.location.href='user_management.html'" id="nav-users" title="User Management" style="display:none;"><i class="fas fa-users"></i></div>
             <div class="nav-item" onclick="switchProfilePane('portfolio')" id="nav-portfolio" title="Portfolio"><i class="fas fa-briefcase"></i></div>
             <div class="nav-item active" onclick="switchProfilePane('profile')" id="nav-profile" title="My Profile"><i class="fas fa-user"></i></div>
@@ -65,6 +67,23 @@
                             <div class="stat"><span id="pages-count">0</span> Creations</div>
                             <div class="stat"><span>4.8</span> Average Rating</div>
                         </div>
+                    </div>
+                </div>
+                <!-- AI Tips: student-facing coaching from quiz/material/course progression -->
+                <div id="ai-tips-panel" style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin-top:30px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px; flex-wrap:wrap;">
+                        <div>
+                            <h3 style="color:#1e293b; font-size:1.4rem; margin:0; display:flex; align-items:center; gap:10px;"><i class="fas fa-wand-magic-sparkles" style="color:#cf982e;"></i> AI Tips</h3>
+                            <p style="color:#64748b; margin:6px 0 0 0; font-size:0.95rem;">Personal study guidance based on your course activity, materials, and quiz scores.</p>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <span id="ai-tips-count" style="background:#f1f5f9; color:#475569; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 tips</span>
+                            <span id="ai-tips-warning-count" style="background:#fff7ed; color:#c2410c; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 attention</span>
+                            <button type="button" id="btn-refresh-ai-tips" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">Refresh tips</button>
+                        </div>
+                    </div>
+                    <div id="ai-tips-list" style="display:flex; flex-direction:column; gap:12px;">
+                        <p style="font-size:13px; color:#64748b;">Loading AI tips...</p>
                     </div>
                 </div>
                 <!-- Agenda Operacional (Integrated) -->
@@ -152,6 +171,31 @@
                         <button onclick="openChannelModal()" class="btn-primary" style="margin-top:20px;">Create First Channel</button>
                     </div>
                     <div id="channels-list" style="display:none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+                </div>
+            </section>
+
+            <!-- Eurobot Sync Pane -->
+            <section id="pane-sync" style="display:none; padding:40px 60px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:30px; flex-wrap:wrap;">
+                    <div>
+                        <h2 style="margin:0; font-family:'Inter', sans-serif; color:#1e293b; display:flex; align-items:center; gap:12px;"><i class="fas fa-sync-alt" style="color:#497aa7;"></i> Eurobot Sync</h2>
+                        <p style="margin:8px 0 0 0; color:#64748b; max-width:720px; line-height:1.5;">Manage the Training Platform knowledge-base connection and sync existing course videos, documents, quizzes, and module content to Eurobot.</p>
+                    </div>
+                </div>
+                <div id="eurobot-sync-panel" style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; margin-bottom:24px; box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+                        <div>
+                            <h3 style="margin:0; color:#1e293b; font-size:1.15rem; display:flex; align-items:center; gap:10px;"><i class="fas fa-database" style="color:#497aa7;"></i> Eurobot Knowledge Sync</h3>
+                            <p style="margin:6px 0 0 0; color:#64748b; font-size:0.9rem; max-width:680px; line-height:1.45;">Sync existing course videos, documents, quizzes, and module content to the active Eurobot knowledge base.</p>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <button type="button" id="btn-eurobot-ensure-default" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-plug"></i> Ensure KB</button>
+                            <button type="button" id="btn-eurobot-sync" style="background:#1e293b; border:1px solid #1e293b; color:white; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-rotate"></i> Sync now</button>
+                        </div>
+                    </div>
+                    <div id="eurobot-sync-status" style="margin-top:16px; color:#64748b; font-size:0.9rem;">Loading Eurobot sync status...</div>
+                    <div id="eurobot-sync-summary" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(105px, 1fr)); gap:10px; margin-top:14px;"></div>
+                    <div id="eurobot-sync-items" style="margin-top:14px;"></div>
                 </div>
             </section>
 
@@ -435,7 +479,7 @@
         });
 
         function switchProfilePane(paneName) {
-            const panes = ['profile', 'creations', 'subscriptions', 'portfolio', 'settings'];
+            const panes = ['profile', 'creations', 'sync', 'subscriptions', 'portfolio', 'settings'];
             panes.forEach(p => {
                 const paneEl = document.getElementById('pane-' + p);
                 const navEl = document.getElementById('nav-' + p);
@@ -633,7 +677,7 @@
             }
         });
     </script>
-    <script src="profile.js"></script>
+    <script src="profile.js?v=ai-tips-eurobot-sync-sidebar-20260512"></script>
     <script src="global_notifications.js"></script>
 </body>
 </html>

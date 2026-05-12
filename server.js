@@ -27,6 +27,9 @@ const notificationController = require('./controllers/notificationController');
 const courseController = require('./controllers/courseController');
 const landingPageController = require('./controllers/landingPageController');
 const moduleAiController = require('./controllers/moduleAiController');
+const aiKnowledgeController = require('./controllers/aiKnowledgeController');
+const trainingAiController = require('./controllers/trainingAiController');
+const aiTipsController = require('./controllers/aiTipsController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
@@ -150,6 +153,12 @@ app.get('/courses/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), 
 app.get('/courses/public', courseController.getPublicCourses);
 app.get('/courses/accessible', authenticateToken, courseController.getAccessibleCourses);
 app.get('/courses/:id', authenticateToken, courseController.getCourseDetail);
+app.get(
+  '/api/students/overview',
+  authenticateToken,
+  roleMiddleware(['MASTER', 'ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR', 'SUPER_ADMIN']),
+  courseController.getStudentsOverview
+);
 app.put('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourse);
 app.delete('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.deleteCourse);
 app.post('/courses/:id/modules', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.addModuleToCourse);
@@ -236,6 +245,25 @@ app.put(
 app.post('/modules/:id/quiz/submit', authenticateToken, contentController.submitQuiz);
 app.get('/modules/:id/quiz/submissions', authenticateToken, contentController.getQuizzesSubmissions);
 app.post('/modules/:id/assistant/chat', authenticateToken, moduleAiController.chatWithModuleAssistant);
+
+app.get('/api/ai-tips/me', authenticateToken, aiTipsController.getMyTips);
+app.post('/api/ai-tips/:id/dismiss', authenticateToken, aiTipsController.dismissMyTip);
+app.get('/api/courses/:courseId/ai-tips/students', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), aiTipsController.getCourseStudentTips);
+
+app.post('/api/ai/chat', authenticateToken, trainingAiController.chat);
+app.get('/api/ai/knowledge-base/config', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.getConfig);
+app.get('/api/ai/knowledge-base/connections', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listConnections);
+app.post('/api/ai/knowledge-base/connections', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.createConnection);
+app.put('/api/ai/knowledge-base/connections/active', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.setActiveConnections);
+app.put('/api/ai/knowledge-base/connections/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateConnection);
+app.delete('/api/ai/knowledge-base/connections/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.deleteConnection);
+app.post('/api/ai/knowledge-base/connections/:id/refresh', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.refresh);
+app.post('/api/ai/knowledge-base/default', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.ensureDefault);
+app.put('/api/ai/knowledge-base/config', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateConfig);
+app.get('/api/ai/knowledge-base/remote', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listRemote);
+app.post('/api/ai/knowledge-base/refresh', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.refresh);
+app.get('/api/ai/knowledge-base/sync-items', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listSyncItems);
+app.put('/api/ai/knowledge-base/sync-items/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateSyncItem);
 
 app.post('/modules/:id/forum/threads', authenticateToken, forumController.createThread);
 app.get('/modules/:id/forum/threads', authenticateToken, forumController.getThreadsByModule);

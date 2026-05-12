@@ -102,6 +102,7 @@ model User {
   enrollments Enrollment[]
   moduleCompletions ModuleCompletion[]
   landingPages  LandingPage[] @relation("MasterLandingPages")
+  aiTips       AiTip[]
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -311,6 +312,42 @@ enum LogSource {
   MULTIPLAYER_WORLD
 }
 
+enum AiTipScope {
+  COURSE
+  MODULE
+  QUIZ
+  SCHEDULE
+  MATERIALS
+}
+
+enum AiTipSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AiTipStatus {
+  ACTIVE
+  DISMISSED
+  STALE
+}
+
+enum AiKnowledgeBaseStatus {
+  ACTIVE
+  DISABLED
+  ERROR
+}
+
+enum AiKnowledgeSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  SKIPPED
+  STALE
+  DELETED
+  DELETE_FAILED
+}
+
 // New Models
 
 model TrainingModule {
@@ -333,6 +370,7 @@ model TrainingModule {
   placements     WorldModulePlacement[]
   courseModules  CourseModule[]
   completions    ModuleCompletion[]
+  aiTips        AiTip[]
   
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -355,6 +393,7 @@ model Course {
   placements      WorldModulePlacement[]
   landingPage     LandingPage? @relation("CourseLandingPage")
   editors         CourseEditor[]
+  aiTips         AiTip[]
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
 }
@@ -583,6 +622,73 @@ model WorldModulePlacement {
   interactedAnim String?         // Interaction animation name
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+}
+
+model AiTip {
+  id           Int             @id @default(autoincrement())
+  fingerprint  String          @unique
+  userId       Int
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     Int?
+  course       Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId     Int?
+  module       TrainingModule? @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  scope        AiTipScope
+  severity     AiTipSeverity   @default(INFO)
+  title        String
+  message      String
+  reason       String?
+  actionLabel  String?
+  actionUrl    String?
+  metadata     Json?
+  status       AiTipStatus     @default(ACTIVE)
+  generatedAt  DateTime        @default(now())
+  dismissedAt  DateTime?
+  expiresAt    DateTime?
+
+  @@index([userId, status, generatedAt])
+  @@index([courseId, status])
+  @@index([moduleId, status])
+}
+
+model AiKnowledgeBaseConnection {
+  id            Int                   @id @default(autoincrement())
+  tenantCode    String                @default("default")
+  displayName   String
+  remoteType    String                @default("internal_collection")
+  remoteId      String
+  remoteName    String?
+  collectionName String?
+  isDefault     Boolean               @default(false)
+  status        AiKnowledgeBaseStatus @default(ACTIVE)
+  lastRefreshAt DateTime?
+  lastError     String?               @db.Text
+  syncItems     AiKnowledgeBaseSyncItem[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([tenantCode, isDefault])
+  @@index([remoteType, remoteId])
+}
+
+model AiKnowledgeBaseSyncItem {
+  id               Int                     @id @default(autoincrement())
+  connectionId     Int
+  connection       AiKnowledgeBaseConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  sourceType       String
+  sourceId         String
+  sourceHash       String?
+  remoteFileId     String?
+  remoteDocumentId String?
+  excluded         Boolean                 @default(false)
+  status           AiKnowledgeSyncStatus   @default(PENDING)
+  lastSyncedAt     DateTime?
+  lastError        String?                 @db.Text
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@unique([connectionId, sourceType, sourceId])
+  @@index([status, updatedAt])
 }
 
 model AuditLog {
