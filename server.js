@@ -147,7 +147,7 @@ app.patch('/api/tasks/:id', authenticateToken, notificationController.updateTask
 app.patch('/api/reminders/:id', authenticateToken, notificationController.updateReminder);
 
 app.post('/courses', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.createCourse);
-app.get('/courses/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.getMyCourses);
+app.get('/courses/my', authenticateToken, courseController.getMyCourses);
 app.get('/courses/public', courseController.getPublicCourses);
 app.get('/courses/accessible', authenticateToken, courseController.getAccessibleCourses);
 app.get('/courses/:id', authenticateToken, courseController.getCourseDetail);
@@ -157,12 +157,12 @@ app.get(
   roleMiddleware(['MASTER', 'ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR', 'SUPER_ADMIN']),
   courseController.getStudentsOverview
 );
-app.put('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourse);
-app.delete('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.deleteCourse);
-app.post('/courses/:id/modules', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.addModuleToCourse);
-app.patch('/courses/:id/modules/reorder', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.reorderCourseModules);
-app.patch('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourseModule);
-app.delete('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.removeCourseModule);
+app.put('/courses/:id', authenticateToken, courseController.updateCourse);
+app.delete('/courses/:id', authenticateToken, courseController.deleteCourse);
+app.post('/courses/:id/modules', authenticateToken, courseController.addModuleToCourse);
+app.patch('/courses/:id/modules/reorder', authenticateToken, courseController.reorderCourseModules);
+app.patch('/courses/:id/modules/:courseModuleId', authenticateToken, courseController.updateCourseModule);
+app.delete('/courses/:id/modules/:courseModuleId', authenticateToken, courseController.removeCourseModule);
 app.post('/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
 
 // --- Channels ---

@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (navCreations) {
                 const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
-                if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
+                if ((isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) && publishedCourses.length === 0) {
                     navCreations.style.display = 'none';
                 }
             }

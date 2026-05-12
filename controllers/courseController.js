@@ -107,6 +107,7 @@ function buildCourseInclude(userId, { includeEnrollmentUsers = false, includeLan
       include: buildProgressModuleInclude(userId),
       orderBy: { orderIndex: 'asc' }
     },
+    editors: true,
     ...(includeLandingPage
       ? {
           landingPage: {
@@ -349,11 +350,18 @@ async function createCourse(req, res) {
 
 async function getMyCourses(req, res) {
   try {
+    console.log("getMyCourses called by userId:", req.user.id);
     const courses = await prisma.course.findMany({
-      where: { ownerMasterId: req.user.id },
+      where: {
+        OR: [
+          { ownerMasterId: req.user.id },
+          { editors: { some: { userId: req.user.id } } }
+        ]
+      },
       include: buildCourseInclude(req.user.id),
       orderBy: { updatedAt: 'desc' }
     });
+    console.log("Found courses:", courses.length, "for userId:", req.user.id);
 
     const result = courses.map((course) => {
       const progress = buildCourseProgress(course, req.user.id, true);
