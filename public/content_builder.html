@@ -269,8 +269,24 @@
                 </div>
 
                 <div id="bg-image-controls">
-                    <button id="upload-panel-btn" class="prop-action-btn"><i class="fas fa-upload"></i> Escolher
-                        Imagem</button>
+                    <button id="upload-panel-btn" class="prop-action-btn" style="margin-bottom: 10px;"><i class="fas fa-upload"></i> Escolher Imagem</button>
+                    <div class="prop-row">
+                        <label>Image Size</label>
+                        <select id="bg-size-select" class="prop-input">
+                            <option value="cover">Cover (Fill)</option>
+                            <option value="contain">Contain (Fit)</option>
+                            <option value="auto">Original Size</option>
+                        </select>
+                    </div>
+                    <div class="prop-row">
+                        <label>Image Repeat</label>
+                        <select id="bg-repeat-select" class="prop-input">
+                            <option value="no-repeat">No Repeat</option>
+                            <option value="repeat">Repeat (Tiling)</option>
+                            <option value="repeat-x">Repeat X</option>
+                            <option value="repeat-y">Repeat Y</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="bg-color-controls" class="hidden">

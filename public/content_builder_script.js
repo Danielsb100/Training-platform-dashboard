@@ -211,6 +211,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bgTypeSelect = document.getElementById('bg-type-select');
     const uploadPanelBtn = document.getElementById('upload-panel-btn');
     const uploadImgPanelBtn = document.getElementById('upload-img-panel-btn');
+    const bgSizeSelect = document.getElementById('bg-size-select');
+    const bgRepeatSelect = document.getElementById('bg-repeat-select');
     const bgColorInput = document.getElementById('bg-color-input');
     const bgGrad1 = document.getElementById('bg-grad1');
     const bgGrad2 = document.getElementById('bg-grad2');
@@ -447,17 +449,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         clone.querySelectorAll('.editable-text').forEach(el => {
             el.removeAttribute('contenteditable');
             el.classList.remove('editable-text');
-            delete el.dataset.eventsBound;
+            el.removeAttribute('data-events-bound');
             if (el.className === '') el.removeAttribute('class');
         });
         clone.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
             wrapper.classList.remove('editable-image-wrapper');
             wrapper.removeAttribute('onclick');
-            delete wrapper.dataset.eventsBound;
+            wrapper.removeAttribute('data-events-bound');
             if (wrapper.className === '') wrapper.removeAttribute('class');
         });
         clone.querySelectorAll('.module-section').forEach(section => {
-            delete section.dataset.eventsBound;
+            section.removeAttribute('data-events-bound');
         });
         
         return { modularContent, compiledContent: clone.innerHTML };
@@ -876,6 +878,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('bg-color-controls').classList.toggle('hidden', bgTypeSelect.value !== 'color');
             document.getElementById('bg-grad-controls').classList.toggle('hidden', bgTypeSelect.value !== 'gradient' && bgTypeSelect.value !== 'radial');
 
+            if (bgTypeSelect.value === 'image') {
+                if (bgSizeSelect) bgSizeSelect.value = computed.backgroundSize || 'cover';
+                if (bgRepeatSelect) bgRepeatSelect.value = computed.backgroundRepeat || 'no-repeat';
+            }
+
             // Ignorando opacidade da div global, pois o slider esta escondido para BGs principais agora.
             bgOpacityRange.value = 100;
         }
@@ -1181,6 +1188,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     bgGrad1.addEventListener('input', updateBgRender);
     bgGrad2.addEventListener('input', updateBgRender);
     bgOpacityRange.addEventListener('input', updateBgRender);
+
+    if (bgSizeSelect) {
+        bgSizeSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            activeElement.style.backgroundSize = e.target.value;
+        });
+    }
+
+    if (bgRepeatSelect) {
+        bgRepeatSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            activeElement.style.backgroundRepeat = e.target.value;
+        });
+    }
 
     bgBlurRange.addEventListener('input', e => {
         if (!activeElement || activeElementType !== 'bg') return;

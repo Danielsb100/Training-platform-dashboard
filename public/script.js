@@ -292,6 +292,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const uploadPanelBtn = document.getElementById('upload-panel-btn');
     const uploadImgPanelBtn = document.getElementById('upload-img-panel-btn');
     const bgColorInput = document.getElementById('bg-color-input');
+    const bgSizeSelect = document.getElementById('bg-size-select');
+    const bgRepeatSelect = document.getElementById('bg-repeat-select');
     const bgGrad1 = document.getElementById('bg-grad1');
     const bgGrad2 = document.getElementById('bg-grad2');
     const bgBlurRange = document.getElementById('bg-blur-range');
@@ -980,6 +982,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('bg-color-controls').classList.toggle('hidden', bgTypeSelect.value !== 'color');
             document.getElementById('bg-grad-controls').classList.toggle('hidden', bgTypeSelect.value !== 'gradient' && bgTypeSelect.value !== 'radial');
 
+            if (bgTypeSelect.value === 'image') {
+                if (bgSizeSelect) bgSizeSelect.value = computed.backgroundSize || 'cover';
+                if (bgRepeatSelect) bgRepeatSelect.value = computed.backgroundRepeat || 'no-repeat';
+            }
+
             // Ignorando opacidade da div global, pois o slider esta escondido para BGs principais agora.
             bgOpacityRange.value = 100;
         }
@@ -1282,6 +1289,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     bgColorInput.addEventListener('input', updateBgRender);
+
+    if (bgSizeSelect) {
+        bgSizeSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            activeElement.style.backgroundSize = e.target.value;
+        });
+    }
+
+    if (bgRepeatSelect) {
+        bgRepeatSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            activeElement.style.backgroundRepeat = e.target.value;
+        });
+    }
     bgGrad1.addEventListener('input', updateBgRender);
     bgGrad2.addEventListener('input', updateBgRender);
     bgOpacityRange.addEventListener('input', updateBgRender);

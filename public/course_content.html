@@ -151,6 +151,10 @@
                     const coursesPlaceholder = tempDiv.querySelector('#courses-placeholder');
                     
                     if (coursesPlaceholder) {
+                        coursesPlaceholder.style.display = 'block';
+                        coursesPlaceholder.style.padding = '0';
+                        coursesPlaceholder.style.border = 'none';
+                        coursesPlaceholder.style.background = 'transparent';
                         coursesPlaceholder.innerHTML = modulesHTML;
                         
                         // Setup placeholders for AI fetching

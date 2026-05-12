@@ -889,7 +889,7 @@
                         // Salvar o rascunho automaticamente para não perder a capa
                         saveDraft(true); // true = silent save
                     };
-                    img.src = e.result;
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }

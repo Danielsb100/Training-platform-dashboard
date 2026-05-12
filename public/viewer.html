@@ -110,40 +110,44 @@
                 document.querySelectorAll('.anim-fade-in, .anim-slide-up').forEach(el => {
                     animObserver.observe(el);
                 });
-                
-                document.querySelectorAll('[data-is-view-modules-btn="true"]').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        window.location.href = 'course_content.html?id=' + pageId;
-                    });
-                });
-
-                document.querySelectorAll('.btn-subscribe, [data-is-subscribe-btn="true"]').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const originalText = btn.innerText;
-                        btn.innerText = 'Subscribing...';
-                        btn.style.opacity = '0.7';
-                        btn.style.pointerEvents = 'none';
-                        try {
-                            const res = await fetch(`/api/courses/${pageId}/subscribe`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                                }
-                            });
-                            if(!res.ok) {
-                                throw new Error('Failed to subscribe');
-                            }
-                            window.location.href = 'course_content.html?id=' + pageId;
-                        } catch(err) {
-                            console.error(err);
-                            alert('Erro ao se inscrever. Tente novamente mais tarde.');
-                            btn.innerText = originalText;
-                            btn.style.opacity = '1';
-                            btn.style.pointerEvents = 'auto';
-                        }
-                    });
-                });
+                // Buttons will be handled by document event delegation to ensure they always fire.
             }
+            
+            document.addEventListener('click', async (e) => {
+                const viewBtn = e.target.closest('[data-is-view-modules-btn="true"]');
+                if (viewBtn) {
+                    window.location.href = 'course_content.html?id=' + pageId;
+                    return;
+                }
+                
+                const subBtn = e.target.closest('.btn-subscribe, [data-is-subscribe-btn="true"]');
+                if (subBtn) {
+                    if (subBtn.style.pointerEvents === 'none') return;
+                    
+                    const originalText = subBtn.innerText;
+                    subBtn.innerText = 'Subscribing...';
+                    subBtn.style.opacity = '0.7';
+                    subBtn.style.pointerEvents = 'none';
+                    try {
+                        const res = await fetch(`/api/courses/${pageId}/subscribe`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('token')
+                            }
+                        });
+                        if(!res.ok) {
+                            throw new Error('Failed to subscribe');
+                        }
+                        window.location.href = 'course_content.html?id=' + pageId;
+                    } catch(err) {
+                        console.error(err);
+                        alert('Erro ao se inscrever. Tente novamente mais tarde.');
+                        subBtn.innerText = originalText;
+                        subBtn.style.opacity = '1';
+                        subBtn.style.pointerEvents = 'auto';
+                    }
+                }
+            });
 
             fetch(`/api/landing-pages/course/${pageId}`)
                 .then(res => {

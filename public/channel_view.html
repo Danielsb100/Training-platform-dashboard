@@ -238,6 +238,7 @@
                 
                 const placeholder = tempDiv.querySelector('#courses-placeholder');
                 if (placeholder) {
+                    placeholder.style.display = 'block';
                     placeholder.innerHTML = `<div style="margin-top:-20px;">${coursesHTML}</div>`;
                     placeholder.style.padding = '0';
                     placeholder.style.border = 'none';

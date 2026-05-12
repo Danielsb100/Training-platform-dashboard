@@ -21,8 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     let moduleData = null;
-    let combinedContent = [];
-    let activeContentIndex = 0;
+    let videos = [];
+    let documents = [];
+    let quizzes = [];
+    
+    // UI Elements
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const hubSections = document.querySelectorAll('.hub-section');
+    const playerView = document.getElementById('player-view');
+    const btnBackHub = document.getElementById('btn-back-hub');
+    const playerContent = document.getElementById('player-content');
+    const playerTitle = document.getElementById('player-title');
     
     try {
         const response = await fetch(`/runtime/modules/${moduleId}`, {
@@ -38,116 +47,177 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('module-name').textContent = moduleData.title || 'Módulo Sem Nome';
         document.getElementById('course-title').textContent = 'Conteúdo da Aula';
         
-        // Unificar os conteúdos
-        const videos = (moduleData.videos || []).map(v => ({ ...v, contentType: 'video' }));
-        const documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' }));
-        const quizzes = (moduleData.quizzes || []).map(q => ({ ...q, contentType: 'quiz' }));
+        videos = (moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
+        documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order);
+        quizzes = (moduleData.quizzes || []).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
         
-        combinedContent = [...videos, ...documents, ...quizzes].sort((a, b) => a.order - b.order);
+        // Update Badges
+        document.getElementById('badge-videos').textContent = videos.length;
+        document.getElementById('badge-documents').textContent = documents.length;
+        document.getElementById('badge-quizzes').textContent = quizzes.length;
         
-        renderSidebar();
-        
-        if (combinedContent.length > 0) {
-            selectContent(0);
-        } else {
-            document.getElementById('content-display').innerHTML = `
-                <div style="text-align: center; color: #94a3b8;">
-                    <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                    <p>Este módulo ainda não possui conteúdos.</p>
-                </div>
-            `;
-        }
+        renderHubs();
         
     } catch (error) {
         console.error(error);
-        document.getElementById('content-display').innerHTML = `<div style="color: #ef4444;">Erro ao carregar o conteúdo do módulo.</div>`;
+        document.getElementById('overview-grid').innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">Erro ao carregar o conteúdo do módulo.</div>`;
     }
     
-    function renderSidebar() {
-        const listContainer = document.getElementById('content-list');
-        listContainer.innerHTML = '';
+    function extractYoutubeId(url) {
+        if (!url) return null;
+        let videoId = '';
+        if(url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
+        else if(url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+        return videoId || null;
+    }
+    
+    function renderHubs() {
+        // --- Videos Grid ---
+        const videosGrid = document.getElementById('videos-grid');
+        videosGrid.innerHTML = videos.length ? videos.map((v, i) => {
+            const ytId = extractYoutubeId(v.url);
+            const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'assets/video-placeholder.png'; // Fallback
+            
+            return `
+            <div class="card" onclick="openPlayer('video', ${i})">
+                <div class="card-thumb">
+                    <img src="${thumbUrl}" alt="Video Thumbnail" onerror="this.src='https://via.placeholder.com/600x400/000000/cf9c33?text=Video'">
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">${v.title}</div>
+                    <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
+                </div>
+            </div>`;
+        }).join('') : '<p style="color:#94a3b8;">Nenhum vídeo disponível neste módulo.</p>';
         
-        combinedContent.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.className = 'content-item';
+        // --- Documents List ---
+        const docsList = document.getElementById('documents-list');
+        docsList.innerHTML = documents.length ? documents.map(d => `
+            <div class="list-item" onclick="downloadDocument(${d.documentId})">
+                <div class="list-icon"><i class="fas fa-file-pdf"></i></div>
+                <div class="list-content">
+                    <div class="list-title">${d.title}</div>
+                    <p class="list-desc">Arquivo PDF para estudos complementares.</p>
+                </div>
+                <div class="list-action"><i class="fas fa-download"></i> Baixar</div>
+            </div>
+        `).join('') : '<p style="color:#94a3b8;">Nenhum documento disponível neste módulo.</p>';
+        
+        // --- Quizzes List ---
+        const quizzesList = document.getElementById('quizzes-list');
+        quizzesList.innerHTML = quizzes.length ? quizzes.map((q, i) => `
+            <div class="list-item" onclick="openPlayer('quiz', ${i})">
+                <div class="list-icon" style="color:#cf9c33; background:rgba(207, 156, 51, 0.2);"><i class="fas fa-question-circle"></i></div>
+                <div class="list-content">
+                    <div class="list-title">${q.title}</div>
+                    <p class="list-desc">${q.questions ? q.questions.length : 0} Questões • Avaliação Prática</p>
+                </div>
+                <div class="list-action"><i class="fas fa-pencil-alt"></i> Iniciar</div>
+            </div>
+        `).join('') : '<p style="color:#94a3b8;">Nenhum quiz disponível neste módulo.</p>';
+        
+        // --- Overview Grid (Combines everything for the home page of the module) ---
+        const overviewGrid = document.getElementById('overview-grid');
+        const allItems = [...videos, ...quizzes].sort((a,b) => a.order - b.order);
+        overviewGrid.innerHTML = allItems.map(item => {
+            if (item.contentType === 'video') {
+                const i = videos.indexOf(item);
+                const ytId = extractYoutubeId(item.url);
+                const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'https://via.placeholder.com/600x400/000000/cf9c33?text=Video';
+                return `
+                <div class="card" onclick="openPlayer('video', ${i})">
+                    <div class="card-thumb">
+                        <img src="${thumbUrl}" alt="Video Thumbnail">
+                        <i class="fas fa-play-circle play-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
+                    </div>
+                </div>`;
+            } else if (item.contentType === 'quiz') {
+                const i = quizzes.indexOf(item);
+                return `
+                <div class="card" onclick="openPlayer('quiz', ${i})">
+                    <div class="card-thumb" style="background:#1e293b;">
+                        <i class="fas fa-question-circle" style="font-size: 5rem; color:#cf9c33; opacity:0.8;"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> Avaliação Prática</div>
+                    </div>
+                </div>`;
+            }
+        }).join('');
+        
+        if (allItems.length === 0) {
+            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">Este módulo ainda não possui conteúdos interativos.</p>';
+        }
+    }
+    
+    // Tab Navigation
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            navTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
             
-            let icon = 'fa-file';
-            if (item.contentType === 'video') icon = 'fa-play-circle';
-            else if (item.contentType === 'document') icon = 'fa-file-pdf';
-            else if (item.contentType === 'quiz') icon = 'fa-question-circle';
-            
-            li.innerHTML = `
-                <div class="content-icon"><i class="fas ${icon}"></i></div>
-                <div class="content-text">${item.title}</div>
-            `;
-            
-            li.onclick = () => selectContent(index);
-            listContainer.appendChild(li);
+            hubSections.forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + tab.dataset.tab).classList.add('active');
         });
-    }
+    });
     
-    function selectContent(index) {
-        const listItems = document.querySelectorAll('.content-item');
-        listItems.forEach(item => item.classList.remove('active'));
-        if(listItems[index]) listItems[index].classList.add('active');
+    // Player Logic
+    window.openPlayer = function(type, index) {
+        playerContent.innerHTML = '';
+        playerView.classList.add('active');
         
-        activeContentIndex = index;
-        const item = combinedContent[index];
-        renderMainContent(item);
-    }
-    
-    function renderMainContent(item) {
-        const display = document.getElementById('content-display');
-        display.innerHTML = '';
-        
-        if (item.contentType === 'video') {
-            const isYouTube = item.url && (item.url.includes('youtube.com') || item.url.includes('youtu.be'));
+        if (type === 'video') {
+            const v = videos[index];
+            playerTitle.textContent = v.title;
+            const ytId = extractYoutubeId(v.url);
             
-            if (isYouTube) {
-                // Extrair ID do vídeo
-                let videoId = '';
-                if(item.url.includes('v=')) videoId = item.url.split('v=')[1].split('&')[0];
-                else if(item.url.includes('youtu.be/')) videoId = item.url.split('youtu.be/')[1].split('?')[0];
-                
-                const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-                display.innerHTML = `
+            if (ytId) {
+                const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+                playerContent.innerHTML = `
                     <div class="video-container">
-                        <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                        <div class="video-wrapper">
+                            <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-info">
+                            <h2 style="color:#fff;">${v.title}</h2>
+                        </div>
                     </div>
                 `;
             } else {
-                display.innerHTML = `
+                playerContent.innerHTML = `
                     <div class="video-container">
-                        <video src="${item.url}" controls autoplay></video>
+                        <div class="video-wrapper">
+                            <video src="${v.url}" controls autoplay></video>
+                        </div>
+                        <div class="video-info">
+                            <h2 style="color:#fff;">${v.title}</h2>
+                        </div>
                     </div>
                 `;
             }
         } 
-        else if (item.contentType === 'document') {
-            display.innerHTML = `
-                <div class="document-container">
-                    <i class="fas fa-file-pdf"></i>
-                    <h2>${item.title}</h2>
-                    <p style="color: #94a3b8; margin-bottom: 30px;">Clique abaixo para baixar este arquivo de estudo.</p>
-                    <button class="btn-download" onclick="downloadDocument(${item.documentId})">
-                        <i class="fas fa-download"></i> Baixar Arquivo
-                    </button>
-                </div>
-            `;
-        }
-        else if (item.contentType === 'quiz') {
-            if (!item.questions || item.questions.length === 0) {
-                display.innerHTML = `<div class="quiz-container"><h2>${item.title}</h2><p>Este questionário ainda não possui perguntas.</p></div>`;
+        else if (type === 'quiz') {
+            const q = quizzes[index];
+            playerTitle.textContent = q.title;
+            
+            if (!q.questions || q.questions.length === 0) {
+                playerContent.innerHTML = `<div class="quiz-container"><h2>${q.title}</h2><p>Este questionário ainda não possui perguntas.</p></div>`;
                 return;
             }
             
-            let questionsHtml = item.questions.map((q, qIndex) => `
-                <div class="question-block" data-question-id="${q.id}">
-                    <h3 class="question-text">${qIndex + 1}. ${q.text}</h3>
+            let questionsHtml = q.questions.map((quest, qIndex) => `
+                <div class="question-block" data-question-id="${quest.id}">
+                    <h3 class="question-text">${qIndex + 1}. ${quest.text}</h3>
                     <div class="options-list">
-                        ${q.options.map(opt => `
+                        ${quest.options.map(opt => `
                             <label class="option-label">
-                                <input type="radio" name="question_${q.id}" value="${opt.id}">
+                                <input type="radio" name="question_${quest.id}" value="${opt.id}">
                                 <span>${opt.text}</span>
                             </label>
                         `).join('')}
@@ -155,12 +225,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `).join('');
             
-            display.innerHTML = `
+            playerContent.innerHTML = `
                 <div class="quiz-container">
                     <div class="quiz-header">
-                        <h2><i class="fas fa-question-circle" style="margin-right:10px;"></i>${item.title}</h2>
+                        <h2><i class="fas fa-question-circle" style="margin-right:10px;"></i>${q.title}</h2>
                     </div>
-                    <form id="quiz-form" data-quiz-id="${item.id}">
+                    <form id="quiz-form" data-quiz-id="${q.id}">
                         ${questionsHtml}
                         <button type="submit" class="btn-submit-quiz">Enviar Respostas</button>
                     </form>
@@ -169,13 +239,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             document.getElementById('quiz-form').addEventListener('submit', handleQuizSubmit);
         }
-    }
+    };
     
+    btnBackHub.addEventListener('click', () => {
+        playerView.classList.remove('active');
+        playerContent.innerHTML = ''; // Stop video playback
+    });
+    
+    // Telemetry and Actions
     window.downloadDocument = async function(documentId) {
-        // Dispara o download numa nova aba
         window.open(`/api/documents/download/${documentId}`, '_blank');
-        
-        // Log telemetry
         try {
             await fetch(`/modules/${moduleId}/documents/${documentId}/download`, {
                 method: 'POST',
@@ -194,7 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         const form = e.target;
         const quizId = form.getAttribute('data-quiz-id');
-        const item = combinedContent.find(c => c.id == quizId && c.contentType === 'quiz');
+        const item = quizzes.find(c => c.id == quizId);
         
         if (!item) return;
         
