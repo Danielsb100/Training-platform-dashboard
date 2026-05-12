@@ -9,7 +9,10 @@ window.templatePresets = [
                 <div class="bg-overlay"></div>
                 <div class="module-content" style="width: 100%; display: flex; justify-content: space-between;">
                     <div style="display:flex; align-items:center; gap:15px; color:white; font-weight:bold; font-size:1.2rem;">
-                        <i class="fas fa-globe"></i> <span class="editable-text">AGENFOR</span>
+                        <div class="editable-image-wrapper" onclick="triggerImageUpload('main-logo', 'src')" style="display: flex; align-items: center;">
+                            <img src="https://placehold.co/40x40/ffffff/1e293b?text=Logo" id="main-logo" style="height: 25px; width: auto; object-fit: contain; border-radius: 4px; background: rgba(255,255,255,0.2); padding: 2px;">
+                        </div>
+                        <span class="editable-text">My Company</span>
                     </div>
                 </div>
             </section>
@@ -21,9 +24,9 @@ window.templatePresets = [
                     <i class="fas fa-image"></i> Change BG
                 </button>
                 <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: block;">
-                    <h1 class="editable-text" style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">Advanced Virtual Academy</h1>
-                    <h2 class="editable-text" style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">AVA</h2>
-                    <p class="editable-text" style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges.</p>
+                    <h1 class="editable-text" style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">My Main Title</h1>
+                    <h2 class="editable-text" style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">My Subtitle</h2>
+                    <p class="editable-text" style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">My detailed description of the platform or course objectives goes here. You can edit this text to suit your needs and provide an overview of your training.</p>
                 </div>
             </section>
 
@@ -48,17 +51,17 @@ window.templatePresets = [
                     <!-- Methodology Sidebar -->
                     <div style="flex: 1; min-width: 300px;">
                         <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
-                            <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">NOSSA METODOLOGIA</h3>
+                            <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">OUR METHODOLOGY</h3>
                             <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">AVA is an advanced training platform that supports blended courses to enhance participants knowledge retention.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">AVA is trained as legal.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Assessment of trainees' expectations and needs.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Design training plans and curricula.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Design online training.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Layout on-the-job training.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Record video-based training.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Support to Q&A through avatars.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Build case studies, scenarios and simulation.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 1: Introduction to the core concepts.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 2: Describe your approach.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 3: Key objectives.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 4: Strategic planning.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 5: Implementation steps.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 6: Practical applications.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 7: Resources and tools.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 8: Evaluation and feedback.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 9: Final presentation and metrics.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -118,8 +121,15 @@ window.templatePresets = [
                     <div style="flex: 1; min-width: 250px;">
                         <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Parceiros</h3>
                         <div style="display: flex; gap: 10px;">
-                            <div class="editable-text" style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 1</div>
-                            <div class="editable-text" style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 2</div>
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-1', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+1" id="logo-footer-1" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-2', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+2" id="logo-footer-2" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-3', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+3" id="logo-footer-3" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
                         </div>
                     </div>
                 </div>

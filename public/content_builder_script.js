@@ -124,7 +124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const container = document.getElementById('template-container');
                 if (container) {
-                    container.innerHTML = course.contentHtml;
+                    if (course.contentCss && course.contentCss.length > 100) {
+                        container.innerHTML = course.contentCss;
+                    } else {
+                        container.innerHTML = course.contentHtml;
+                    }
                     container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
                     container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
                 }
@@ -477,7 +481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Save directly to the Course model
             const payload = {
                 contentHtml: compiledContent,
-                contentCss: ''
+                contentCss: modularContent
             };
             
             if (thumbUrl) {
@@ -1129,7 +1133,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(imageScaleInput) imageScaleInput.value = val;
         if(activeElement){
             activeElement.dataset.scale = val;
-            applyStyle('width', `${val}%`);
+            applyStyle('width', `${val}px`);
+            applyStyle('height', 'auto');
         }
     };
     imageScaleRange.addEventListener('input', e => updateImgScale(e.target.value));
@@ -1139,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', () => {
             // Imagens e logos estao num container editable-image-wrapper
             const container = activeElement.closest('.editable-image-wrapper') || activeElement.parentElement;
-            container.style.display = 'flex';
+            container.style.display = 'inline-flex';
             container.style.justifyContent = btn.dataset.align;
         });
     });
@@ -1203,6 +1208,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     };
+    function applyCinemaMode(el, enable) {
+        let sharpLayer = el.querySelector('.bg-sharp-layer');
+        if (enable) {
+            if (!sharpLayer) {
+                sharpLayer = document.createElement('div');
+                sharpLayer.className = 'bg-sharp-layer';
+                sharpLayer.style.position = 'absolute';
+                sharpLayer.style.inset = '0';
+                sharpLayer.style.pointerEvents = 'none';
+                sharpLayer.style.zIndex = '2';
+                // Insert after bg-overlay so it sits on top of the blur
+                const overlay = el.querySelector('.bg-overlay');
+                if (overlay && overlay.nextSibling) {
+                    el.insertBefore(sharpLayer, overlay.nextSibling);
+                } else {
+                    el.appendChild(sharpLayer);
+                }
+            }
+            sharpLayer.style.backgroundImage = el.style.backgroundImage;
+            sharpLayer.style.backgroundSize = 'contain';
+            sharpLayer.style.backgroundPosition = 'center';
+            sharpLayer.style.backgroundRepeat = 'no-repeat';
+            
+            el.style.backgroundSize = 'cover';
+            
+            // Auto-apply blur to overlay if not set
+            const overlay = el.querySelector('.bg-overlay');
+            if (overlay && (!overlay.style.backdropFilter || overlay.style.backdropFilter === 'blur(0px)')) {
+                overlay.style.backdropFilter = 'blur(15px)';
+                const blurSlider = document.getElementById('bg-blur-slider');
+                if (blurSlider) blurSlider.value = 15;
+            }
+        } else {
+            if (sharpLayer) sharpLayer.remove();
+        }
+    }
 
     bgColorInput.addEventListener('input', updateBgRender);
     bgGrad1.addEventListener('input', updateBgRender);
@@ -1213,13 +1254,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         bgSizeSelect.addEventListener('change', e => {
             if (!activeElement || activeElementType !== 'bg') return;
             const bgScaleRow = document.getElementById('bg-scale-row');
-            if (e.target.value === 'custom') {
-                if(bgScaleRow) bgScaleRow.style.display = 'flex';
-                const slider = document.getElementById('bg-scale-slider');
-                if(slider) activeElement.style.backgroundSize = `${slider.value}%`;
-            } else {
+            activeElement.style.backgroundPosition = 'center'; // Always center
+            
+            if (e.target.value === 'contain-blur') {
                 if(bgScaleRow) bgScaleRow.style.display = 'none';
-                activeElement.style.backgroundSize = e.target.value;
+                applyCinemaMode(activeElement, true);
+            } else {
+                applyCinemaMode(activeElement, false);
+                if (e.target.value === 'custom') {
+                    if(bgScaleRow) bgScaleRow.style.display = 'flex';
+                    const slider = document.getElementById('bg-scale-slider');
+                    if(slider) activeElement.style.backgroundSize = `${slider.value}%`;
+                } else {
+                    if(bgScaleRow) bgScaleRow.style.display = 'none';
+                    activeElement.style.backgroundSize = e.target.value;
+                }
             }
         });
     }
@@ -1231,6 +1280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (bgScaleVal) bgScaleVal.innerText = `${e.target.value}%`;
             if (!activeElement || activeElementType !== 'bg') return;
             if (bgSizeSelect && bgSizeSelect.value === 'custom') {
+                activeElement.style.backgroundPosition = 'center';
                 activeElement.style.backgroundSize = `${e.target.value}%`;
             }
         });
@@ -1344,6 +1394,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById('bg-grad-controls').classList.add('hidden');
 
                     activeElement.style.backgroundImage = `url(${e.target.result})`;
+                    activeElement.style.backgroundPosition = 'center';
+                    
+                    const bgSizeSelect = document.getElementById('bg-size-select');
+                    if (bgSizeSelect && bgSizeSelect.value === 'contain-blur') {
+                        applyCinemaMode(activeElement, true);
+                    }
                 }
             };
             reader.readAsDataURL(file);

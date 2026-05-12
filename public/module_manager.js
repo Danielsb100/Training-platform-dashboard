@@ -147,6 +147,11 @@ function renderAttachedModules() {
             <div style="position: relative; z-index: 10; margin-top: auto;">
                 <h3 style="margin:0 0 5px 0; font-size:1.2rem; color: ${color}; font-family: ${font};">${m.title}</h3>
                 <p style="margin:0; font-size:0.85rem; color: rgba(255,255,255,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
+                <div style="display:flex; gap:10px; margin-top:10px; font-size:0.8rem; color:rgba(255,255,255,0.6);">
+                    <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
+                    <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
+                    <span title="Quizzes"><i class="fas fa-question-circle"></i> ${m.quizzes ? m.quizzes.length : 0}</span>
+                </div>
             </div>
         </div>
         `;

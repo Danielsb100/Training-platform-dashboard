@@ -239,9 +239,9 @@
                         Nova Imagem</button>
                 </div>
                 <div class="prop-row">
-                    <label>Current Scale (%)</label>
+                    <label>Image Width (px)</label>
                     <div style="display:flex; gap:5px;">
-                        <input type="range" id="image-scale-range" min="1" max="500" value="100" style="flex:2">
+                        <input type="range" id="image-scale-range" min="20" max="800" value="100" style="flex:2">
                         <input type="number" id="image-scale-input" value="100" style="flex:1">
                     </div>
                 </div>
@@ -275,6 +275,7 @@
                         <select id="bg-size-select" class="prop-input">
                             <option value="cover">Cover (Fill)</option>
                             <option value="contain">Contain (Fit)</option>
+                            <option value="contain-blur">Cinema Mode (Contain + Blurred Fill)</option>
                             <option value="auto">Original Size</option>
                             <option value="100% 100%">Extended (Stretch)</option>
                             <option value="custom">Custom Scale</option>
@@ -451,8 +452,8 @@
         </div>
     </div>
 
-    <script src="templates.js"></script>
-    <script src="content_builder_script.js"></script>
+    <script src="templates.js?v=2"></script>
+    <script src="content_builder_script.js?v=2"></script>
 </body>
 
 </html>

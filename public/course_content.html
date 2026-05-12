@@ -24,12 +24,12 @@
         
         /* New Grid Styles */
         .modules-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 0; }
-        .module-card { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
+        .module-card { position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
         .module-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 0.8; }
-        .module-card:hover .module-cover { opacity: 0.3; transform: scale(1.1); }
-        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
-        .module-card:hover .module-overlay { background: rgba(0,0,0,0.4); justify-content: flex-start; padding-top: 30px; }
+        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 1.0; }
+        .module-card:hover .module-cover { opacity: 0.8; transform: scale(1.05); }
+        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
+        .module-card:hover .module-overlay { background: rgba(0,0,0,0.2); justify-content: flex-start; padding-top: 30px; }
         .module-title { margin: 0; font-size: 1.3rem; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.3s; }
         .module-card:hover .module-title { margin-bottom: 15px; color: #cf9c33; }
         .module-desc { margin: 0; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.5; }
@@ -38,9 +38,10 @@
         /* Custom Design Container */
         #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
         #custom-design-container .module-section { position: relative; }
+        #custom-design-container .module-content { max-width: 100% !important; padding-left: 40px !important; padding-right: 40px !important; }
     </style>
 </head>
-<body>
+<body class="view-mode">
 
     <div id="course-content-root">
         <!-- Content injected by JS -->
@@ -97,7 +98,10 @@
                     content: m.description || m.content || 'No description available for this module.',
                     coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
                     titleFont: m.titleFont || 'inherit',
-                    textColor: m.textColor || '#ffffff'
+                    textColor: m.textColor || '#ffffff',
+                    videos: m.videos || [],
+                    documents: m.documents || [],
+                    quizzes: m.quizzes || []
                 }));
 
                 let modulesHTML = '';
@@ -118,6 +122,11 @@
                                 <div class="module-overlay">
                                     <h3 class="module-title" style="font-family: ${m.titleFont}; color: ${m.textColor};">${m.title}</h3>
                                     <p class="module-desc">${m.content}</p>
+                                    <div style="display:flex; gap:10px; margin-top:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); padding-top:15px;">
+                                        <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
+                                        <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
+                                        <span title="Quizzes"><i class="fas fa-question-circle"></i> ${m.quizzes ? m.quizzes.length : 0}</span>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -295,8 +304,8 @@
                             `;
                         }
 
-                        // Update Reminders
-                        const tasksList = document.querySelector('#custom-design-container ul');
+                        // Update tasks list if it exists
+                        const tasksList = document.querySelector('#custom-design-container #ai-tasks-list');
                         if (tasksList && insights.reminders) {
                             tasksList.innerHTML = insights.reminders.map(r => `
                                 <li style="display:flex; align-items:flex-start; gap:10px;">
@@ -353,6 +362,11 @@
                                         <div class="module-overlay">
                                             <h3 class="module-title">${mTitle}</h3>
                                             <p class="module-desc">${mDesc}</p>
+                                            <div style="display:flex; gap:10px; margin-top:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); padding-top:15px;">
+                                                <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
+                                                <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
+                                                <span title="Quizzes"><i class="fas fa-question-circle"></i> ${m.quizzes ? m.quizzes.length : 0}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 `;

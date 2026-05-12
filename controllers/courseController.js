@@ -65,8 +65,10 @@ function buildProgressModuleInclude(userId) {
         coverImage: true,
         titleFont: true,
         textColor: true,
+        videos: true,
+        documents: true,
         quizzes: {
-          select: { id: true }
+          select: { id: true, title: true, questions: true }
         },
         submissions: {
           where: { userId },
@@ -247,6 +249,9 @@ function buildCourseProgress(course, userId, isManagerView = false) {
       latestQuizScore: quizState.latestQuizScore,
       quizAttemptCount: quizState.quizAttemptCount,
       latestQuizAttemptNumber: quizState.latestAttemptNumber,
+      videos: courseModule.module?.videos || [],
+      documents: courseModule.module?.documents || [],
+      quizzes: courseModule.module?.quizzes || [],
       canMarkComplete: isManagerView || !completionBlockedByQuiz,
       completionBlockedReason: completionBlockedByQuiz
         ? `Pass the module quiz with at least ${quizState.minimumQuizScore}% before marking this room as done.`
