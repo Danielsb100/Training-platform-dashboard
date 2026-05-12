@@ -301,8 +301,7 @@ async function assertCourseAccess(courseId, user) {
   const enrollment = course.enrollments.find((item) => item.userId === user.id && item.status !== 'CANCELLED');
 
   if (!managerView && !enrollment) {
-    // Unenrolled users can view the course outline, but we will strip sensitive content later
-    return { course, managerView: false, enrollment: null };
+    throw new Error('COURSE_ACCESS_DENIED');
   }
 
   return { course, managerView, enrollment };
@@ -472,17 +471,6 @@ async function getCourseDetail(req, res) {
     const courseId = Number(req.params.id);
     const { course, managerView, enrollment } = await assertCourseAccess(courseId, req.user);
     const progress = buildCourseProgress(course, req.user.id, managerView);
-
-    // If unenrolled and not a manager, strip sensitive module contents
-    if (!managerView && !enrollment) {
-      progress.modules.forEach(m => {
-        m.videos = [];
-        m.documents = [];
-        m.quizzes = [];
-        m.content = "Enroll in the course to view this module's content.";
-        m.description = "Enroll in the course to view this module's content.";
-      });
-    }
 
     return res.json({
       id: course.id,
