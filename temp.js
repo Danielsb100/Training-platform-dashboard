@@ -1,52 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Content - Training Platform</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="app.css">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
-        .course-header { background: linear-gradient(135deg, #44749f 0%, #1e293b 100%); padding: 60px 80px; color: white; }
-        .back-link { color: rgba(255,255,255,0.7); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.9rem; }
-        .back-link:hover { color: white; }
-        
-        .course-info h1 { margin: 0; font-size: 2.2rem; color: #cf9c33; }
-        .course-info p { margin: 10px 0 0 0; font-size: 1rem; opacity: 0.8; max-width: 700px; line-height: 1.6; }
-        
-        .main-content { padding: 40px 80px; max-width: 1000px; margin: 0 auto; }
-        .section-title { font-size: 1.4rem; color: #1e293b; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
-        
-        .module-item { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; overflow: hidden; }
-        .empty-state { text-align: center; padding: 100px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
-        
-        /* New Grid Styles */
-        .modules-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 0; }
-        .module-card { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
-        .module-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 0.8; }
-        .module-card:hover .module-cover { opacity: 0.3; transform: scale(1.1); }
-        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
-        .module-card:hover .module-overlay { background: rgba(0,0,0,0.4); justify-content: flex-start; padding-top: 30px; }
-        .module-title { margin: 0; font-size: 1.3rem; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.3s; }
-        .module-card:hover .module-title { margin-bottom: 15px; color: #cf9c33; }
-        .module-desc { margin: 0; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.5; }
-        .module-card:hover .module-desc { opacity: 1; transform: translateY(0); }
-        
-        /* Custom Design Container */
-        #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
-        #custom-design-container .module-section { position: relative; }
-    </style>
-</head>
-<body>
 
-    <div id="course-content-root">
-        <!-- Content injected by JS -->
-    </div>
-
-    <script>
         function toggleModule(id) {
             const content = document.getElementById('content-' + id);
             const icon = document.getElementById('icon-' + id);
@@ -197,7 +149,7 @@
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
                                 <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
                             </div>
-                            ${editSettingsButtonHTML}
+                            \${editSettingsButtonHTML}
                             
                             <!-- Nav -->
                             <nav style="background-color: #cf9c33; padding: 15px 40px; display: flex; align-items: center; justify-content: flex-end; height: 60px;">
@@ -209,9 +161,9 @@
                             <!-- Header -->
                             <header style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
                                 <div style="max-width: 1200px; margin: 0 auto;">
-                                    <h1 style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">${course.title || 'Advanced Virtual Academy'}</h1>
+                                    <h1 style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">\${course.title || 'Advanced Virtual Academy'}</h1>
                                     <h2 style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">AVA</h2>
-                                    <p style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">${course.description || "To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges."}</p>
+                                    <p style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">\${course.description || "To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges."}</p>
                                 </div>
                             </header>
 
@@ -223,7 +175,7 @@
                                         <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                                             <i class="fas fa-layer-group" style="color: #cf9c33;"></i> Módulos do Curso
                                         </h2>
-                                        ${modulesHTML}
+                                        \${modulesHTML}
                                     </div>
                                     
                                     <!-- Methodology Sidebar -->
@@ -378,6 +330,4 @@
                 }
             });
         });
-    </script>
-</body>
-</html>
+    

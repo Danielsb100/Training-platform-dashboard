@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelIdParam = urlParams.get('channelId');
 
     if (channelIdParam) {
-        const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        const channel = channels.find(c => c.id === channelIdParam);
+        let channel = null;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                channel = data.data;
+            }
+        } catch (e) { console.error(e); }
         if (channel) {
             editingPageId = 'channel_lp';
             
@@ -20,50 +27,133 @@ document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('template-container');
             if (container) {
                 const defaultCoursesAndFooter = `
-                    <section class="module-section" id="channel-courses-section" style="background-color: #f4f6f8; padding: 40px 80px; position: relative;">
+                    <!-- COURSE GALLERY -->
+                    <section class="module-section" id="channel-courses-section" style="background-color:#f8fafc; padding:40px 0; position:relative;">
                         <div class="bg-overlay"></div>
                         <button class="bg-edit-btn" onclick="triggerImageUpload('channel-courses-section', 'bg')">
-                            <i class="fas fa-image"></i> Change Courses BG
+                            <i class="fas fa-image"></i> Change BG
                         </button>
-                        <div class="module-content" style="position: relative; z-index: 2; width: 100%;">
-                            <div id="courses-placeholder" style="padding: 40px; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b; background: rgba(255,255,255,0.5);">
-                                <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                                <p class="editable-text" style="margin: 0; font-size: 1.1rem;">A grade de cursos aparecerá aqui na página final.</p>
+                        <div class="module-content" style="flex-direction:row; gap:30px; max-width:1200px; position:relative; z-index:2;">
+                            <!-- Left: Course Grid -->
+                            <div style="flex:3;">
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; padding-bottom:10px;">
+                                    <span class="editable-text" style="font-size:1.5rem; color:#cf9c33;">🏛️</span>
+                                    <h3 class="editable-text" style="font-size:1.3rem; color:#1e293b; margin:0; font-weight:bold;">Courses in Channel</h3>
+                                </div>
+                                <div style="display:flex; flex-wrap:wrap; gap:20px;" id="courses-placeholder">
+                                    <div style="padding: 40px; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b; background: rgba(255,255,255,0.5); width: 100%;">
+                                        <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                        <p class="editable-text" style="margin: 0; font-size: 1.1rem;">A grade de cursos aparecerá aqui na página final.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Right: Methodology Sidebar -->
+                            <div style="flex:1; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:25px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                                <h4 class="editable-text" style="font-size:1rem; color:#cf9c33; margin-top:0; margin-bottom:20px; font-weight:bold;">OUR METHODOLOGY</h4>
+                                <ul style="list-style-type:disc; padding-left:20px; color:#1e293b; font-size:0.85rem; line-height:1.6; margin:0;">
+                                    <li style="margin-bottom:10px;"><span class="editable-text">Advanced training platform that supports blended courses.</span></li>
+                                    <li style="margin-bottom:10px;"><span class="editable-text">Assessment of trainees' expectations and needs.</span></li>
+                                    <li style="margin-bottom:10px;"><span class="editable-text">Design training plans and curricula.</span></li>
+                                    <li style="margin-bottom:10px;"><span class="editable-text">Design online training.</span></li>
+                                    <li style="margin-bottom:10px;"><span class="editable-text">Record video-based training.</span></li>
+                                    <li><span class="editable-text">Support to Q&A through avatars.</span></li>
+                                </ul>
                             </div>
                         </div>
                     </section>
-                    <footer class="module-section" id="channel-footer-section" style="background-color: #1e293b; padding: 60px 80px 20px; color: white; position: relative;">
+
+                    <!-- HUB DASHBOARD -->
+                    <section class="module-section" style="background-color:#ffffff; padding:40px 0; border-top:1px solid #e2e8f0;">
+                        <div class="module-content" style="flex-direction:row; gap:20px; align-items:stretch; max-width:1200px;">
+                            <!-- Col 1: Performance -->
+                            <div style="flex:2; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#f8fafc;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+                                    <h4 class="editable-text" style="margin:0; font-size:1rem; color:#1e293b; font-weight:bold;">Performance Dashboard</h4>
+                                    <span class="editable-text" style="color:#cf9c33;">📊</span>
+                                </div>
+                                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                                    <div style="flex:1; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
+                                        <p class="editable-text" style="margin:0 0 5px 0; font-size:0.75rem; color:#64748b; font-weight:bold;">Active Learners</p>
+                                        <h3 class="editable-text" style="margin:0; font-size:1.5rem; color:#1e293b;">1,250</h3>
+                                    </div>
+                                    <div style="flex:1; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
+                                        <p class="editable-text" style="margin:0 0 5px 0; font-size:0.75rem; color:#64748b; font-weight:bold;">Top Course</p>
+                                        <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
+                                            <span class="editable-text" style="font-size:1.2rem; color:#cf9c33;">🏅</span>
+                                            <h3 class="editable-text" style="margin:0; font-size:1.5rem; color:#1e293b;">78%</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="editable-image-wrapper" style="width:100%; height:120px; background:white; border-radius:8px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center;">
+                                    <img src="https://placehold.co/400x120/ffffff/cbd5e1?text=User+Engagement+Chart" style="width:100%; height:100%; object-fit:contain; padding:10px;">
+                                </div>
+                            </div>
+                            <!-- Col 2: Reminders -->
+                            <div style="flex:1.5; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#ffffff;">
+                                <h4 class="editable-text" style="margin:0 0 15px 0; font-size:1rem; color:#1e293b; border-bottom:1px solid #e2e8f0; padding-bottom:10px; font-weight:bold;">Course Reminders & Tasks</h4>
+                                <div style="display:flex; flex-direction:column; gap:10px;">
+                                    <div style="display:flex; align-items:flex-start; gap:8px;">
+                                        <input type="checkbox" style="margin-top:4px;">
+                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Review assignments (12 pending)</span>
+                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
+                                    </div>
+                                    <div style="display:flex; align-items:flex-start; gap:8px;">
+                                        <input type="checkbox" style="margin-top:4px;">
+                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Upcoming live session (June 15th)</span>
+                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
+                                    </div>
+                                    <div style="display:flex; align-items:flex-start; gap:8px;">
+                                        <input type="checkbox" style="margin-top:4px;">
+                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Update content module 3</span>
+                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Col 3: News -->
+                            <div style="flex:1.5; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#ffffff;">
+                                <h4 class="editable-text" style="margin:0 0 15px 0; font-size:1rem; color:#1e293b; border-bottom:1px solid #e2e8f0; padding-bottom:10px; font-weight:bold;">Latest News</h4>
+                                <div style="display:flex; flex-direction:column; gap:15px;">
+                                    <div style="display:flex; align-items:flex-start; gap:10px; border-left:3px solid #cf9c33; padding-left:10px;">
+                                        <div style="flex:1;">
+                                            <h5 class="editable-text" style="margin:0 0 3px 0; font-size:0.85rem; color:#1e293b;">New Module Added!</h5>
+                                            <p class="editable-text" style="margin:0; font-size:0.75rem; color:#64748b;">15 Aug 2026</p>
+                                        </div>
+                                        <span class="editable-text" style="color:#cf9c33; font-size:1rem;">📰</span>
+                                    </div>
+                                    <div style="display:flex; align-items:flex-start; gap:10px; border-left:3px solid #cf9c33; padding-left:10px;">
+                                        <div style="flex:1;">
+                                            <h5 class="editable-text" style="margin:0 0 3px 0; font-size:0.85rem; color:#1e293b;">Mentorship Pilot Program</h5>
+                                            <p class="editable-text" style="margin:0; font-size:0.75rem; color:#64748b;">15 Aug 2026</p>
+                                        </div>
+                                        <span class="editable-text" style="color:#cf9c33; font-size:1rem;">📰</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- FOOTER -->
+                    <footer class="module-section" id="channel-footer-section" style="background:linear-gradient(135deg, #1e293b 0%, #334155 100%); padding:40px 0; color:white; margin-bottom:0; position:relative;">
                         <div class="bg-overlay"></div>
                         <button class="bg-edit-btn" onclick="triggerImageUpload('channel-footer-section', 'bg')">
                             <i class="fas fa-image"></i> Change Footer BG
                         </button>
-                        <div class="module-content" style="position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 40px;">
-                            <div style="display: flex; justify-content: space-between; width: 100%; max-width: 1200px; flex-wrap: wrap; gap: 40px;">
-                                <div style="flex: 1; min-width: 250px;">
-                                    <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.5rem; margin-bottom: 20px;">Sobre Nós</h3>
-                                    <p class="editable-text" style="opacity: 0.8; font-size: 0.95rem; line-height: 1.8; margin: 0;">Somos uma instituição dedicada a entregar o melhor conteúdo educacional. Nossa missão é democratizar o conhecimento através da tecnologia.</p>
-                                </div>
-                                <div style="flex: 1; min-width: 250px;">
-                                    <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.5rem; margin-bottom: 20px;">Contato</h3>
-                                    <p class="editable-text" style="opacity: 0.8; font-size: 0.95rem; line-height: 1.8; margin: 0;">Email: contato@exemplo.com<br>Telefone: (11) 99999-9999<br>Endereço: Avenida Principal, 1000 - Centro</p>
-                                </div>
-                                <div style="flex: 1; min-width: 250px;">
-                                    <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.5rem; margin-bottom: 20px;">Parceiros</h3>
-                                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                        <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-1', 'src')">
-                                            <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+1" id="logo-footer-1" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
-                                        </div>
-                                        <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-2', 'src')">
-                                            <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+2" id="logo-footer-2" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
-                                        </div>
-                                        <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-3', 'src')">
-                                            <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+3" id="logo-footer-3" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:flex-start; gap:40px; max-width:1200px; position:relative; z-index:2;">
+                            <div style="flex:1;">
+                                <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">About Us</h3>
+                                <p class="editable-text" style="opacity:0.8; font-size:0.85rem; line-height:1.6; margin:0;">We are an institution dedicated to delivering the best educational content. Our mission is to democratize knowledge through open technology.</p>
                             </div>
-                            <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; display: flex; justify-content: center;">
-                                <p class="editable-text" style="margin: 0; font-size: 0.85rem; opacity: 0.6; text-align: center;">© 2026 Plataforma Training. Todos os direitos reservados.</p>
+                            <div style="flex:1;">
+                                <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">Contact</h3>
+                                <p class="editable-text" style="opacity:0.8; font-size:0.85rem; line-height:1.6; margin:0;">Email: contact@example.com<br>Phone: (11) 9999-9999<br>Address: Main Avenue, 1000 - Center</p>
+                            </div>
+                            <div style="flex:1;">
+                                <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">Partners</h3>
+                                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                    <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+1" style="height:25px;"></div>
+                                    <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+2" style="height:25px;"></div>
+                                    <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+3" style="height:25px;"></div>
+                                </div>
                             </div>
                         </div>
                     </footer>
@@ -76,19 +166,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Migration: append the courses section and footer to the existing content
                         container.innerHTML = channel.modular_content + defaultCoursesAndFooter;
                     }
-                    container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                    container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
                 } else {
                     container.innerHTML = `
-                        <section class="module-section" id="channel-header-section" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 60px 80px; color: white; position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 350px;">
+                        <!-- Header & Nav -->
+                        <section class="module-section" id="channel-header-section" style="background-color:#ffffff; padding:20px 40px; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; position:relative;">
                             <div class="bg-overlay"></div>
                             <button class="bg-edit-btn" onclick="triggerImageUpload('channel-header-section', 'bg')">
                                 <i class="fas fa-image"></i> Change Header BG
                             </button>
-                            <div class="module-content" style="position: relative; z-index: 2; width: 100%;">
-                                <div class="text-block text-white" style="flex: 1; max-width: 800px;">
-                                    <h1 class="editable-text" id="titulo-cabecalho" style="margin: 0; font-size: 2.5rem; color: #cf9c33; font-family: 'Helvetica', 'Arial', sans-serif;">${channel.name}</h1>
-                                    <p class="editable-text" id="desc-cabecalho" style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.8; max-width: 600px; line-height: 1.6; font-family: 'Helvetica', 'Arial', sans-serif;">${channel.description || 'Canal dedicado ao compartilhamento de conhecimento e treinamento especializado.'}</p>
+                            <div class="module-content" style="flex-direction:row; justify-content:space-between; width:100%; max-width:1200px; position:relative; z-index:2;">
+                                <div class="editable-image-wrapper" style="width:120px; flex-shrink:0;">
+                                    <img src="https://placehold.co/200x200/ffffff/0ea5e9?text=Logo" class="logo-img" style="border-radius:8px; width:100%; object-fit:contain;">
+                                </div>
+                                <div style="flex:1; margin-left:40px;">
+                                    <h1 class="editable-text" id="titulo-cabecalho" style="font-size:2.2rem; font-weight:800; color:#1e293b; margin:0; line-height:1.2;">${channel.name}</h1>
+                                    <h2 class="editable-text" style="font-size:1.2rem; color:#cf9c33; margin:5px 0;">Academy Subtitle</h2>
+                                    <p class="editable-text" id="desc-cabecalho" style="font-size:0.95rem; color:#64748b; margin-top:10px; max-width:800px; line-height:1.5;">${channel.description || 'Generic description of the mission and goals, focusing on empowering professionals with skills needed for complex challenges.'}</p>
                                 </div>
                             </div>
                         </section>
@@ -124,8 +219,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const container = document.getElementById('template-container');
                     if (container) {
                         container.innerHTML = pageContent.html;
-                        container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                        container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                        container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                        container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
                     }
                     const tModal = document.getElementById('template-modal');
                     if (tModal) tModal.style.display = 'none';
@@ -150,8 +245,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Important: the saved HTML might have data-events-bound="true" attributes.
                 // Since these are fresh DOM nodes, they don't actually have the event listeners attached.
                 // We must remove these attributes so initDynamicEvents() can bind them properly.
-                container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
             }
             
             // Hide the template modal since we are loading an existing layout
@@ -416,17 +511,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         clone.querySelectorAll('.editable-text').forEach(el => {
             el.removeAttribute('contenteditable');
             el.classList.remove('editable-text');
-            delete el.dataset.eventsBound;
+            el.removeAttribute('data-events-bound');
             if (el.className === '') el.removeAttribute('class');
         });
         clone.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
             wrapper.classList.remove('editable-image-wrapper');
             wrapper.removeAttribute('onclick');
-            delete wrapper.dataset.eventsBound;
+            wrapper.removeAttribute('data-events-bound');
             if (wrapper.className === '') wrapper.removeAttribute('class');
         });
         clone.querySelectorAll('.module-section').forEach(section => {
-            delete section.dataset.eventsBound;
+            section.removeAttribute('data-events-bound');
+            section.removeAttribute('data-events-bound-bg-main');
         });
         
         return { modularContent, compiledContent: clone.innerHTML };
@@ -497,24 +593,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
-        let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        let channelIdx = channels.findIndex(c => c.id === channelIdParam);
+    async function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
+        const updateData = {
+            modular_content: modularContent,
+            compiled_content: compiledContent
+        };
+        if (thumbUrl) updateData.thumb = thumbUrl;
         
-        if (channelIdx !== -1) {
-            channels[channelIdx].modular_content = modularContent;
-            channels[channelIdx].compiled_content = compiledContent;
-            if (thumbUrl) channels[channelIdx].thumb = thumbUrl;
-            
-            const titleEl = document.getElementById('titulo-cabecalho');
-            const descEl = document.getElementById('desc-cabecalho');
-            if (titleEl) channels[channelIdx].name = titleEl.innerText;
-            if (descEl) channels[channelIdx].description = descEl.innerText;
+        const titleEl = document.getElementById('titulo-cabecalho');
+        const descEl = document.getElementById('desc-cabecalho');
+        if (titleEl) updateData.name = titleEl.innerText;
+        if (descEl) updateData.description = descEl.innerText;
 
-            localStorage.setItem('my_channels', JSON.stringify(channels));
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(updateData)
+            });
+            if(!res.ok) throw new Error('Falha ao salvar no servidor');
+            
             publishModal.classList.add('hidden');
-            alert('Design do Canal salvo com sucesso!');
+            alert('Design do Canal salvo com sucesso (PostgreSQL)!');
             window.location.href = 'channel_view.html?id=' + channelIdParam;
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar canal oficial: ' + error.message);
         }
     }
 

@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelIdParam = urlParams.get('channelId');
 
     if (channelIdParam) {
-        const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        const channel = channels.find(c => c.id === channelIdParam);
+        let channel = null;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                channel = data.data;
+            }
+        } catch (e) { console.error(e); }
         if (channel) {
             editingPageId = 'channel_lp';
             
@@ -252,6 +259,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    window.resetToAgenfor = function() {
+        if(confirm('Isso vai resetar a página inteira para o Padrão AGENFOR, apagando suas modificações atuais. Deseja continuar?')) {
+            const tpl = window.templatePresets ? window.templatePresets.find(t => t.id === 'advanced-academy') : null;
+            if (tpl) {
+                const templateContainer = document.getElementById('template-container');
+                if (templateContainer) {
+                    templateContainer.innerHTML = tpl.html;
+                    initDynamicEvents();
+                    alert('Design atualizado para o Padrão AGENFOR com sucesso!');
+                }
+            } else {
+                alert('O template AGENFOR não foi encontrado. Certifique-se de que o arquivo templates.js está carregado corretamente.');
+            }
+        }
+    };
+
     // Text Link & Shadow & Fx inputs
     const textLinkInput = document.getElementById('text-link-input');
     const applyLinkBtn = document.getElementById('apply-link-btn');
@@ -478,24 +501,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
-        let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        let channelIdx = channels.findIndex(c => c.id === channelIdParam);
+    async function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
+        const updateData = {
+            modular_content: modularContent,
+            compiled_content: compiledContent
+        };
+        if (thumbUrl) updateData.thumb = thumbUrl;
         
-        if (channelIdx !== -1) {
-            channels[channelIdx].modular_content = modularContent;
-            channels[channelIdx].compiled_content = compiledContent;
-            if (thumbUrl) channels[channelIdx].thumb = thumbUrl;
-            
-            const titleEl = document.getElementById('titulo-cabecalho');
-            const descEl = document.getElementById('desc-cabecalho');
-            if (titleEl) channels[channelIdx].name = titleEl.innerText;
-            if (descEl) channels[channelIdx].description = descEl.innerText;
+        const titleEl = document.getElementById('titulo-cabecalho');
+        const descEl = document.getElementById('desc-cabecalho');
+        if (titleEl) updateData.name = titleEl.innerText;
+        if (descEl) updateData.description = descEl.innerText;
 
-            localStorage.setItem('my_channels', JSON.stringify(channels));
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(updateData)
+            });
+            if(!res.ok) throw new Error('Falha ao salvar no servidor');
+            
             publishModal.classList.add('hidden');
-            alert('Design do Canal salvo com sucesso!');
+            alert('Design do Canal salvo com sucesso (PostgreSQL)!');
             window.location.href = 'channel_view.html?id=' + channelIdParam;
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar canal oficial: ' + error.message);
         }
     }
 

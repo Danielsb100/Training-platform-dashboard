@@ -25,11 +25,12 @@ const placementController = require('./controllers/placementController');
 const reportController = require('./controllers/reportController');
 const notificationController = require('./controllers/notificationController');
 const courseController = require('./controllers/courseController');
+const channelController = require('./controllers/channelController');
 const landingPageController = require('./controllers/landingPageController');
 const moduleAiController = require('./controllers/moduleAiController');
 
-const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
-const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
+const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
+const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 
 fs.mkdirSync(env.upload.tempDir, { recursive: true });
 
@@ -163,11 +164,22 @@ app.patch('/courses/:id/modules/reorder', authenticateToken, roleMiddleware(COUR
 app.patch('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourseModule);
 app.delete('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.removeCourseModule);
 app.post('/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
+
+// --- Channels ---
+app.post('/channels', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.createChannel);
+app.get('/channels/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.getMyChannels);
+app.get('/channels/public', channelController.getPublicChannels);
+app.get('/channels/:id', authenticateToken, channelController.getChannelDetail);
+app.put('/channels/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.updateChannel);
+app.delete('/channels/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.deleteChannel);
+app.post('/channels/:id/courses', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.addCourseToChannel);
+app.delete('/channels/:id/courses/:courseId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.removeCourseFromChannel);
 app.get('/courses/:id/runtime', authenticateToken, courseController.getCourseRuntime);
 app.post('/courses/:id/modules/:moduleId/complete', authenticateToken, courseController.completeCourseModule);
 app.post('/api/courses/:id/subscribe', authenticateToken, courseController.selfEnroll);
 app.get('/api/courses/enrolled', authenticateToken, courseController.getEnrolledCourses);
 app.delete('/api/courses/:id/unsubscribe', authenticateToken, courseController.unsubscribe);
+app.get('/api/courses/:id/insights', authenticateToken, courseController.getCourseInsights);
 
 app.get('/api/courses/:id/editors', authenticateToken, courseController.getCourseEditors);
 app.post('/api/courses/:id/editors', authenticateToken, courseController.addCourseEditor);

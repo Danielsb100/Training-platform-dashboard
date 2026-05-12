@@ -539,16 +539,20 @@
             const channelSelect = document.getElementById('course-channel');
             
             // Tenta carregar os canais reais salvos no navegador ANTES de preencher o formulário
-            const savedChannels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            
-            if (savedChannels.length > 0) {
-                savedChannels.forEach(ch => {
-                    const opt = document.createElement('option');
-                    opt.value = ch.id;
-                    opt.innerText = ch.name;
-                    channelSelect.appendChild(opt);
-                });
-            }
+            const tokenForChannels = localStorage.getItem('token');
+            fetch('/channels/my', { headers: { 'Authorization': `Bearer ${tokenForChannels}` } })
+                .then(r => r.json())
+                .then(res => {
+                    const savedChannels = res.data || [];
+                    if (savedChannels.length > 0) {
+                        savedChannels.forEach(ch => {
+                            const opt = document.createElement('option');
+                            opt.value = ch.id;
+                            opt.innerText = ch.name;
+                            channelSelect.appendChild(opt);
+                        });
+                    }
+                }).catch(e => console.error(e));
 
             const coursesLocal = JSON.parse(localStorage.getItem('published_courses') || '[]');
             let course = coursesLocal.find(c => String(c.id) === String(courseId));

@@ -1,6 +1,7 @@
 const prisma = require('../config/db');
 const { deepDeleteModule } = require('./moduleController');
 const { createEnrollmentNotification, createEventInviteNotification } = require('../services/notificationService');
+const { generateCourseInsightsForStudent } = require('../services/moduleAiService');
 
 function getEffectiveUserRoles(user) {
   return new Set([
@@ -1272,7 +1273,51 @@ async function removeCourseEditor(req, res) {
   }
 }
 
+async function getCourseInsights(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const { course, managerView } = await assertCourseAccess(courseId, req.user);
+    const progress = buildCourseProgress(course, req.user.id, managerView);
+
+    // Calculate average score for the user in this course
+    let totalScore = 0;
+    let quizCount = 0;
+
+    progress.modules.forEach(m => {
+      if (m.hasQuiz && m.bestQuizScore !== null) {
+        totalScore += m.bestQuizScore;
+        quizCount++;
+      }
+    });
+
+    const averageScore = quizCount > 0 ? Math.round(totalScore / quizCount) : 0;
+
+    const studentStats = {
+      courseTitle: course.title,
+      totalModules: progress.modules.length,
+      completedModules: progress.completedCount,
+      progressPercent: progress.progressPercent,
+      averageScore,
+      recentlyCompleted: progress.modules.filter(m => m.completed).map(m => m.title).slice(-3) // last 3 completed
+    };
+
+    const insights = await generateCourseInsightsForStudent(studentStats);
+    
+    return res.json(insights);
+  } catch (error) {
+    if (error.message === 'COURSE_NOT_FOUND') {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+    if (error.message === 'COURSE_ACCESS_DENIED') {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+    console.error('Error fetching course insights:', error);
+    return res.status(500).json({ error: 'Failed to fetch course insights.' });
+  }
+}
+
 module.exports = {
+  getCourseInsights,
   addCourseEditor,
   removeCourseEditor,
   getStudentsOverview,

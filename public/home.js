@@ -160,31 +160,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-    // --- 4. Render Featured Channels (Legacy from LocalStorage) ---
-    const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+    // --- 4. Render Featured Channels (from API) ---
     const featuredContainer = document.getElementById('featured-container');
     if (featuredContainer) {
-        let featuredHtml = '';
+        fetch('/channels/public')
+            .then(res => res.json())
+            .then(resData => {
+                const channels = resData.data || [];
+                let featuredHtml = '';
 
-        channels.forEach(ch => {
-            const thumbHtml = ch.thumb
-                ? `<div style="width:100%; height:120px; background-image:url(${ch.thumb}); background-size:cover; background-position:center; border-radius:8px; margin-bottom:15px;"></div>`
-                : `<div style="width:100%; height:120px; background:#497aa7; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:white; font-size:30px;"><i class="fas fa-tv"></i></div>`;
-                
-            featuredHtml += `
-                <div style="min-width:250px; background:white; border-radius:12px; border:1px solid #e2e8f0; padding:15px; text-align:center; cursor:pointer;" onclick="window.location.href='channel_view.html?id=${ch.id}&view=public'">
-                    ${thumbHtml}
-                    <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
-                    <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
-                    <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
-                </div>
-            `;
-        });
+                channels.forEach(ch => {
+                    const thumbHtml = ch.thumb
+                        ? `<div style="width:100%; height:120px; background-image:url(${ch.thumb}); background-size:cover; background-position:center; border-radius:8px; margin-bottom:15px;"></div>`
+                        : `<div style="width:100%; height:120px; background:#497aa7; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:white; font-size:30px;"><i class="fas fa-tv"></i></div>`;
+                        
+                    featuredHtml += `
+                        <div style="min-width:250px; background:white; border-radius:12px; border:1px solid #e2e8f0; padding:15px; text-align:center; cursor:pointer;" onclick="window.location.href='channel_view.html?id=${ch.id}&view=public'">
+                            ${thumbHtml}
+                            <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
+                            <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
+                            <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
+                        </div>
+                    `;
+                });
 
-        if (featuredHtml === '') {
-            featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
-        } else {
-            featuredContainer.innerHTML = featuredHtml;
-        }
+                if (featuredHtml === '') {
+                    featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
+                } else {
+                    featuredContainer.innerHTML = featuredHtml;
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load channels:', err);
+                featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">Falha ao carregar canais.</p>';
+            });
     }
 });

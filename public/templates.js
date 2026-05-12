@@ -1,10 +1,138 @@
 window.templatePresets = [
+        {
+        id: 'advanced-academy',
+        name: 'AGENFOR Advanced Virtual Academy',
+        thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&q=80',
+        html: `
+            <!-- Nav -->
+            <section class="module-section" style="background-color: #cf9c33; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="width: 100%; display: flex; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap:15px; color:white; font-weight:bold; font-size:1.2rem;">
+                        <i class="fas fa-globe"></i> <span class="editable-text">AGENFOR</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Header -->
+            <section class="module-section" id="header-section" style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
+                <div class="bg-overlay"></div>
+                <button class="bg-edit-btn" onclick="triggerImageUpload('header-section', 'bg')">
+                    <i class="fas fa-image"></i> Change BG
+                </button>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: block;">
+                    <h1 class="editable-text" style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">Advanced Virtual Academy</h1>
+                    <h2 class="editable-text" style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">AVA</h2>
+                    <p class="editable-text" style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges.</p>
+                </div>
+            </section>
+
+            <!-- Main Content & Methodology -->
+            <section class="module-section" style="background-color: #f8fafc; padding: 40px;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 40px; flex-wrap: wrap;">
+                    
+                    <!-- Courses/Modules Grid -->
+                    <div style="flex: 3; min-width: 300px;">
+                        <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <i class="fas fa-layer-group" style="color: #cf9c33;"></i> <span class="editable-text">Cursos no Canal</span>
+                        </h2>
+                        <div id="courses-placeholder" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
+                            <div style="padding: 60px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b; background: white;">
+                                <i class="fas fa-layer-group" style="font-size: 3rem; margin-bottom: 15px; display: block; color: #e2e8f0;"></i>
+                                <p>A grade de cursos aparecerá aqui na página final.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Methodology Sidebar -->
+                    <div style="flex: 1; min-width: 300px;">
+                        <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
+                            <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">NOSSA METODOLOGIA</h3>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">AVA is an advanced training platform that supports blended courses to enhance participants knowledge retention.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">AVA is trained as legal.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Assessment of trainees' expectations and needs.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Design training plans and curricula.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Design online training.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Layout on-the-job training.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Record video-based training.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Support to Q&A through avatars.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Build case studies, scenarios and simulation.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard -->
+            <section class="module-section" style="background-color: #f8fafc; padding: 40px; border-top: 1px solid #e2e8f0;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap;">
+                    
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Performance Dashboard</h4>
+                            <i class="fas fa-chart-line" style="color:#cf9c33;"></i>
+                        </div>
+                        <h3 class="editable-text" style="margin:0; font-size:1.8rem; color:#1e293b;">1,250</h3>
+                        <p class="editable-text" style="margin:5px 0 0 0; font-size:0.9rem; color:#64748b;">Active Learners</p>
+                    </div>
+
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Course Reminders</h4>
+                            <i class="fas fa-bell" style="color:#cf9c33;"></i>
+                        </div>
+                        <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem; color:#64748b; display:flex; flex-direction:column; gap:8px;">
+                            <li><i class="far fa-square"></i> <span class="editable-text">Review assignments (12 pending)</span></li>
+                            <li><i class="far fa-square"></i> <span class="editable-text">Upcoming live session (June 15th)</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Latest News</h4>
+                            <i class="fas fa-newspaper" style="color:#cf9c33;"></i>
+                        </div>
+                        <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem; color:#64748b; display:flex; flex-direction:column; gap:8px;">
+                            <li><strong><span class="editable-text">New Module Added!</span></strong><br><small>15 Aug 2026</small></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <section class="module-section" style="background: linear-gradient(to right, #1e293b 0%, #cf9c33 100%); padding: 40px; color: white;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Sobre Nós</h3>
+                        <p class="editable-text" style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Somos uma instituição dedicada a entregar o melhor conteúdo educacional. Nosso foco é democratizar o conhecimento através da tecnologia aberta.</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Contato</h3>
+                        <p class="editable-text" style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Email: contato@exemplo.com<br>Telefone: (11) 9999-9999<br>Endereço: Avenida Principal, 1000 - Centro</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Parceiros</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="editable-text" style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 1</div>
+                            <div class="editable-text" style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 2</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `
+    },
     {
         id: "corporate",
         name: "Corporate PRO",
         thumb: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- HEADER -->
+            <style>html { scroll-behavior: smooth; }</style>
+            <!-- HEADER -->
             <section class="module-section" style="background-color:#ffffff; padding:20px; align-items:center;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; width:100%;">
                     <div class="editable-image-wrapper" style="width:180px;"><img src="https://placehold.co/400x150/ffffff/0ea5e9?text=Corp+PRO" class="logo-img" style="border-radius:4px;"></div>

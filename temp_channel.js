@@ -1,55 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Canal - Plataforma Training</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="app.css">
-    <style>
-        body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
-        .channel-header { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 60px 80px; color: white; position: relative; }
-        .back-link { color: rgba(255,255,255,0.7); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.9rem; }
-        .back-link:hover { color: white; }
-        
-        .channel-info h1 { margin: 0; font-size: 2.5rem; color: #cf9c33; }
-        .channel-info p { margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.8; max-width: 600px; line-height: 1.6; }
-        
-        .main-content { padding: 40px 80px; }
-        .section-title { font-size: 1.5rem; color: #1e293b; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
-        
-        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .course-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; transition: 0.3s; }
-        .course-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .course-thumb { height: 160px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 3rem; }
-        .course-body { padding: 20px; }
-        .course-body h4 { margin: 0; color: #1e293b; font-size: 1.1rem; }
-        .course-body p { color: #64748b; font-size: 0.85rem; margin: 10px 0 20px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        
-        .btn-view { display: block; width: 100%; padding: 10px; background: #497aa7; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
-        
-        .empty-state { text-align: center; padding: 100px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
-    </style>
-</head>
-<body>
 
-    <div id="channel-content">
-        <!-- Content injected by JS -->
-    </div>
-
-    <!-- Modal Vincular Curso -->
-    <div id="link-course-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:800px; border-radius:15px; padding:30px; max-height:80vh; overflow-y:auto; position:relative;">
-            <button onclick="closeLinkModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;"><i class="fas fa-times"></i></button>
-            <h2 style="color:#1e293b; margin-top:0;">Vincular Curso ao Canal</h2>
-            <p style="color:#64748b;">Selecione um dos seus cursos abaixo para adicionar a este canal.</p>
-            
-            <div id="available-courses-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px; margin-top:30px;">
-                <!-- Courses injected by JS -->
-            </div>
-        </div>
-    </div>
-    <script>
         let apiCourses = []; // Cache from DB
 
         async function fetchMyCourses() {
@@ -70,11 +19,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
             
-            const token = localStorage.getItem('token');
-            const channelRes = await fetch('/channels/' + channelId, { headers: { 'Authorization': `Bearer ${token}` } });
-            const channelData = await channelRes.json();
-            const channel = channelData.data;
-            const linkedIds = channel && channel.courses ? channel.courses.map(c => c.toString()) : [];
+            const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+            const channel = channels.find(c => c.id === channelId);
+            const linkedIds = channel && channel.linkedCourses ? channel.linkedCourses : [];
             
             const courses = await fetchMyCourses();
             const available = courses.filter(c => !linkedIds.includes(c.id.toString()));
@@ -108,41 +55,44 @@
             document.getElementById('link-course-modal').style.display = 'none';
         }
 
-        async function linkCourseToChannel(courseId) {
+        function linkCourseToChannel(courseId) {
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            const token = localStorage.getItem('token');
-            try {
-                const res = await fetch('/channels/' + channelId + '/courses', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ courseId })
-                });
-                if(res.ok) location.reload();
-                else alert('Erro ao vincular curso');
-            } catch(e) { console.error(e); }
+            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+            const index = channels.findIndex(c => c.id === channelId);
+            
+            if (index !== -1) {
+                if(!channels[index].linkedCourses) channels[index].linkedCourses = [];
+                if(!channels[index].linkedCourses.includes(courseId.toString())) {
+                    channels[index].linkedCourses.push(courseId.toString());
+                    localStorage.setItem('my_channels', JSON.stringify(channels));
+                }
+                location.reload();
+            }
         }
 
-        async function deleteChannel() {
+        function deleteChannel() {
             if(!confirm("Tem certeza que deseja excluir este canal? Os cursos não serão apagados.")) return;
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            const token = localStorage.getItem('token');
-            try {
-                await fetch('/channels/' + channelId, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                window.location.href = 'profile.html?tab=creations';
-            } catch(e) { console.error(e); }
+            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+            channels = channels.filter(c => c.id !== channelId);
+            localStorage.setItem('my_channels', JSON.stringify(channels));
+            
+            window.location.href = 'profile.html?tab=creations';
         }
 
-        async function unlinkCourse(courseId) {
+        function unlinkCourse(courseId) {
             if(!confirm("Desvincular este curso do canal?")) return;
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            const token = localStorage.getItem('token');
-            try {
-                await fetch('/channels/' + channelId + '/courses/' + courseId, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+            const index = channels.findIndex(c => c.id === channelId);
+            if (index !== -1 && channels[index].linkedCourses) {
+                channels[index].linkedCourses = channels[index].linkedCourses.filter(id => id !== courseId.toString());
+                localStorage.setItem('my_channels', JSON.stringify(channels));
                 location.reload();
-            } catch(e) { console.error(e); }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -155,22 +105,28 @@
                 return;
             }
 
-            const token = localStorage.getItem('token');
-            let channel;
-            try {
-                const res = await fetch('/channels/' + channelId, { headers: { 'Authorization': `Bearer ${token}` } });
-                if(res.ok) {
-                    const d = await res.json();
-                    channel = d.data;
+            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+            
+            // Migration: Ensure all channels have linkedCourses
+            let needsMigration = false;
+            channels.forEach(ch => {
+                if (!ch.linkedCourses) {
+                    ch.linkedCourses = [];
+                    const legacyCourses = JSON.parse(localStorage.getItem('published_courses') || '[]');
+                    legacyCourses.forEach(lc => {
+                        if (lc.channelId === ch.id) ch.linkedCourses.push(lc.id.toString());
+                    });
+                    needsMigration = true;
                 }
-            } catch(e) { console.error(e); }
+            });
+            if (needsMigration) localStorage.setItem('my_channels', JSON.stringify(channels));
+            
+            const channel = channels.find(c => c.id === channelId);
             
             if (!channel) {
                 container.innerHTML = '<div class="empty-state">Canal não encontrado.</div>';
                 return;
             }
-            if(!channel.courses) channel.courses = [];
-            channel.linkedCourses = channel.courses.map(c => c.toString());
 
             const courses = await fetchMyCourses();
             const channelCourses = courses.filter(c => channel.linkedCourses.includes(c.id.toString()));
@@ -337,6 +293,4 @@
                 `;
             }
         });
-    </script>
-</body>
-</html>
+    

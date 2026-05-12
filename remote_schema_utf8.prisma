@@ -707,29 +707,3 @@ enum AiTipStatus {
 }
 
 
-
-model Channel {
-  id              String   @id @default(cuid())
-  ownerMasterId   Int
-  owner           User     @relation("ChannelOwner", fields: [ownerMasterId], references: [id], onDelete: Cascade)
-  name            String
-  description     String?
-  thumb           String?
-  modular_content String?  @db.Text
-  compiled_content String? @db.Text
-  status          CourseStatus @default(PUBLISHED)
-  courses         ChannelCourse[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model ChannelCourse {
-  id        Int      @id @default(autoincrement())
-  channelId String
-  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([channelId, courseId])
-}
