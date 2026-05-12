@@ -1,3 +1,279 @@
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
+function getAiTipSeverityStyle(severity) {
+    if (severity === 'CRITICAL') return { border: '#fecaca', bg: '#fff1f2', text: '#be123c', icon: 'fa-triangle-exclamation' };
+    if (severity === 'WARNING') return { border: '#fed7aa', bg: '#fff7ed', text: '#c2410c', icon: 'fa-circle-exclamation' };
+    return { border: '#bfdbfe', bg: '#eff6ff', text: '#1d4ed8', icon: 'fa-lightbulb' };
+}
+
+function renderAiTips(payload = {}) {
+    const list = document.getElementById('ai-tips-list');
+    const count = document.getElementById('ai-tips-count');
+    const warning = document.getElementById('ai-tips-warning-count');
+    if (!list) return;
+
+    const tips = Array.isArray(payload.tips) ? payload.tips : [];
+    const counts = payload.severityCounts || {};
+    if (count) count.textContent = `${tips.length} tip${tips.length === 1 ? '' : 's'}`;
+    if (warning) warning.textContent = `${(counts.WARNING || 0) + (counts.CRITICAL || 0)} attention`;
+
+    if (!tips.length) {
+        list.innerHTML = '<p style="font-size:13px; color:#64748b; margin:0;">No AI tips right now. Keep studying and refresh when you want updated guidance.</p>';
+        return;
+    }
+
+    list.innerHTML = tips.map((tip) => {
+        const style = getAiTipSeverityStyle(tip.severity);
+        const metadata = tip.metadata || {};
+        const focusAreas = Array.isArray(metadata.focusAreas) && metadata.focusAreas.length
+            ? `<div style="margin-top:8px;"><strong style="font-size:12px; color:#475569;">Focus:</strong> <span style="font-size:12px; color:#64748b;">${metadata.focusAreas.map(escapeHtml).join(' • ')}</span></div>`
+            : '';
+        const nextSteps = Array.isArray(metadata.nextSteps) && metadata.nextSteps.length
+            ? `<ul style="margin:8px 0 0 18px; padding:0; color:#64748b; font-size:12px; line-height:1.45;">${metadata.nextSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>`
+            : '';
+        return `
+            <article data-ai-tip-id="${tip.id}" style="background:${style.bg}; border:1px solid ${style.border}; border-radius:10px; padding:14px; display:flex; justify-content:space-between; gap:14px; align-items:flex-start;">
+                <div style="display:flex; gap:12px; min-width:0;">
+                    <i class="fas ${style.icon}" style="color:${style.text}; margin-top:3px;"></i>
+                    <div style="min-width:0;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <strong style="color:#1e293b; font-size:14px;">${escapeHtml(tip.title || 'AI tip')}</strong>
+                            <span style="background:white; color:${style.text}; border:1px solid ${style.border}; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:bold;">${escapeHtml(tip.severity || 'INFO')}</span>
+                            <span style="background:white; color:#475569; border:1px solid #e2e8f0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:bold;">${escapeHtml(tip.scope || 'COURSE')}</span>
+                        </div>
+                        <p style="margin:6px 0 0 0; color:#475569; font-size:13px; line-height:1.45;">${escapeHtml(tip.message || '')}</p>
+                        ${tip.reason ? `<p style="margin:6px 0 0 0; color:#94a3b8; font-size:12px; line-height:1.4;">Why: ${escapeHtml(tip.reason)}</p>` : ''}
+                        ${focusAreas}
+                        ${nextSteps}
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+                    ${tip.actionUrl ? `<a href="${escapeHtml(tip.actionUrl)}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;">${escapeHtml(tip.actionLabel || 'Open')}</a>` : ''}
+                    <button type="button" data-ai-tip-dismiss="${tip.id}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">Dismiss</button>
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    list.querySelectorAll('[data-ai-tip-dismiss]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            button.disabled = true;
+            try {
+                await dismissAiTip(button.dataset.aiTipDismiss);
+                await loadAiTips({ refresh: false });
+            } catch (error) {
+                console.error('Failed to dismiss AI tip:', error);
+                button.disabled = false;
+            }
+        });
+    });
+}
+
+async function fetchAiTips({ refresh = true } = {}) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/ai-tips/me?refresh=${refresh ? 'true' : 'false'}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || 'Could not load AI tips.');
+    return payload;
+}
+
+async function dismissAiTip(id) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/ai-tips/${encodeURIComponent(id)}/dismiss`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || 'Could not dismiss AI tip.');
+    return payload;
+}
+
+async function loadAiTips({ refresh = true } = {}) {
+    const list = document.getElementById('ai-tips-list');
+    if (!list) return;
+    try {
+        if (refresh) list.innerHTML = '<p style="font-size:13px; color:#64748b; margin:0;">Refreshing AI tips...</p>';
+        const payload = await fetchAiTips({ refresh });
+        renderAiTips(payload);
+    } catch (error) {
+        console.error('AI tips error:', error);
+        list.innerHTML = '<p style="font-size:13px; color:#be123c; margin:0;">Could not load AI tips yet.</p>';
+    }
+}
+
+window.loadAiTips = loadAiTips;
+
+function getEurobotSyncStatusStyle(status) {
+    const normalized = String(status || '').toUpperCase();
+    if (normalized === 'SYNCED' || normalized === 'ACTIVE') return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' };
+    if (normalized === 'FAILED' || normalized === 'ERROR' || normalized === 'DELETE_FAILED') return { bg: '#fee2e2', text: '#b91c1c', border: '#fecaca' };
+    if (normalized === 'PENDING' || normalized === 'STALE') return { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' };
+    if (normalized === 'SKIPPED' || normalized === 'DELETED' || normalized === 'DISABLED') return { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' };
+    return { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' };
+}
+
+function formatEurobotDate(value) {
+    if (!value) return 'Never';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Never';
+    return date.toLocaleString();
+}
+
+function renderEurobotSyncPanel(payload = {}) {
+    const statusEl = document.getElementById('eurobot-sync-status');
+    const summaryEl = document.getElementById('eurobot-sync-summary');
+    const itemsEl = document.getElementById('eurobot-sync-items');
+    const ensureBtn = document.getElementById('btn-eurobot-ensure-default');
+    if (!statusEl || !summaryEl || !itemsEl) return;
+
+    const connection = payload.connection || null;
+    const summary = payload.syncSummary || connection?.syncSummary || {};
+    const items = Array.isArray(payload.items) ? payload.items : [];
+
+    if (!connection) {
+        statusEl.innerHTML = '<span style="color:#c2410c; font-weight:700;">No active Eurobot knowledge base yet.</span> Click <strong>Ensure KB</strong> to create/connect the default Training KB, then run sync.';
+        summaryEl.innerHTML = '';
+        itemsEl.innerHTML = '';
+        if (ensureBtn) ensureBtn.style.display = 'inline-flex';
+        return;
+    }
+
+    if (ensureBtn) ensureBtn.style.display = 'inline-flex';
+    const connStyle = getEurobotSyncStatusStyle(connection.status);
+    statusEl.innerHTML = `
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+            <span style="font-weight:800; color:#1e293b;">${escapeHtml(connection.displayName || connection.remoteName || connection.collectionName || 'Training Knowledge Base')}</span>
+            <span style="background:${connStyle.bg}; color:${connStyle.text}; border:1px solid ${connStyle.border}; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800;">${escapeHtml(connection.status || 'ACTIVE')}</span>
+            <span style="color:#64748b; font-size:12px;">Last refresh: ${escapeHtml(formatEurobotDate(connection.lastRefreshAt))}</span>
+        </div>
+        ${connection.lastError ? `<p style="margin:8px 0 0 0; color:#b91c1c; font-size:12px;">Last error: ${escapeHtml(connection.lastError)}</p>` : ''}
+    `;
+
+    const cards = [
+        ['Total', summary.total || 0, '#f8fafc', '#334155'],
+        ['Synced', summary.synced || 0, '#dcfce7', '#166534'],
+        ['Pending', summary.pending || 0, '#fff7ed', '#c2410c'],
+        ['Failed', (summary.failed || 0) + (summary.delete_failed || 0), '#fee2e2', '#b91c1c'],
+        ['Skipped', summary.skipped || 0, '#f1f5f9', '#475569'],
+        ['Deleted', summary.deleted || 0, '#f1f5f9', '#475569']
+    ];
+    summaryEl.innerHTML = cards.map(([label, value, bg, color]) => `
+        <div style="background:${bg}; border:1px solid #e2e8f0; border-radius:10px; padding:10px;">
+            <div style="font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">${label}</div>
+            <div style="font-size:1.35rem; color:${color}; font-weight:900; line-height:1.2;">${value}</div>
+        </div>
+    `).join('');
+
+    if (!items.length) {
+        itemsEl.innerHTML = '<p style="font-size:12px; color:#64748b; margin:0;">No sync items to show yet. Click <strong>Sync now</strong> to reconcile existing course materials.</p>';
+        return;
+    }
+
+    const latestItems = items.slice(0, 8);
+    itemsEl.innerHTML = `
+        <div style="border-top:1px solid #e2e8f0; padding-top:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px;">
+                <strong style="font-size:13px; color:#1e293b;">Latest sync items</strong>
+                <span style="font-size:12px; color:#64748b;">Showing ${latestItems.length} of ${items.length}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                ${latestItems.map((item) => {
+                    const itemStyle = getEurobotSyncStatusStyle(item.status);
+                    const label = item.filename || `${item.sourceType || 'Material'} #${item.sourceId || item.id}`;
+                    return `
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:9px 10px;">
+                            <div style="min-width:0;">
+                                <div style="font-size:13px; color:#1e293b; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(label)}</div>
+                                <div style="font-size:11px; color:#64748b;">${escapeHtml(item.sourceType || 'MATERIAL')} • Updated ${escapeHtml(formatEurobotDate(item.updatedAt))}</div>
+                                ${item.lastError ? `<div style="font-size:11px; color:#b91c1c; margin-top:3px;">${escapeHtml(item.lastError)}</div>` : ''}
+                            </div>
+                            <span style="flex-shrink:0; background:${itemStyle.bg}; color:${itemStyle.text}; border:1px solid ${itemStyle.border}; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:900;">${escapeHtml(item.status || 'PENDING')}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+async function eurobotSyncRequest(path, options = {}) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(path, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            ...(options.headers || {})
+        }
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || 'Eurobot sync request failed.');
+    return payload;
+}
+
+async function loadEurobotSyncPanel() {
+    const statusEl = document.getElementById('eurobot-sync-status');
+    if (!statusEl) return;
+    try {
+        statusEl.textContent = 'Loading Eurobot sync status...';
+        const config = await eurobotSyncRequest('/api/ai/knowledge-base/config');
+        const syncItems = await eurobotSyncRequest('/api/ai/knowledge-base/sync-items');
+        renderEurobotSyncPanel({ ...config, items: syncItems.items || [], connection: config.connection || syncItems.connection });
+    } catch (error) {
+        console.error('Eurobot sync status failed:', error);
+        statusEl.innerHTML = `<span style="color:#b91c1c; font-weight:700;">Could not load Eurobot sync status:</span> ${escapeHtml(error.message)}`;
+    }
+}
+
+async function ensureEurobotKnowledgeBase() {
+    const button = document.getElementById('btn-eurobot-ensure-default');
+    if (!button) return;
+    const previousHtml = button.innerHTML;
+    try {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+        const payload = await eurobotSyncRequest('/api/ai/knowledge-base/default', { method: 'POST' });
+        renderEurobotSyncPanel(payload);
+        await loadEurobotSyncPanel();
+    } catch (error) {
+        alert('Could not ensure Eurobot KB: ' + error.message);
+    } finally {
+        button.disabled = false;
+        button.innerHTML = previousHtml;
+    }
+}
+
+async function triggerEurobotKnowledgeSync() {
+    const button = document.getElementById('btn-eurobot-sync');
+    const statusEl = document.getElementById('eurobot-sync-status');
+    if (!button) return;
+    const previousHtml = button.innerHTML;
+    try {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+        if (statusEl) statusEl.textContent = 'Syncing existing Training materials to Eurobot...';
+        const payload = await eurobotSyncRequest('/api/ai/knowledge-base/refresh', { method: 'POST', body: '{}' });
+        renderEurobotSyncPanel(payload);
+        await loadEurobotSyncPanel();
+    } catch (error) {
+        alert('Eurobot sync failed: ' + error.message);
+        await loadEurobotSyncPanel();
+    } finally {
+        button.disabled = false;
+        button.innerHTML = previousHtml;
+    }
+}
+
+window.loadEurobotSyncPanel = loadEurobotSyncPanel;
+window.triggerEurobotKnowledgeSync = triggerEurobotKnowledgeSync;
+window.ensureEurobotKnowledgeBase = ensureEurobotKnowledgeBase;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const userPagesGrid = document.getElementById('user-pages-grid');
     const pagesCount = document.getElementById('pages-count');
@@ -82,6 +358,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- 2. Load Operational Agenda / Notifications ---
     await loadNotificationsSummary();
 
+    // --- 2b. Load student-facing AI Tips ---
+    const refreshAiTipsBtn = document.getElementById('btn-refresh-ai-tips');
+    if (refreshAiTipsBtn) {
+        refreshAiTipsBtn.addEventListener('click', () => loadAiTips({ refresh: true }));
+    }
+    await loadAiTips({ refresh: false });
+
+    // --- 2c. Load creator Eurobot sync status ---
+    const eurobotSyncBtn = document.getElementById('btn-eurobot-sync');
+    if (eurobotSyncBtn) {
+        eurobotSyncBtn.addEventListener('click', triggerEurobotKnowledgeSync);
+    }
+    const eurobotEnsureBtn = document.getElementById('btn-eurobot-ensure-default');
+    if (eurobotEnsureBtn) {
+        eurobotEnsureBtn.addEventListener('click', ensureEurobotKnowledgeBase);
+    }
+    await loadEurobotSyncPanel();
+
     // --- 3. Load Profile API ---
     try {
         const profileRes = await fetch('/api/profile/me', {
@@ -156,8 +450,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     navCreations.style.display = 'none';
                 }
             }
-            const canManageStudents = roles.some(r => ['TEACHER', 'TUTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role);
-            if (navStudents && canManageStudents) {
+            const canManageStudentsProfile = roles.some(r => ['TEACHER', 'TUTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role);
+            if (navStudents && canManageStudentsProfile) {
                 navStudents.style.display = 'flex';
             }
             if (navUsers && user.role === 'MASTER') {
