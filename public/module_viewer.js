@@ -63,29 +63,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('overview-grid').innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">Erro ao carregar o conteúdo do módulo.</div>`;
     }
     
-    function extractYoutubeId(url) {
-        if (!url) return null;
-        let videoId = '';
-        if(url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
-        else if(url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
-        return videoId || null;
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(value) {
+        return escapeHtml(value);
+    }
+
+    function parseVideoUrl(url) {
+        if (!url) return { type: 'unknown', url: '', youtubeId: null };
+
+        try {
+            const parsedUrl = new URL(url, window.location.origin);
+            const hostname = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
+            const pathname = parsedUrl.pathname;
+
+            if (hostname === 'youtu.be') {
+                const youtubeId = pathname.split('/').filter(Boolean)[0] || null;
+                return { type: youtubeId ? 'youtube' : 'unknown', url, youtubeId };
+            }
+
+            if (hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'youtube-nocookie.com') {
+                const watchId = parsedUrl.searchParams.get('v');
+                const embedMatch = pathname.match(/\/(?:embed|shorts)\/([^/?#]+)/);
+                const youtubeId = watchId || (embedMatch ? embedMatch[1] : null);
+                return { type: youtubeId ? 'youtube' : 'unknown', url, youtubeId };
+            }
+
+            if (hostname.endsWith('sharepoint.com') || hostname.endsWith('1drv.ms') || hostname.endsWith('onedrive.live.com')) {
+                return { type: 'sharepoint', url, youtubeId: null };
+            }
+
+            if (/\.(mp4|webm|ogg|mov)(?:$|[?#])/i.test(parsedUrl.pathname)) {
+                return { type: 'direct', url, youtubeId: null };
+            }
+        } catch (error) {
+            console.warn('Invalid video URL:', url, error);
+        }
+
+        return { type: 'external', url, youtubeId: null };
+    }
+
+    function getVideoThumbnailHtml(video) {
+        const videoInfo = parseVideoUrl(video.url);
+        if (videoInfo.type === 'youtube' && videoInfo.youtubeId) {
+            const thumbUrl = `https://img.youtube.com/vi/${encodeURIComponent(videoInfo.youtubeId)}/hqdefault.jpg`;
+            return `<img src="${thumbUrl}" alt="Video Thumbnail" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="video-placeholder" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; background:#0f172a; color:#cf9c33; flex-direction:column; gap:8px;">
+                    <i class="fas fa-video" style="font-size:3rem;"></i><span>Video</span>
+                </div>`;
+        }
+
+        const label = videoInfo.type === 'sharepoint' ? 'SharePoint Video' : 'Video';
+        return `<div class="video-placeholder" style="display:flex; width:100%; height:100%; align-items:center; justify-content:center; background:#0f172a; color:#cf9c33; flex-direction:column; gap:8px;">
+            <i class="fas fa-video" style="font-size:3rem;"></i><span>${label}</span>
+        </div>`;
     }
     
     function renderHubs() {
         // --- Videos Grid ---
         const videosGrid = document.getElementById('videos-grid');
         videosGrid.innerHTML = videos.length ? videos.map((v, i) => {
-            const ytId = extractYoutubeId(v.url);
-            const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'assets/video-placeholder.png'; // Fallback
+            const thumbHtml = getVideoThumbnailHtml(v);
             
             return `
             <div class="card" onclick="openPlayer('video', ${i})">
                 <div class="card-thumb">
-                    <img src="${thumbUrl}" alt="Video Thumbnail" onerror="this.src='https://via.placeholder.com/600x400/000000/cf9c33?text=Video'">
+                    ${thumbHtml}
                     <i class="fas fa-play-circle play-icon"></i>
                 </div>
                 <div class="card-body">
-                    <div class="card-title">${v.title}</div>
+                    <div class="card-title">${escapeHtml(v.title)}</div>
                     <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
                 </div>
             </div>`;
@@ -123,16 +177,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         overviewGrid.innerHTML = allItems.map(item => {
             if (item.contentType === 'video') {
                 const i = videos.indexOf(item);
-                const ytId = extractYoutubeId(item.url);
-                const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'https://via.placeholder.com/600x400/000000/cf9c33?text=Video';
+                const thumbHtml = getVideoThumbnailHtml(item);
                 return `
                 <div class="card" onclick="openPlayer('video', ${i})">
                     <div class="card-thumb">
-                        <img src="${thumbUrl}" alt="Video Thumbnail">
+                        ${thumbHtml}
                         <i class="fas fa-play-circle play-icon"></i>
                     </div>
                     <div class="card-body">
-                        <div class="card-title">${item.title}</div>
+                        <div class="card-title">${escapeHtml(item.title)}</div>
                         <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
                     </div>
                 </div>`;
@@ -170,39 +223,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Player Logic
     window.openPlayer = function(type, index) {
         playerContent.innerHTML = '';
-        playerView.classList.add('active');
         
         if (type === 'video') {
             const v = videos[index];
+            const title = escapeHtml(v.title);
             playerTitle.textContent = v.title;
-            const ytId = extractYoutubeId(v.url);
+            const videoInfo = parseVideoUrl(v.url);
+
+            if (videoInfo.type === 'sharepoint') {
+                window.open(v.url, '_blank', 'noopener,noreferrer');
+                playerView.classList.remove('active');
+                return;
+            }
+
+            playerView.classList.add('active');
             
-            if (ytId) {
-                const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+            if (videoInfo.type === 'youtube' && videoInfo.youtubeId) {
+                const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoInfo.youtubeId)}?autoplay=1`;
                 playerContent.innerHTML = `
                     <div class="video-container">
                         <div class="video-wrapper">
                             <iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <div class="video-info">
-                            <h2 style="color:#fff;">${v.title}</h2>
+                            <h2 style="color:#fff;">${title}</h2>
+                        </div>
+                    </div>
+                `;
+            } else if (videoInfo.type === 'direct') {
+                playerContent.innerHTML = `
+                    <div class="video-container">
+                        <div class="video-wrapper">
+                            <video src="${escapeAttr(v.url)}" controls autoplay></video>
+                        </div>
+                        <div class="video-info">
+                            <h2 style="color:#fff;">${title}</h2>
                         </div>
                     </div>
                 `;
             } else {
+                const externalLabel = 'Abrir vídeo em nova aba';
                 playerContent.innerHTML = `
                     <div class="video-container">
-                        <div class="video-wrapper">
-                            <video src="${v.url}" controls autoplay></video>
-                        </div>
-                        <div class="video-info">
-                            <h2 style="color:#fff;">${v.title}</h2>
+                        <div class="video-info" style="padding:40px; text-align:center;">
+                            <h2 style="color:#fff;">${title}</h2>
+                            <p style="color:#cbd5e1; margin-top:8px;">Este vídeo abre em uma nova aba.</p>
+                            <a href="${escapeAttr(v.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; margin-top:12px; color:#cf9c33; font-weight:700;">
+                                <i class="fas fa-external-link-alt"></i> ${externalLabel}
+                            </a>
                         </div>
                     </div>
                 `;
             }
         } 
         else if (type === 'quiz') {
+            playerView.classList.add('active');
             const q = quizzes[index];
             playerTitle.textContent = q.title;
             

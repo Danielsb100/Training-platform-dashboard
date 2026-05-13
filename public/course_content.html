@@ -24,16 +24,25 @@
         
         /* New Grid Styles */
         .modules-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 0; }
-        .module-card { position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
+        .module-card { position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, opacity 0.3s, filter 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
         .module-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .module-card.module-card-locked { cursor: not-allowed; opacity: 0.52; filter: grayscale(0.35); }
+        .module-card.module-card-locked:hover { transform: none; z-index: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 1.0; }
         .module-card:hover .module-cover { opacity: 0.8; transform: scale(1.05); }
+        .module-card.module-card-locked:hover .module-cover { opacity: 1; transform: none; }
         .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
         .module-card:hover .module-overlay { background: rgba(0,0,0,0.2); justify-content: flex-start; padding-top: 30px; }
+        .module-card.module-card-locked .module-overlay { background: linear-gradient(to bottom, rgba(15,23,42,0.65) 0%, rgba(15,23,42,0.35) 45%, rgba(15,23,42,0.9) 100%); }
+        .module-card.module-card-locked:hover .module-overlay { justify-content: space-between; padding-top: 20px; }
         .module-title { margin: 0; font-size: 1.3rem; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.3s; }
         .module-card:hover .module-title { margin-bottom: 15px; color: #cf9c33; }
+        .module-card.module-card-locked:hover .module-title { margin-bottom: 0; color: inherit; }
         .module-desc { margin: 0; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.5; }
         .module-card:hover .module-desc { opacity: 1; transform: translateY(0); }
+        .module-card.module-card-locked .module-desc { opacity: 1; transform: none; -webkit-line-clamp: 3; }
+        .module-status-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 999px; background: rgba(15,23,42,0.82); border: 1px solid rgba(255,255,255,0.24); color: #f8fafc; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; backdrop-filter: blur(4px); }
+        .module-status-badge.waiting { background: rgba(207,156,51,0.92); color: #111827; border-color: rgba(255,255,255,0.35); }
         
         /* Custom Design Container */
         #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
@@ -90,19 +99,27 @@
                     return;
                 }
 
+                const isOwnerOrEditor = course.canManage === true;
+
                 // Handle modules format from DB or Local
                 const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
-                const modules = rawModules.map((m, i) => ({
-                    id: m.id,
-                    title: m.title || `Module ${i+1}`,
-                    content: m.description || m.content || 'No description available for this module.',
-                    coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
-                    titleFont: m.titleFont || 'inherit',
-                    textColor: m.textColor || '#ffffff',
-                    videos: m.videos || [],
-                    documents: m.documents || [],
-                    quizzes: m.quizzes || []
-                }));
+                const modules = rawModules.map((m, i) => {
+                    const status = m.moduleStatus || m.status || 'DRAFT';
+                    return {
+                        id: m.id || m.moduleId,
+                        title: m.title || `Module ${i+1}`,
+                        content: m.description || m.content || 'No description available for this module.',
+                        coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
+                        titleFont: m.titleFont || 'inherit',
+                        textColor: m.textColor || '#ffffff',
+                        status,
+                        isPublished: status === 'PUBLISHED',
+                        isLockedForStudent: !isOwnerOrEditor && status !== 'PUBLISHED',
+                        videos: m.videos || [],
+                        documents: m.documents || [],
+                        quizzes: m.quizzes || []
+                    };
+                });
 
                 let modulesHTML = '';
                 if (modules.length === 0) {
@@ -116,12 +133,22 @@
                 } else {
                     modulesHTML = `<div class="modules-grid">`;
                     modules.forEach(m => {
+                        const lockedMessage = 'Waiting to be published';
+                        const cardClass = m.isLockedForStudent ? 'module-card module-card-locked' : 'module-card';
+                        const clickHandler = m.isLockedForStudent
+                            ? `event.preventDefault(); event.stopPropagation();`
+                            : `window.location.href='module_viewer.html?moduleId=${m.id}&courseId=${course.id}'`;
+                        const statusBadge = m.isLockedForStudent
+                            ? `<div class="module-status-badge waiting"><i class="fas fa-clock"></i> ${lockedMessage}</div>`
+                            : (!m.isPublished && isOwnerOrEditor ? `<div class="module-status-badge"><i class="fas fa-eye-slash"></i> Draft</div>` : '');
+
                         modulesHTML += `
-                            <div class="module-card" onclick="window.location.href='module_viewer.html?moduleId=${m.id}&courseId=${course.id}'">
+                            <div class="${cardClass}" onclick="${clickHandler}" aria-disabled="${m.isLockedForStudent ? 'true' : 'false'}" title="${m.isLockedForStudent ? lockedMessage : 'Open module'}">
                                 <div class="module-cover" style="background-image: url('${m.coverImage}');"></div>
                                 <div class="module-overlay">
+                                    ${statusBadge}
                                     <h3 class="module-title" style="font-family: ${m.titleFont}; color: ${m.textColor};">${m.title}</h3>
-                                    <p class="module-desc">${m.content}</p>
+                                    <p class="module-desc">${m.isLockedForStudent ? 'This module is not available yet.' : m.content}</p>
                                     <div style="display:flex; gap:10px; margin-top:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); padding-top:15px;">
                                         <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
                                         <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
@@ -140,9 +167,6 @@
                     style.innerHTML = course.contentCss;
                     document.head.appendChild(style);
                 }
-
-                // Check if current user is owner or editor via the backend flag
-                const isOwnerOrEditor = course.canManage === true;
 
                 const editSettingsButtonHTML = isOwnerOrEditor ? `
                     <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
