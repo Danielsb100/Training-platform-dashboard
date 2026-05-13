@@ -837,7 +837,7 @@
             // Apaga no backend, se existir
             if (window.apiCourseData && window.apiCourseData.landingPage) {
                 try {
-                    await apiCall(`/landing-pages/${window.apiCourseData.landingPage.id}`, 'DELETE');
+                    await apiCall(`/api/landing-pages/${window.apiCourseData.landingPage.id}`, 'DELETE');
                     window.apiCourseData.landingPage = null;
                 } catch (e) {
                     alert('Error deleting landing page from server: ' + e.message);
