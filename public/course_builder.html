@@ -831,11 +831,22 @@
             }
         }
 
-        function deleteLandingPage() {
+        async function deleteLandingPage() {
             if(!confirm("Are you sure you want to unlink and delete the Landing Page of this course?")) return;
             
+            // Apaga no backend, se existir
+            if (window.apiCourseData && window.apiCourseData.landingPage) {
+                try {
+                    await apiCall(`/landing-pages/${window.apiCourseData.landingPage.id}`, 'DELETE');
+                    window.apiCourseData.landingPage = null;
+                } catch (e) {
+                    alert('Error deleting landing page from server: ' + e.message);
+                    return; // Se falhar no servidor, aborta
+                }
+            }
+            
             const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-            const index = courses.findIndex(c => c.id === window.editingCourseId);
+            const index = courses.findIndex(c => String(c.id) === String(window.editingCourseId));
             
             if (index !== -1) {
                 courses[index].modular_content = '';
@@ -851,9 +862,14 @@
                 }
                 
                 localStorage.setItem('published_courses', JSON.stringify(courses));
-                updateConstructionUI();
-                alert("Landing Page removed!");
+            } else if (window.apiCourseData && !window.apiCourseData.custom_thumb && !window.apiCourseData.coverImage) {
+                document.getElementById('cover-preview').style.backgroundImage = 'none';
+                document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'block';
+                document.getElementById('cover-status-text').innerText = '(Cover not selected)';
             }
+            
+            updateConstructionUI();
+            alert("Landing Page removed!");
         }
 
         function handleCourseThumbUpload(event) {
