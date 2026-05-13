@@ -318,6 +318,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? `<div style="height:140px; background-image:url(${thumbUrl}); background-size:cover; background-position:center;"></div>`
             : `<div style="height:140px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:3rem;"><i class="fas fa-image"></i></div>`;
 
+        const buttonsHtml = course.externalUrl
+            ? `
+                <button onclick="openExternalLinkModal(${course.id}, '${(course.title || '').replace(/'/g, "\\'")}', '${(course.description || '').replace(/'/g, "\\'")}', '${(course.externalUrl || '').replace(/'/g, "\\'")}', '${(course.coverImage || '').replace(/'/g, "\\'")}', '${course.status}')" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit Link</button>
+                <button onclick="window.open('${course.externalUrl}', '_blank')" style="flex:1; padding:8px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Open Link</button>
+            `
+            : `
+                <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit</button>
+                <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">View Content</button>
+            `;
+
         return `
             <div class="course-card" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display:flex; flex-direction:column;">
                 ${thumbHtml}
@@ -328,8 +338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || 'No description'}</p>
                     <div style="display:flex; gap:10px;">
-                        <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit</button>
-                        <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">View Content</button>
+                        ${buttonsHtml}
                     </div>
                 </div>
             </div>
@@ -987,5 +996,153 @@ window.unsubscribeCourse = async function(courseId) {
     } catch (err) {
         console.error(err);
         alert('Erro de rede ao tentar desinscrever.');
+    }
+};
+
+let editingExternalLinkId = null;
+
+window.openExternalLinkModal = function(id = null, title = '', desc = '', url = '', cover = '', status = 'PUBLISHED') {
+    editingExternalLinkId = id;
+    document.getElementById('ext-link-title').value = title;
+    document.getElementById('ext-link-description').value = desc;
+    document.getElementById('ext-link-url').value = url;
+    document.getElementById('ext-link-cover').value = cover;
+    document.getElementById('ext-link-status').value = status;
+    
+    if (id) {
+        document.getElementById('ext-link-delete-btn').style.display = 'block';
+    } else {
+        document.getElementById('ext-link-delete-btn').style.display = 'none';
+    }
+    
+    // Reset file input and preview
+    document.getElementById('ext-link-cover-file').value = '';
+    const preview = document.getElementById('ext-link-cover-preview');
+    const nameLabel = document.getElementById('ext-link-cover-name');
+    if (cover) {
+        preview.style.backgroundImage = `url('${cover}')`;
+        preview.style.display = 'block';
+        nameLabel.textContent = 'Imagem atual carregada';
+    } else {
+        preview.style.backgroundImage = 'none';
+        preview.style.display = 'none';
+        nameLabel.textContent = 'Nenhuma imagem selecionada';
+    }
+    
+    document.getElementById('external-link-modal').style.display = 'flex';
+};
+
+window.previewExternalLinkCover = function(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('ext-link-cover-preview');
+    const nameLabel = document.getElementById('ext-link-cover-name');
+    if (file) {
+        nameLabel.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.style.backgroundImage = `url('${e.target.result}')`;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else {
+        nameLabel.textContent = 'Nenhuma imagem selecionada';
+        preview.style.display = 'none';
+        preview.style.backgroundImage = 'none';
+    }
+};
+
+window.closeExternalLinkModal = function() {
+    document.getElementById('external-link-modal').style.display = 'none';
+};
+
+window.saveExternalLink = async function() {
+    const title = document.getElementById('ext-link-title').value;
+    const description = document.getElementById('ext-link-description').value;
+    const externalUrl = document.getElementById('ext-link-url').value;
+    const status = document.getElementById('ext-link-status').value;
+    let coverImage = document.getElementById('ext-link-cover').value;
+    const fileInput = document.getElementById('ext-link-cover-file');
+
+    if (!title || !externalUrl) {
+        alert('Título e URL são obrigatórios!');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        
+        // If user selected a new file, upload it first
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            
+            // Upload the file directly to the Database via our existing document endpoint
+            const uploadRes = await fetch('/api/documents/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            
+            if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                coverImage = uploadData.downloadUrl; // Keep the URL serving from DB
+            } else {
+                const errorData = await uploadRes.json();
+                alert('Falha ao fazer upload da imagem de capa: ' + (errorData.error || 'Erro desconhecido'));
+                return;
+            }
+        }
+
+        let res;
+        
+        // Wait! The POST route in this codebase is `/courses` and PUT is `/courses/:id`
+        if (editingExternalLinkId) {
+            res = await fetch(`/courses/${editingExternalLinkId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ title, description, externalUrl, coverImage, status })
+            });
+        } else {
+            res = await fetch('/courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ title, description, externalUrl, coverImage, status })
+            });
+        }
+
+        if (res.ok) {
+            closeExternalLinkModal();
+            location.reload();
+        } else {
+            const data = await res.json();
+            alert('Erro: ' + data.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar o link externo.');
+    }
+};
+
+window.deleteExternalLink = async function() {
+    if (!editingExternalLinkId) return;
+    if (!confirm('Tem certeza que deseja excluir este link externo permanentemente?')) return;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/courses/${editingExternalLinkId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+            closeExternalLinkModal();
+            location.reload();
+        } else {
+            const data = await res.json();
+            alert('Erro ao excluir: ' + data.error);
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Erro de conexão ao tentar excluir.');
     }
 };

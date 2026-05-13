@@ -253,6 +253,7 @@ model Course {
   updatedAt     DateTime               @updatedAt
   contentHtml   String?
   contentCss    String?
+  externalUrl   String?
   AiTip         AiTip[]
   owner         User                   @relation("CourseOwner", fields: [ownerMasterId], references: [id], onDelete: Cascade)
   editors       CourseEditor[]

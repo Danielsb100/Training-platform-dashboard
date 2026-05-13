@@ -157,7 +157,10 @@
                         <button class="btn-tab active" onclick="switchCreationTab('courses')" id="tab-creations-courses" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:#1e293b; color:white; border:none;">My Courses</button>
                         <button class="btn-tab" onclick="switchCreationTab('channels')" id="tab-creations-channels" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:transparent; color:#64748b; border:1px solid #cbd5e1;">My Channels</button>
                     </div>
-                    <button onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> New</button>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> New Course</button>
+                        <button onclick="openExternalLinkModal()" class="btn-primary" style="background:#0f172a;"><i class="fas fa-link"></i> New Link</button>
+                    </div>
                 </div>
                 <div id="subpane-courses">
                     <div class="courses-grid" id="user-pages-grid">
@@ -690,5 +693,53 @@
     </script>
     <script src="profile.js?v=ai-tips-eurobot-sync-sidebar-20260512"></script>
     <script src="global_notifications.js"></script>
+
+    <!-- Modal Novo Link Externo -->
+    <div id="external-link-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.75); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+        <div style="background:white; width:90%; max-width:500px; border-radius:12px; padding:30px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; font-size:1.5rem; color:#1e293b;">Novo Link Externo</h3>
+                <button onclick="closeExternalLinkModal()" style="background:none; border:none; font-size:1.5rem; color:#94a3b8; cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Título</label>
+                <input type="text" id="ext-link-title" placeholder="Ex: Portal de Treinamentos Externos" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Descrição</label>
+                <textarea id="ext-link-description" placeholder="Uma breve descrição..." rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b; resize:none;"></textarea>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">URL (Link)</label>
+                <input type="url" id="ext-link-url" placeholder="https://..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Status</label>
+                <select id="ext-link-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
+                    <option value="DRAFT">Rascunho (Privado)</option>
+                    <option value="PUBLISHED" selected>Publicado (Visível no Marketplace)</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Imagem de Capa (Opcional - Será salva no Banco de Dados)</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label for="ext-link-cover-file" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#475569; font-weight:bold;"><i class="fas fa-upload"></i> Escolher Imagem</label>
+                    <input type="file" id="ext-link-cover-file" accept="image/*" style="display:none;" onchange="previewExternalLinkCover(event)">
+                    <span id="ext-link-cover-name" style="font-size:0.85rem; color:#64748b;">Nenhuma imagem selecionada</span>
+                </div>
+                <div id="ext-link-cover-preview" style="margin-top:10px; width:100%; height:120px; border-radius:8px; background-size:cover; background-position:center; display:none;"></div>
+                <input type="hidden" id="ext-link-cover">
+            </div>
+            
+            <button onclick="saveExternalLink()" style="width:100%; background:#1e293b; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer;">Salvar Link</button>
+            <button id="ext-link-delete-btn" onclick="deleteExternalLink()" style="width:100%; margin-top:10px; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer; display:none;"><i class="fas fa-trash"></i> Excluir Link</button>
+            <button onclick="closeExternalLinkModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b; font-weight:bold; padding:12px;">Cancelar</button>
+        </div>
+    </div>
 </body>
 </html>

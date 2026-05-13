@@ -309,7 +309,7 @@ async function assertCourseAccess(courseId, user) {
 
 async function createCourse(req, res) {
   try {
-    const { title, description, coverImage } = req.body;
+    const { title, description, coverImage, externalUrl } = req.body;
     if (!title || !String(title).trim()) {
       return res.status(400).json({ error: 'Course title is required.' });
     }
@@ -322,6 +322,8 @@ async function createCourse(req, res) {
           title: String(title).trim(),
           description: description || null,
           coverImage: coverImage || null,
+          externalUrl: externalUrl || null,
+          status: req.body.status || 'DRAFT',
           sceneId: initialSceneId
         }
       });
@@ -455,6 +457,7 @@ async function getPublicCourses(req, res) {
       description: course.description,
       coverImage: course.coverImage,
       status: course.status,
+      externalUrl: course.externalUrl,
       landingPage: course.landingPage,
       instructor: course.owner?.profile?.displayName || course.owner?.username || 'Instructor'
     }));
@@ -477,6 +480,7 @@ async function getCourseDetail(req, res) {
       title: course.title,
       description: course.description,
       coverImage: course.coverImage,
+      externalUrl: course.externalUrl,
       contentHtml: course.contentHtml,
       contentCss: course.contentCss,
       status: course.status,
@@ -534,7 +538,8 @@ async function updateCourse(req, res) {
         coverImage: req.body.coverImage === undefined ? existing.coverImage : req.body.coverImage,
         contentHtml: req.body.contentHtml === undefined ? existing.contentHtml : req.body.contentHtml,
         contentCss: req.body.contentCss === undefined ? existing.contentCss : req.body.contentCss,
-        status: req.body.status || existing.status
+        status: req.body.status || existing.status,
+        externalUrl: req.body.externalUrl === undefined ? existing.externalUrl : req.body.externalUrl
       }
     });
 

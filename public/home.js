@@ -86,7 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         let thumbUrl = course.coverImage || course.landingPage?.thumbUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
 
         const rating = (Math.random() * (5 - 4) + 4).toFixed(1); // Mocado por enquanto
-        const clickAction = `window.location.href='viewer.html?id=${course.id}'`;
+        const clickAction = course.externalUrl 
+            ? `window.open('${course.externalUrl}', '_blank')`
+            : `window.location.href='viewer.html?id=${course.id}'`;
         
         const description = course.description ? course.description.substring(0, 80) + '...' : 'Explore este incrível curso dentro de nossa plataforma para aprimorar suas habilidades.';
 
