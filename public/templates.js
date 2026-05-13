@@ -1287,7 +1287,10 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 /* HERO */
 .hero{background:linear-gradient(135deg,#001a2e 0%,#003d5c 40%,#006b6b 100%);position:relative;padding:60px 50px 140px 50px;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80') center/cover;opacity:0.25;mix-blend-mode:screen;}
-.hero-inner{position:relative;z-index:10;}
+.hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.hero-content{flex:1;}
+.hero-logo{flex-shrink:0;max-width:350px;}
+.hero-logo img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(1px 1px 0px #fff) drop-shadow(-1px -1px 0px #fff) drop-shadow(1px -1px 0px #fff) drop-shadow(-1px 1px 0px #fff) drop-shadow(0px 0px 8px rgba(255,255,255,0.5));}
 .hero h1{color:#fff;font-size:2.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
 .hero h2{color:#22d3ee;font-size:1.6rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.5px;}
 .hero p{color:#cbd5e1;font-size:0.95rem;max-width:550px;line-height:1.6;margin-bottom:24px;border-left:3px solid #22d3ee;padding-left:14px;}
@@ -1375,36 +1378,27 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 
 <div class="page">
 
-<header class="header">
-    <div class="logo-block">
-        <svg viewBox="0 0 24 24" fill="#0f172a"><path d="M12 2L2 12l10 10 10-10L12 2zm0 17.5L4.5 12 12 4.5 19.5 12 12 19.5z"/></svg>
-        <span>Project<br>Phygital-OC</span>
-    </div>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="EU">
-    <span class="partner-text">SCO</span>
-    <span class="partner-text">KIMIA</span>
-    <span class="partner-text">AGENFOR</span>
-    <span class="partner-text">POLICÍA</span>
-    <span class="partner-text">REOC</span>
-    <span class="partner-text" style="text-align:center;line-height:1.1;">GLOBAL<br>INITIATIVE</span>
-</header>
-
 <section class="hero">
     <div class="hero-inner">
-        <h1>[PROJECT PHYGITAL-OC]</h1>
-        <h2>DISMANTLING TRANSNATIONAL ORGANIZED CRIME</h2>
-        <p>The core objective of PHYGITAL-OC is to strengthen international cooperation to help dismantle transnational criminal networks. The project utilizes advanced technologies to trace crimes in both the physical and digital worlds.</p>
-        <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        <div class="hero-content">
+            <h1>[PROJECT PHYGITAL-OC]</h1>
+            <h2>DISMANTLING TRANSNATIONAL ORGANIZED CRIME</h2>
+            <p>The core objective of PHYGITAL-OC is to strengthen international cooperation to help dismantle transnational criminal networks. The project utilizes advanced technologies to trace crimes in both the physical and digital worlds.</p>
+            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        </div>
+        <div class="hero-logo">
+            <img src="phygital_logo_transparent.png" alt="Project Phygital-OC">
+        </div>
     </div>
 </section>
 
 <div class="features" id="features">
-    <div class="f-card"><div class="f-icon">🔬</div><div><h3>Core Curriculum</h3><ul><li>Evolution of OCCs, 9 OSINT</li><li>Trace Analysis, Trace Analysis</li><li>Digital Forensics</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">💻</div><div><h3>Flexible Learning</h3><ul><li>Online and synchronous for Law Enforcement</li><li>Exlaining and manual for training material.</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">📋</div><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">📊</div><div><h3>Operational Readiness</h3><ul><li>Performance Analytics</li><li>Interactive Training</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">🤖</div><div><h3>AI Assistant Support</h3><ul><li>Content optional international</li><li>and assessed reports.</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">⚖️</div><div><h3>AI Assistant Support</h3><ul><li>Transnational Law &</li><li>Case Law Guide</li></ul></div></div>
+    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCCs, 9 OSINT</li><li>Trace Analysis, Trace Analysis</li><li>Digital Forensics</li></ul></div></div>
+    <div class="f-card"><div><h3>Flexible Learning</h3><ul><li>Online and synchronous for Law Enforcement</li><li>Exlaining and manual for training material.</li></ul></div></div>
+    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
+    <div class="f-card"><div><h3>Operational Readiness</h3><ul><li>Performance Analytics</li><li>Interactive Training</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Assistant Support</h3><ul><li>Content optional international</li><li>and assessed reports.</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Assistant Support</h3><ul><li>Transnational Law &</li><li>Case Law Guide</li></ul></div></div>
 </div>
 
 <section class="mission">
@@ -1597,9 +1591,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 /* HERO — darker teal/slate tone */
 .hero{background:linear-gradient(135deg,#0c2d3f 0%,#1a4a5a 40%,#245d6e 100%);position:relative;padding:60px 50px 140px 50px;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background:url('intercepted-hero-hand.png') center/cover;opacity:0.4;mix-blend-mode:luminosity;}
-.hero-inner{position:relative;z-index:10;}
+.hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.hero-content{flex:1;}
+.hero-logo{flex-shrink:0;max-width:350px;}
+.hero-logo img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(1px 1px 0px #fff) drop-shadow(-1px -1px 0px #fff) drop-shadow(1px -1px 0px #fff) drop-shadow(-1px 1px 0px #fff) drop-shadow(0px 0px 8px rgba(255,255,255,0.5));}
 .hero h1{color:#fff;font-size:2.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
-.hero h2{color:#5eead4;font-size:1.6rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.5px;}
+.hero h2{color:#5eead4;font-size:1.3rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.5px;}
 .hero p{color:#cbd5e1;font-size:0.95rem;max-width:550px;line-height:1.6;margin-bottom:24px;border-left:3px solid #5eead4;padding-left:14px;}
 .hero-btn{display:inline-flex;align-items:center;gap:12px;background:#0f172a;color:#fff;padding:10px 28px;border-radius:50px;border:2px solid #2dd4bf;font-weight:800;font-size:0.85rem;text-transform:uppercase;text-decoration:none;box-shadow:0 0 20px rgba(45,212,191,0.4);letter-spacing:0.5px;}
 
@@ -1685,35 +1682,27 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 
 <div class="page">
 
-<header class="header">
-    <div class="logo-block">
-        <svg viewBox="0 0 24 24" fill="#134e4a"><path d="M12 2L2 12l10 10 10-10L12 2zm0 17.5L4.5 12 12 4.5 19.5 12 12 19.5z"/></svg>
-        <span>Project<br>INTERCEPTED</span>
-    </div>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="EU">
-    <span class="partner-text">KIMIA</span>
-    <span class="partner-text">AGENFOR</span>
-    <span class="partner-text" style="text-align:center;line-height:1.1;">PROCURA DELLA<br>REPUBBLICA</span>
-    <span class="partner-text" style="text-align:center;line-height:1.1;">TRIBUNALE<br>DI TRENTO</span>
-    <span class="partner-text" style="text-align:center;line-height:1.1;">EURO-ARAB<br>FOUNDATION</span>
-</header>
-
 <section class="hero">
     <div class="hero-inner">
-        <h1>[PROJECT INTERCEPTED]</h1>
-        <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
-        <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
-        <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        <div class="hero-content">
+            <h1>[PROJECT INTERCEPTED]</h1>
+            <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
+            <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
+            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        </div>
+        <div class="hero-logo">
+            <img src="intercepted_logo_transparent.png" alt="Project INTERCEPTED">
+        </div>
     </div>
 </section>
 
 <div class="features" id="features">
-    <div class="f-card"><div class="f-icon">🔬</div><div><h3>Core Curriculum</h3><ul><li>Evolution of OCG modus operandi in THB</li><li>OSINT & Telecom Surveillance</li><li>Digital Forensics</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">💻</div><div><h3>Flexible Learning</h3><ul><li>Online and asynchronous modules</li><li>Adapted for Law Enforcement schedules</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">📋</div><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">📊</div><div><h3>Operational Readiness</h3><ul><li>OSINT-HUMINT-SIGINT cycle</li><li>Public-Private cooperation</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">🤖</div><div><h3>AI Avatar Support</h3><ul><li>Closed-circuit assistant</li><li>Legislation & manual clarifications</li></ul></div></div>
-    <div class="f-card"><div class="f-icon">⚖️</div><div><h3>Legal & Judicial Cooperation</h3><ul><li>LEA & Judicial Authorities</li><li>Private Sector & Civil Society</li></ul></div></div>
+    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCG modus operandi in THB</li><li>OSINT & Telecom Surveillance</li><li>Digital Forensics</li></ul></div></div>
+    <div class="f-card"><div><h3>Flexible Learning</h3><ul><li>Online and asynchronous modules</li><li>Adapted for Law Enforcement schedules</li></ul></div></div>
+    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
+    <div class="f-card"><div><h3>Operational Readiness</h3><ul><li>OSINT-HUMINT-SIGINT cycle</li><li>Public-Private cooperation</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Avatar Support</h3><ul><li>Closed-circuit assistant</li><li>Legislation & manual clarifications</li></ul></div></div>
+    <div class="f-card"><div><h3>Legal & Judicial Cooperation</h3><ul><li>LEA & Judicial Authorities</li><li>Private Sector & Civil Society</li></ul></div></div>
 </div>
 
 <section class="mission">
