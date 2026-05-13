@@ -19,6 +19,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'login.html';
         return;
     }
+
+    const getMultiplayerUrl = () => {
+        const configuredUrl = window.__APP_CONFIG__?.multiplayerUrl || '';
+        return String(configuredUrl || '').trim().replace(/\/+$/, '');
+    };
+
+    function buildCourseWorldUrl() {
+        const multiplayerUrl = getMultiplayerUrl();
+        if (!multiplayerUrl) return null;
+
+        try {
+            const targetUrl = new URL(multiplayerUrl);
+            if (courseId) targetUrl.searchParams.set('courseId', courseId);
+            if (moduleId) targetUrl.searchParams.set('moduleId', moduleId);
+            targetUrl.searchParams.set('token', token);
+            targetUrl.searchParams.set('source', 'training-platform');
+            return targetUrl.toString();
+        } catch (error) {
+            console.error('Invalid PUBLIC_MULTIPLAYER_URL:', error);
+            return null;
+        }
+    }
+
+    function openCourseWorld() {
+        const targetUrl = buildCourseWorldUrl();
+        if (!targetUrl) {
+            alert('3D Course World is not configured yet. Set PUBLIC_MULTIPLAYER_URL in Railway for this environment.');
+            return;
+        }
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
     
     let moduleData = null;
     let videos = [];
@@ -27,11 +58,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // UI Elements
     const navTabs = document.querySelectorAll('.nav-tab');
+    const worldButton = document.getElementById('btn-enter-course-world');
     const hubSections = document.querySelectorAll('.hub-section');
     const playerView = document.getElementById('player-view');
     const btnBackHub = document.getElementById('btn-back-hub');
     const playerContent = document.getElementById('player-content');
     const playerTitle = document.getElementById('player-title');
+
+    if (worldButton && !getMultiplayerUrl()) {
+        worldButton.classList.add('is-disabled');
+        worldButton.title = 'Set PUBLIC_MULTIPLAYER_URL in Railway to enable the 3D Course World.';
+    }
     
     try {
         const response = await fetch(`/runtime/modules/${moduleId}`, {
@@ -212,7 +249,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Tab Navigation
     navTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            navTabs.forEach(t => t.classList.remove('active'));
+            if (tab.dataset.action === 'course-world') {
+                openCourseWorld();
+                return;
+            }
+
+            if (!tab.dataset.tab) return;
+            navTabs.forEach(t => {
+                if (t.dataset.tab) t.classList.remove('active');
+            });
             tab.classList.add('active');
             
             hubSections.forEach(s => s.classList.remove('active'));

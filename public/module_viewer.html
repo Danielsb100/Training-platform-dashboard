@@ -37,6 +37,21 @@
         .nav-tab.active { background: rgba(73, 122, 167, 0.2); border-left: 4px solid #cf9c33; color: #fff; }
         .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
         .nav-badge { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 2px 8px; font-size: 0.8rem; margin-left: auto; }
+        .nav-world-tab {
+            margin: 18px 14px 0;
+            padding: 16px 14px;
+            border-left: 4px solid #cf9c33;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(207, 156, 51, 0.24), rgba(73, 122, 167, 0.22));
+            color: #fff;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255,255,255,0.08);
+        }
+        .nav-world-tab:hover { background: linear-gradient(135deg, rgba(207, 156, 51, 0.34), rgba(73, 122, 167, 0.30)); transform: translateX(3px); }
+        .nav-world-copy { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+        .nav-world-copy strong { font-size: 0.98rem; }
+        .nav-world-copy span { color: #fde68a; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+        .nav-world-tab.is-disabled { opacity: 0.55; filter: grayscale(0.25); cursor: not-allowed; }
+        .nav-world-tab.is-disabled:hover { transform: none; }
         
         .viewer-main { flex: 1; position: relative; background: #0b1121; display: flex; flex-direction: column; overflow-y: auto; padding: 30px; transition: 0.3s; }
         
@@ -148,6 +163,13 @@
                         <div>Quizzes</div>
                         <div class="nav-badge" id="badge-quizzes">0</div>
                     </li>
+                    <li class="nav-tab nav-world-tab" id="btn-enter-course-world" data-action="course-world" title="Open the existing 3D course world">
+                        <div class="nav-icon"><i class="fas fa-cube"></i></div>
+                        <div class="nav-world-copy">
+                            <strong>Enter 3D Course World</strong>
+                            <span>Immersive environment</span>
+                        </div>
+                    </li>
                 </ul>
             </div>
             
@@ -211,6 +233,7 @@
         </div>
     </div>
 
+    <script src="/app-config.js"></script>
     <script src="module_viewer.js"></script>
 </body>
 </html>
