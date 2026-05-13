@@ -1266,6 +1266,412 @@ window.templatePresets = [
                 </div>
             </section>
         `
-    
-}
+    },
+    {
+        id: "phygital-oc",
+        name: "Project Phygital-OC",
+        thumb: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&q=80",
+        html: `
+            <style>
+                html { scroll-behavior: smooth; font-family: 'Inter', 'Roboto', sans-serif; }
+                .module-section { position: relative; }
+                .phygital-btn { transition: all 0.3s; }
+                .phygital-btn:hover { box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }
+                .timeline-node::before {
+                    content: ''; position: absolute; left: -24px; top: 0; width: 2px; height: 100%; background: linear-gradient(to bottom, #0ea5e9, #8b5cf6);
+                }
+            </style>
+            
+            <!-- HEADER LOGOS -->
+            <section class="module-section" style="background-color:#ffffff; padding:15px 40px; border-bottom:1px solid #e2e8f0;">
+                <div class="module-content" style="flex-direction:row; justify-content:center; align-items:center; flex-wrap:wrap; gap:30px;">
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/150x50/ffffff/0f172a?text=Phygital-OC" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/80x50/ffffff/0f172a?text=EU+Flag" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/100x50/ffffff/0f172a?text=SCO" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/100x50/ffffff/0f172a?text=KIMIA" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/120x50/ffffff/0f172a?text=AGENFOR" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/100x50/ffffff/0f172a?text=Policia" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/100x50/ffffff/0f172a?text=REOC" style="height:40px;"></div>
+                    <div class="editable-image-wrapper"><img src="https://placehold.co/150x50/ffffff/0f172a?text=Global+Initiative" style="height:40px;"></div>
+                </div>
+            </section>
+
+            <!-- HERO -->
+            <section id="hero" class="module-section" style="background:linear-gradient(135deg, #0f172a 0%, #0891b2 100%); padding:100px 20px; text-align:center; position:relative; overflow:hidden;">
+                <div class="bg-overlay" style="background-image:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80'); opacity:0.15; background-size:cover; background-position:center;"></div>
+                <div class="module-content" style="flex-direction:column; align-items:center; position:relative; z-index:10;">
+                    <h1 class="editable-text" style="color:white; font-size:3.5rem; font-weight:900; margin-bottom:10px; line-height:1.2;">[PROJECT PHYGITAL-OC]</h1>
+                    <h2 class="editable-text" style="color:#22d3ee; font-size:2.5rem; font-weight:800; margin-bottom:30px; line-height:1.2;">DISMANTLING TRANSNATIONAL ORGANIZED CRIME</h2>
+                    <p class="editable-text" style="color:#e2e8f0; font-size:1.2rem; max-width:800px; margin-bottom:40px;">Strengthening international co-operation to dismantle criminal networks by deploying advanced technologies to combat transnational crime in both physical and digital worlds.</p>
+                    <a href="#features-grid" class="editable-text phygital-btn" style="text-decoration:none; background-color:#0f172a; color:white; padding:15px 40px; border-radius:50px; font-weight:bold; border:2px solid #06b6d4; font-size:1.1rem; display:inline-block;">INTERESTED? LEARN MORE BELOW</a>
+                </div>
+            </section>
+
+            <!-- FEATURES GRID -->
+            <section id="features-grid" class="module-section" style="background-color:#f8fafc; padding:80px 20px;">
+                <div class="module-content">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:25px; width:100%; max-width:1200px; margin:0 auto;">
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">🔬</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">Core Curriculum</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Evolution of OCCs</li>
+                                    <li class="editable-text">OSINT & Trace Analysis</li>
+                                    <li class="editable-text">Digital Forensics</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">💻</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">Flexible Learning</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Online and asynchronous</li>
+                                    <li class="editable-text">Designed for Law Enforcement</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">📋</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">Expert Knowledge</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Developed by Specialist Trainers</li>
+                                    <li class="editable-text">High Level Reports</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">📊</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">Operational Readiness</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Performance Analytics</li>
+                                    <li class="editable-text">Interactive Training</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">🤖</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">AI Avatar Support</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Multilingual guidance</li>
+                                    <li class="editable-text">Answers complex questions</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05); border:1px solid #e2e8f0; display:flex; gap:15px;">
+                            <div style="font-size:2rem; color:#06b6d4;">⚖️</div>
+                            <div>
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem; font-weight:bold;">Legal Assistant Support</h3>
+                                <ul style="margin:0; padding-left:20px; color:#475569; font-size:0.95rem;">
+                                    <li class="editable-text">Transnational Law</li>
+                                    <li class="editable-text">Case Law Guide</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MISSION ADVANTAGE CORE -->
+            <section id="mission-advantage" class="module-section" style="background-color:#ffffff; padding:80px 20px;">
+                <div class="module-content" style="flex-direction:column; align-items:center;">
+                    <h2 class="editable-text" style="font-size:2.5rem; font-weight:900; color:#0f172a; margin-bottom:50px;">MISSION ADVANTAGE CORE</h2>
+                    
+                    <div style="display:flex; flex-wrap:wrap; gap:40px; justify-content:center; align-items:center; max-width:1200px; width:100%;">
+                        <!-- Left Col -->
+                        <div style="flex:1; display:flex; flex-direction:column; gap:30px; min-width:300px;">
+                            <div style="background:#f0f9ff; padding:25px; border-radius:12px; border:1px solid #bae6fd;">
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem;">Secure & Specialized Intelligence Environment</h3>
+                                <p class="editable-text" style="margin:0; color:#475569; font-size:0.95rem; line-height:1.5;">Developed a closed ecosystem to facilitate international cooperation while protecting sensitive operational data and institutional assets.</p>
+                            </div>
+                            <div style="background:#f0f9ff; padding:25px; border-radius:12px; border:1px solid #bae6fd;">
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem;">Expert Knowledge</h3>
+                                <p class="editable-text" style="margin:0; color:#475569; font-size:0.95rem; line-height:1.5;">Developed in closed groups with specialist lectures, integrating reports from Europol, UNODC, and NATO into practical institutional models.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Center Col -->
+                        <div class="editable-image-wrapper" style="flex:1; display:flex; justify-content:center; min-width:300px;">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" style="width:100%; max-width:400px; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+                        </div>
+                        
+                        <!-- Right Col -->
+                        <div style="flex:1; display:flex; flex-direction:column; gap:30px; min-width:300px;">
+                            <div style="background:#f0f9ff; padding:25px; border-radius:12px; border:1px solid #bae6fd;">
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem;">Operational Readiness</h3>
+                                <p class="editable-text" style="margin:0; color:#475569; font-size:0.95rem; line-height:1.5;">Detailed performance analytics from entry to critical skill tracking, preparing teams for successful international operations.</p>
+                            </div>
+                            <div style="background:#f0f9ff; padding:25px; border-radius:12px; border:1px solid #bae6fd;">
+                                <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.2rem;">Practical & Evidence Based</h3>
+                                <p class="editable-text" style="margin:0; color:#475569; font-size:0.95rem; line-height:1.5;">Detailed case studies and simulations rooted in real-world environments, accelerating training for successful operations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6-STEP LEARNING JOURNEY -->
+            <section id="learning-journey" class="module-section" style="background-color:#f8fafc; padding:80px 20px; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                <div class="module-content" style="flex-direction:column; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:15px; margin-bottom:50px;">
+                        <div style="background:#0f172a; color:white; width:50px; height:50px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:1.5rem;">👤</div>
+                        <h2 class="editable-text" style="font-size:2.5rem; font-weight:900; color:#0f172a; margin:0;">6-Step Learning Journey</h2>
+                    </div>
+                    
+                    <div style="display:flex; gap:50px; width:100%; max-width:1200px; flex-wrap:wrap;">
+                        <!-- Left Sidebar -->
+                        <div style="width:250px; background:white; padding:25px; border-radius:12px; border:1px solid #e2e8f0; align-self:flex-start;">
+                            <h4 class="editable-text" style="margin:0 0 15px 0; font-size:1.1rem; color:#0f172a;">Downloads</h4>
+                            <ul style="list-style:none; padding:0; margin:0; color:#06b6d4; font-size:0.9rem; line-height:2;">
+                                <li class="editable-text" style="cursor:pointer;">• Interactive scenarios</li>
+                                <li class="editable-text" style="cursor:pointer;">• Case studies</li>
+                                <li class="editable-text" style="cursor:pointer;">• Trace analysis</li>
+                                <li class="editable-text" style="cursor:pointer;">• Operational scenarios</li>
+                                <li class="editable-text" style="cursor:pointer;">• Digital forensics</li>
+                                <li class="editable-text" style="cursor:pointer;">• OSINT modules</li>
+                                <li class="editable-text" style="cursor:pointer;">• External networks</li>
+                                <li class="editable-text" style="cursor:pointer;">• Other...</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Vertical Timeline -->
+                        <div style="flex:1; position:relative; padding-left:40px; min-width:300px;">
+                            
+                            <!-- Step 1 -->
+                            <div class="timeline-node" style="position:relative; margin-bottom:40px;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#0ea5e9; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">1</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">Entry Test</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Quick assessment. Evaluation of OCCs, OSINT, Trace Analysis, and Digital Forensics knowledge base.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2 -->
+                            <div class="timeline-node" style="position:relative; margin-bottom:40px;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#3b82f6; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">2</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">Video Lessons</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Comprehensive curriculum covering 2-3 sessions (30 mins each) led by specialists on technical themes.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3 -->
+                            <div class="timeline-node" style="position:relative; margin-bottom:40px;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#6366f1; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">3</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">Training Material</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Essential resources, manuals, and data files ready for download and offline review.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 4 -->
+                            <div class="timeline-node" style="position:relative; margin-bottom:40px;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#8b5cf6; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">4</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">Interactive Simulation</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Practical application in real-case studies and dynamic operational scenarios.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 5 -->
+                            <div class="timeline-node" style="position:relative; margin-bottom:40px;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#a855f7; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">5</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">AI Avatar Support</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Multilingual AI guidance specialized in EU jurisprudence, national legislation, and operational manuals.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 6 -->
+                            <div class="timeline-node" style="position:relative;">
+                                <div style="position:absolute; left:-40px; top:0; width:30px; height:30px; border-radius:50%; background:#d946ef; color:white; display:flex; justify-content:center; align-items:center; font-weight:bold; z-index:2;">6</div>
+                                <div style="background:white; padding:20px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <h3 class="editable-text" style="margin:0 0 10px 0; color:#0f172a; font-size:1.3rem;">Final Evaluation</h3>
+                                    <p class="editable-text" style="margin:0; color:#475569;">Final assessment to validate acquired competencies and complete the training module.</p>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI AVATAR -->
+            <section id="ai-avatar" class="module-section" style="background-color:#f1f5f9; padding:80px 20px;">
+                <div class="module-content" style="flex-direction:column; align-items:center; max-width:1200px; margin:0 auto;">
+                    <h2 class="editable-text" style="font-size:2.5rem; font-weight:900; color:#0f172a; margin-bottom:50px;">AI Avatar</h2>
+                    
+                    <div style="display:flex; flex-wrap:wrap; gap:40px; width:100%; align-items:center;">
+                        <!-- Avatar Image -->
+                        <div class="editable-image-wrapper" style="flex:1; min-width:300px; position:relative;">
+                            <div style="position:absolute; inset:-10px; border:2px dashed #06b6d4; border-radius:16px;"></div>
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80" style="width:100%; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); position:relative; z-index:5;">
+                        </div>
+                        
+                        <!-- Avatar Features -->
+                        <div style="flex:2; display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:30px;">
+                            <div style="display:flex; gap:15px;">
+                                <div style="font-size:1.8rem; color:#06b6d4;">💬</div>
+                                <div>
+                                    <h4 class="editable-text" style="margin:0 0 5px 0; font-size:1.1rem; color:#0f172a;">Real-time QA</h4>
+                                    <p class="editable-text" style="margin:0; color:#475569; font-size:0.9rem;">Constant support for trace analysis and digital forensics workflows.</p>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:15px;">
+                                <div style="font-size:1.8rem; color:#06b6d4;">🌍</div>
+                                <div>
+                                    <h4 class="editable-text" style="margin:0 0 5px 0; font-size:1.1rem; color:#0f172a;">Multilingual by design</h4>
+                                    <p class="editable-text" style="margin:0; color:#475569; font-size:0.9rem;">Communicates flawlessly in English, Italian, Spanish, French, and Greek.</p>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:15px;">
+                                <div style="font-size:1.8rem; color:#06b6d4;">🧭</div>
+                                <div>
+                                    <h4 class="editable-text" style="margin:0 0 5px 0; font-size:1.1rem; color:#0f172a;">Step-by-step guidance</h4>
+                                    <p class="editable-text" style="margin:0; color:#475569; font-size:0.9rem;">Provides actionable advice based on core technical manuals.</p>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:15px;">
+                                <div style="font-size:1.8rem; color:#06b6d4;">⚖️</div>
+                                <div>
+                                    <h4 class="editable-text" style="margin:0 0 5px 0; font-size:1.1rem; color:#0f172a;">Jurisprudential Complexity</h4>
+                                    <p class="editable-text" style="margin:0; color:#475569; font-size:0.9rem;">Reports and contextualizes EU laws for successful international operations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mic Icon -->
+                        <div style="width:80px; height:80px; border-radius:50%; background:white; box-shadow:0 10px 25px rgba(6, 182, 212, 0.2); display:flex; justify-content:center; align-items:center; font-size:2rem; color:#06b6d4; border:2px solid #cffafe;">
+                            🎤
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INTEL LIBRARY -->
+            <section id="intel-library" class="module-section" style="background-color:#ffffff; padding:80px 20px;">
+                <div class="module-content" style="flex-direction:column; align-items:center; max-width:1200px; margin:0 auto;">
+                    <h2 class="editable-text" style="font-size:2rem; font-weight:900; color:#0f172a; margin-bottom:50px;">INTEL LIBRARY & ASSET HUB</h2>
+                    
+                    <div style="display:flex; flex-wrap:wrap; gap:50px; width:100%;">
+                        <!-- Left: Resource Center -->
+                        <div style="flex:1; min-width:300px;">
+                            <h3 class="editable-text" style="font-size:1.5rem; color:#0f172a; margin-bottom:20px;">Resource Center</h3>
+                            
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                <!-- Buttons -->
+                                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                                    <div style="background:#e0f2fe; color:#0284c7; padding:8px; border-radius:6px; font-weight:bold;">PCS</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#475569;">Download OSINT Trace Analysis</span>
+                                </div>
+                                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                                    <div style="background:#e0f2fe; color:#0284c7; padding:8px; border-radius:6px; font-weight:bold;">SWD</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#475569;">Download automatics from online</span>
+                                </div>
+                                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                                    <div style="background:#e0f2fe; color:#0284c7; padding:8px; border-radius:6px; font-weight:bold;">PPO</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#475569;">Download specific directories</span>
+                                </div>
+                                <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                                    <div style="background:#0284c7; color:white; padding:8px; border-radius:6px; font-weight:bold;">👁️</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#0284c7; font-weight:bold;">Quick preview</span>
+                                </div>
+                                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                                    <div style="background:#e0f2fe; color:#0284c7; padding:8px; border-radius:6px; font-weight:bold;">FILE</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#475569;">Download specific file documents</span>
+                                </div>
+                                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                                    <div style="background:#e0f2fe; color:#0284c7; padding:8px; border-radius:6px; font-weight:bold;">Y5L</div>
+                                    <span class="editable-text" style="font-size:0.9rem; color:#475569;">Download technical certifications</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: General Resources -->
+                        <div style="flex:1; min-width:300px;">
+                            <ul style="list-style:none; padding:0; margin:0 0 30px 0; color:#0f172a; font-size:0.95rem; line-height:1.6;">
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#06b6d4;">•</span>
+                                    <span class="editable-text"><b>Answers questions:</b> Formal time and test recording to contain technical timelines.</span>
+                                </li>
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#06b6d4;">•</span>
+                                    <span class="editable-text"><b>Guiding user:</b> Step by step to help you through the operational protocols.</span>
+                                </li>
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#06b6d4;">•</span>
+                                    <span class="editable-text"><b>Multilingual by design:</b> Communicates in several languages to support borderless efforts.</span>
+                                </li>
+                                <li style="display:flex; gap:10px;">
+                                    <span style="color:#06b6d4;">•</span>
+                                    <span class="editable-text"><b>Feedback form / Jurisprudential complexity:</b> Dedicated feedback available in real-time.</span>
+                                </li>
+                            </ul>
+                            
+                            <h3 class="editable-text" style="font-size:1.5rem; color:#0f172a; margin-bottom:15px;">General Resources</h3>
+                            <ul style="list-style:none; padding:0; margin:0; color:#0f172a; font-size:0.95rem; line-height:1.6;">
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#0f172a;">■</span>
+                                    <span class="editable-text"><b>Technical manuals:</b> Professional guidelines completing the field manuals.</span>
+                                </li>
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#0f172a;">■</span>
+                                    <span class="editable-text"><b>Legislation clarifications:</b> Indications of manual pertinence and jurisdictional limits.</span>
+                                </li>
+                                <li style="display:flex; gap:10px; margin-bottom:10px;">
+                                    <span style="color:#0f172a;">■</span>
+                                    <span class="editable-text"><b>High-level institutional reports:</b> Several addresses of institutional reports.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FOOTER -->
+            <section class="module-section" style="background-color:#ffffff; padding:40px 20px 20px 20px; border-top:1px solid #e2e8f0;">
+                <div class="module-content" style="max-width:1200px; margin:0 auto; display:flex; flex-direction:column;">
+                    
+                    <div style="display:flex; flex-wrap:wrap; gap:40px; margin-bottom:40px;">
+                        <div style="flex:1; min-width:150px;">
+                            <h4 class="editable-text" style="color:#0f172a; font-weight:bold; margin-bottom:15px;">About Us</h4>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Careers</p>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Help Center</p>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Company Service</p>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Contact</p>
+                        </div>
+                        <div style="flex:1; min-width:150px;">
+                            <h4 class="editable-text" style="color:#0f172a; font-weight:bold; margin-bottom:15px;">Contact Us</h4>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Security</p>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Customer Support</p>
+                            <p class="editable-text" style="color:#475569; font-size:0.9rem; margin-bottom:8px; cursor:pointer;">Privacy Policy</p>
+                        </div>
+                        <div style="flex:2; min-width:300px;">
+                            <h4 class="editable-text" style="color:#0f172a; font-weight:bold; margin-bottom:15px;">Partners</h4>
+                            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px;">
+                                <div class="editable-image-wrapper"><img src="https://placehold.co/80x40/ffffff/0f172a?text=SCO" style="height:30px;"></div>
+                                <div class="editable-image-wrapper"><img src="https://placehold.co/80x40/ffffff/0f172a?text=KIMIA" style="height:30px;"></div>
+                                <div class="editable-image-wrapper"><img src="https://placehold.co/100x40/ffffff/0f172a?text=AGENFOR" style="height:30px;"></div>
+                                <div class="editable-image-wrapper"><img src="https://placehold.co/120x40/ffffff/0f172a?text=Global+Init" style="height:30px;"></div>
+                                <div class="editable-image-wrapper"><img src="https://placehold.co/80x40/ffffff/0f172a?text=REOC" style="height:30px;"></div>
+                            </div>
+                            <p class="editable-text" style="color:#0f172a; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">Grant number: 101188456</p>
+                            <p class="editable-text" style="color:#94a3b8; font-size:0.75rem; line-height:1.5;">Phygital-OC is co-financed by the ISF program of the European Union. This project aims to strengthen international cooperation to combat transnational crime by deploying advanced technologies and training methodologies.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e2e8f0; padding-top:20px;">
+                        <span class="editable-text" style="color:#64748b; font-size:0.85rem;">Copyright © 2026 Belte Agency</span>
+                        <div style="display:flex; gap:15px; color:#0f172a; font-size:1.2rem;">
+                            <span>📷</span> <span>🐦</span> <span>📘</span> <span>💼</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `
+    }
 ];
