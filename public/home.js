@@ -74,8 +74,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 navStudents.style.display = 'flex';
             }
 
-            if (navUsers && user?.role === 'MASTER') {
-                navUsers.style.display = 'flex';
+            if (user?.role === 'MASTER') {
+                if (navUsers) navUsers.style.display = 'flex';
+                if (typeof window.enableMasterControls === 'function') {
+                    window.enableMasterControls();
+                }
             }
         })
         .catch(err => console.error('Failed to fetch profile', err));
