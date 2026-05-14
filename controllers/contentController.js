@@ -1,6 +1,13 @@
 const prisma = require('../config/db');
 const { notifyQuizSubmitted } = require('../services/notificationService');
 const { generateQuizFromModule, getModuleAssetUrl } = require('../services/openaiQuizService');
+const { scheduleKnowledgeBaseRefresh } = require('../services/aiKnowledgeSyncService');
+
+const queueAiKnowledgeRefresh = (reason) => {
+    scheduleKnowledgeBaseRefresh({ prisma, reason }).catch((error) => {
+        console.error(`Failed to queue AI KB refresh (${reason}):`, error);
+    });
+};
 
 const getEffectiveUserRoles = (user) => new Set([
     ...(Array.isArray(user?.roles) ? user.roles : []),
@@ -67,7 +74,8 @@ const addVideo = async (req, res) => {
             }
         });
         console.log(`[DEBUG] Video created:`, video.id);
-        res.status(201).json(video);
+        queueAiKnowledgeRefresh('module video added');
+        res.status(201).json({ ...video, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to add video' });
     }
@@ -84,15 +92,21 @@ const updateVideo = async (req, res) => {
         });
 
         if (!video) return res.status(404).json({ error: 'Video not found' });
-        if (video.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
+        if (!isModuleManager(req.user, video.module)) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
+        const dataToUpdate = {};
+        if (title !== undefined) dataToUpdate.title = title;
+        if (url !== undefined) dataToUpdate.url = url;
+        if (order !== undefined) dataToUpdate.order = parseInt(order);
+
         const updated = await prisma.moduleVideo.update({
             where: { id: parseInt(videoId) },
-            data: { title, url, order: parseInt(order) }
+            data: dataToUpdate
         });
-        res.json(updated);
+        queueAiKnowledgeRefresh('training content updated');
+        res.json({ ...updated, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update video' });
     }
@@ -112,7 +126,8 @@ const deleteVideo = async (req, res) => {
         }
 
         await prisma.moduleVideo.delete({ where: { id: parseInt(videoId) } });
-        res.json({ message: 'Video deleted' });
+        queueAiKnowledgeRefresh('module video deleted');
+        res.json({ message: 'Video deleted', aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete video' });
     }
@@ -141,7 +156,8 @@ const addDocument = async (req, res) => {
             }
         });
         console.log(`[DEBUG] ModuleDocument created:`, doc.id);
-        res.status(201).json(doc);
+        queueAiKnowledgeRefresh('module document added');
+        res.status(201).json({ ...doc, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to add document' });
     }
@@ -166,7 +182,8 @@ const updateDocument = async (req, res) => {
             where: { id: parseInt(documentId) },
             data: { title, order: parseInt(order) }
         });
-        res.json(updated);
+        queueAiKnowledgeRefresh('training content updated');
+        res.json({ ...updated, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update document' });
     }
@@ -186,7 +203,8 @@ const deleteDocument = async (req, res) => {
         }
 
         await prisma.moduleDocument.delete({ where: { id: parseInt(documentId) } });
-        res.json({ message: 'Document removed from module' });
+        queueAiKnowledgeRefresh('module document removed');
+        res.json({ message: 'Document removed from module', aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete document' });
     }
@@ -214,7 +232,8 @@ const createQuiz = async (req, res) => {
             }
         });
         console.log(`[DEBUG] Quiz created:`, quiz.id);
-        res.status(201).json(quiz);
+        queueAiKnowledgeRefresh('module quiz created');
+        res.status(201).json({ ...quiz, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to create quiz' });
     }
@@ -239,7 +258,8 @@ const deleteQuiz = async (req, res) => {
             where: { id: quizId }
         });
 
-        res.json({ message: 'Quiz deleted' });
+        queueAiKnowledgeRefresh('module quiz deleted');
+        res.json({ message: 'Quiz deleted', aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete quiz' });
     }
@@ -279,7 +299,8 @@ const updateQuiz = async (req, res) => {
             include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } }
         });
 
-        res.json(updated);
+        queueAiKnowledgeRefresh('training content updated');
+        res.json({ ...updated, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update quiz' });
     }
@@ -342,7 +363,8 @@ const createAiGeneratedQuiz = async (req, res) => {
             include: { questions: { include: { options: true } } }
         });
 
-        res.status(201).json(quiz);
+        queueAiKnowledgeRefresh('AI quiz generated');
+        res.status(201).json({ ...quiz, aiKnowledgeSyncQueued: true });
     } catch (error) {
         console.error('AI quiz generation failed:', error);
         res.status(error.statusCode || 500).json({ error: error.message || 'Failed to generate AI quiz' });
@@ -375,7 +397,8 @@ const addQuizQuestion = async (req, res) => {
             include: { options: true }
         });
         console.log(`[DEBUG] Question created:`, question.id);
-        res.status(201).json(question);
+        queueAiKnowledgeRefresh('quiz question added');
+        res.status(201).json({ ...question, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(error.statusCode || 500).json({ error: error.message || 'Failed to add quiz question' });
     }
@@ -434,7 +457,8 @@ const updateQuizQuestion = async (req, res) => {
             });
         });
 
-        res.json(updated);
+        queueAiKnowledgeRefresh('training content updated');
+        res.json({ ...updated, aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(error.statusCode || 500).json({ error: error.message || 'Failed to update quiz question' });
     }
@@ -455,7 +479,8 @@ const deleteQuizQuestion = async (req, res) => {
 
         // Cascading delete handles options if configured in Prisma, otherwise handle manually
         await prisma.quizQuestion.delete({ where: { id: parseInt(questionId) } });
-        res.json({ message: 'Question deleted' });
+        queueAiKnowledgeRefresh('quiz question deleted');
+        res.json({ message: 'Question deleted', aiKnowledgeSyncQueued: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete question' });
     }

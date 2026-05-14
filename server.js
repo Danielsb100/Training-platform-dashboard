@@ -25,11 +25,16 @@ const placementController = require('./controllers/placementController');
 const reportController = require('./controllers/reportController');
 const notificationController = require('./controllers/notificationController');
 const courseController = require('./controllers/courseController');
+const channelController = require('./controllers/channelController');
 const landingPageController = require('./controllers/landingPageController');
 const moduleAiController = require('./controllers/moduleAiController');
+const aiKnowledgeController = require('./controllers/aiKnowledgeController');
+const trainingAiController = require('./controllers/trainingAiController');
+const aiTipsController = require('./controllers/aiTipsController');
+const systemController = require('./controllers/systemController');
 
-const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
-const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'TUTOR'];
+const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
+const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 
 fs.mkdirSync(env.upload.tempDir, { recursive: true });
 
@@ -146,10 +151,16 @@ app.patch('/api/tasks/:id', authenticateToken, notificationController.updateTask
 app.patch('/api/reminders/:id', authenticateToken, notificationController.updateReminder);
 
 app.post('/courses', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.createCourse);
-app.get('/courses/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.getMyCourses);
+app.get('/courses/my', authenticateToken, courseController.getMyCourses);
 app.get('/courses/public', courseController.getPublicCourses);
 app.get('/courses/accessible', authenticateToken, courseController.getAccessibleCourses);
 app.get('/courses/:id', authenticateToken, courseController.getCourseDetail);
+app.get(
+  '/api/students/overview',
+  authenticateToken,
+  roleMiddleware(['MASTER', 'ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR', 'SUPER_ADMIN']),
+  courseController.getStudentsOverview
+);
 app.put('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourse);
 app.delete('/courses/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.deleteCourse);
 app.post('/courses/:id/modules', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.addModuleToCourse);
@@ -157,10 +168,27 @@ app.patch('/courses/:id/modules/reorder', authenticateToken, roleMiddleware(COUR
 app.patch('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.updateCourseModule);
 app.delete('/courses/:id/modules/:courseModuleId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.removeCourseModule);
 app.post('/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
+app.post('/api/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
+
+// --- Channels ---
+app.post('/channels', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.createChannel);
+app.get('/channels/my', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.getMyChannels);
+app.get('/channels/public', channelController.getPublicChannels);
+app.get('/channels/:id', authenticateToken, channelController.getChannelDetail);
+app.put('/channels/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.updateChannel);
+app.delete('/channels/:id', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.deleteChannel);
+app.post('/channels/:id/courses', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.addCourseToChannel);
+app.delete('/channels/:id/courses/:courseId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.removeCourseFromChannel);
 app.get('/courses/:id/runtime', authenticateToken, courseController.getCourseRuntime);
 app.post('/courses/:id/modules/:moduleId/complete', authenticateToken, courseController.completeCourseModule);
 app.post('/api/courses/:id/subscribe', authenticateToken, courseController.selfEnroll);
 app.get('/api/courses/enrolled', authenticateToken, courseController.getEnrolledCourses);
+app.delete('/api/courses/:id/unsubscribe', authenticateToken, courseController.unsubscribe);
+app.get('/api/courses/:id/insights', authenticateToken, courseController.getCourseInsights);
+
+app.get('/api/courses/:id/editors', authenticateToken, courseController.getCourseEditors);
+app.post('/api/courses/:id/editors', authenticateToken, courseController.addCourseEditor);
+app.delete('/api/courses/:id/editors/:userId', authenticateToken, courseController.removeCourseEditor);
 
 // --- Landing Pages API ---
 app.get('/api/landing-pages', authenticateToken, landingPageController.getLandingPages);
@@ -232,6 +260,25 @@ app.post('/modules/:id/quiz/submit', authenticateToken, contentController.submit
 app.get('/modules/:id/quiz/submissions', authenticateToken, contentController.getQuizzesSubmissions);
 app.post('/modules/:id/assistant/chat', authenticateToken, moduleAiController.chatWithModuleAssistant);
 
+app.get('/api/ai-tips/me', authenticateToken, aiTipsController.getMyTips);
+app.post('/api/ai-tips/:id/dismiss', authenticateToken, aiTipsController.dismissMyTip);
+app.get('/api/courses/:courseId/ai-tips/students', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), aiTipsController.getCourseStudentTips);
+
+app.post('/api/ai/chat', authenticateToken, trainingAiController.chat);
+app.get('/api/ai/knowledge-base/config', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.getConfig);
+app.get('/api/ai/knowledge-base/connections', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listConnections);
+app.post('/api/ai/knowledge-base/connections', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.createConnection);
+app.put('/api/ai/knowledge-base/connections/active', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.setActiveConnections);
+app.put('/api/ai/knowledge-base/connections/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateConnection);
+app.delete('/api/ai/knowledge-base/connections/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.deleteConnection);
+app.post('/api/ai/knowledge-base/connections/:id/refresh', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.refresh);
+app.post('/api/ai/knowledge-base/default', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.ensureDefault);
+app.put('/api/ai/knowledge-base/config', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateConfig);
+app.get('/api/ai/knowledge-base/remote', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listRemote);
+app.post('/api/ai/knowledge-base/refresh', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.refresh);
+app.get('/api/ai/knowledge-base/sync-items', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.listSyncItems);
+app.put('/api/ai/knowledge-base/sync-items/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), aiKnowledgeController.updateSyncItem);
+
 app.post('/modules/:id/forum/threads', authenticateToken, forumController.createThread);
 app.get('/modules/:id/forum/threads', authenticateToken, forumController.getThreadsByModule);
 app.post('/forum/threads/:threadId/replies', authenticateToken, forumController.createReply);
@@ -287,6 +334,10 @@ app.get('/api/documents', authenticateToken, (req, res) => {
 app.get('/api/documents/user/:username', documentController.getUserDocuments);
 app.get('/api/documents/download/:id', documentController.downloadDocument);
 app.delete('/api/documents/:id', authenticateToken, documentController.deleteDocument);
+
+// --- System Settings API ---
+app.get('/api/system/settings/:key', systemController.getSettings);
+app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
 
 app.get('/', (req, res) => {
   return sendSuccess(res, { message: 'Authentication API is running.' });

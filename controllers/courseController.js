@@ -1,5 +1,7 @@
 const prisma = require('../config/db');
 const { deepDeleteModule } = require('./moduleController');
+const { createEnrollmentNotification, createEventInviteNotification } = require('../services/notificationService');
+const { generateCourseInsightsForStudent } = require('../services/moduleAiService');
 
 function getEffectiveUserRoles(user) {
   return new Set([
@@ -12,7 +14,10 @@ function getEffectiveUserRoles(user) {
 
 function isCourseManager(user, course) {
   const roles = getEffectiveUserRoles(user);
-  return String(course.ownerMasterId) === String(user.id) || roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
+  if (roles.has('SUPER_ADMIN')) return true;
+  if (String(course.ownerMasterId) === String(user?.id)) return true;
+  if (course.editors && course.editors.some(e => String(e.userId) === String(user?.id))) return true;
+  return false;
 }
 
 function slugify(value) {
@@ -60,8 +65,10 @@ function buildProgressModuleInclude(userId) {
         coverImage: true,
         titleFont: true,
         textColor: true,
+        videos: true,
+        documents: true,
         quizzes: {
-          select: { id: true }
+          select: { id: true, title: true, questions: true }
         },
         submissions: {
           where: { userId },
@@ -100,13 +107,15 @@ function buildCourseInclude(userId, { includeEnrollmentUsers = false, includeLan
       include: buildProgressModuleInclude(userId),
       orderBy: { orderIndex: 'asc' }
     },
+    editors: true,
     ...(includeLandingPage
       ? {
           landingPage: {
             select: { id: true, title: true, compiledHtml: true, compiledCss: true }
           }
         }
-      : {})
+      : {}),
+    editors: true
   };
 }
 
@@ -241,6 +250,9 @@ function buildCourseProgress(course, userId, isManagerView = false) {
       latestQuizScore: quizState.latestQuizScore,
       quizAttemptCount: quizState.quizAttemptCount,
       latestQuizAttemptNumber: quizState.latestAttemptNumber,
+      videos: courseModule.module?.videos || [],
+      documents: courseModule.module?.documents || [],
+      quizzes: courseModule.module?.quizzes || [],
       canMarkComplete: isManagerView || !completionBlockedByQuiz,
       completionBlockedReason: completionBlockedByQuiz
         ? `Pass the module quiz with at least ${quizState.minimumQuizScore}% before marking this room as done.`
@@ -297,7 +309,7 @@ async function assertCourseAccess(courseId, user) {
 
 async function createCourse(req, res) {
   try {
-    const { title, description, coverImage } = req.body;
+    const { title, description, coverImage, externalUrl } = req.body;
     if (!title || !String(title).trim()) {
       return res.status(400).json({ error: 'Course title is required.' });
     }
@@ -310,6 +322,8 @@ async function createCourse(req, res) {
           title: String(title).trim(),
           description: description || null,
           coverImage: coverImage || null,
+          externalUrl: externalUrl || null,
+          status: req.body.status || 'DRAFT',
           sceneId: initialSceneId
         }
       });
@@ -338,11 +352,18 @@ async function createCourse(req, res) {
 
 async function getMyCourses(req, res) {
   try {
+    console.log("getMyCourses called by userId:", req.user.id);
     const courses = await prisma.course.findMany({
-      where: { ownerMasterId: req.user.id },
+      where: {
+        OR: [
+          { ownerMasterId: req.user.id },
+          { editors: { some: { userId: req.user.id } } }
+        ]
+      },
       include: buildCourseInclude(req.user.id),
       orderBy: { updatedAt: 'desc' }
     });
+    console.log("Found courses:", courses.length, "for userId:", req.user.id);
 
     const result = courses.map((course) => {
       const progress = buildCourseProgress(course, req.user.id, true);
@@ -436,6 +457,7 @@ async function getPublicCourses(req, res) {
       description: course.description,
       coverImage: course.coverImage,
       status: course.status,
+      externalUrl: course.externalUrl,
       landingPage: course.landingPage,
       instructor: course.owner?.profile?.displayName || course.owner?.username || 'Instructor'
     }));
@@ -458,6 +480,7 @@ async function getCourseDetail(req, res) {
       title: course.title,
       description: course.description,
       coverImage: course.coverImage,
+      externalUrl: course.externalUrl,
       contentHtml: course.contentHtml,
       contentCss: course.contentCss,
       status: course.status,
@@ -496,7 +519,10 @@ async function getCourseDetail(req, res) {
 async function updateCourse(req, res) {
   try {
     const courseId = Number(req.params.id);
-    const existing = await prisma.course.findUnique({ where: { id: courseId } });
+    const existing = await prisma.course.findUnique({ 
+      where: { id: courseId },
+      include: { editors: true }
+    });
     if (!existing) {
       return res.status(404).json({ error: 'Course not found.' });
     }
@@ -512,7 +538,8 @@ async function updateCourse(req, res) {
         coverImage: req.body.coverImage === undefined ? existing.coverImage : req.body.coverImage,
         contentHtml: req.body.contentHtml === undefined ? existing.contentHtml : req.body.contentHtml,
         contentCss: req.body.contentCss === undefined ? existing.contentCss : req.body.contentCss,
-        status: req.body.status || existing.status
+        status: req.body.status || existing.status,
+        externalUrl: req.body.externalUrl === undefined ? existing.externalUrl : req.body.externalUrl
       }
     });
 
@@ -761,6 +788,17 @@ async function enrollUser(req, res) {
       create: { courseId, userId, status: 'ENROLLED' }
     });
 
+    if (enrollment) {
+      await createEnrollmentNotification({
+        recipientUserId: userId,
+        title: `You have been enrolled in ${course.title}`,
+        message: `You were manually enrolled in this course by an instructor.`,
+        actorUserId: req.user.id,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+    }
+
     return res.status(201).json(enrollment);
   } catch (error) {
     console.error(error);
@@ -881,6 +919,29 @@ async function selfEnroll(req, res) {
       create: { courseId, userId, status: 'ENROLLED' }
     });
 
+    if (enrollment) {
+      // Notify the student
+      await createEnrollmentNotification({
+        recipientUserId: userId,
+        title: `You have subscribed to ${course.title}`,
+        message: `You successfully enrolled in ${course.title}.`,
+        actorUserId: userId,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+      // Notify the course owner
+      if (course.ownerMasterId && course.ownerMasterId !== userId) {
+        await createEnrollmentNotification({
+          recipientUserId: course.ownerMasterId,
+          title: `${req.user.username} has subscribed to ${course.title}`,
+          message: `${req.user.username} enrolled in your course.`,
+          actorUserId: userId,
+          sourceEntityType: 'Course',
+          sourceEntityId: course.id
+        });
+      }
+    }
+
     return res.status(201).json(enrollment);
   } catch (error) {
     console.error(error);
@@ -891,7 +952,10 @@ async function selfEnroll(req, res) {
 async function getEnrolledCourses(req, res) {
   try {
     const courses = await prisma.course.findMany({
-      where: { enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } } },
+      where: { 
+        enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } },
+        ownerMasterId: { not: req.user.id }
+      },
       include: {
         ...buildCourseInclude(req.user.id),
         landingPage: {
@@ -927,7 +991,358 @@ async function getEnrolledCourses(req, res) {
   }
 }
 
+async function unsubscribe(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = req.user.id;
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'Invalid course ID.' });
+    }
+
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found.' });
+    }
+
+    await prisma.enrollment.delete({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    return res.json({ message: 'Unsubscribed successfully.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to unsubscribe from course.' });
+  }
+}
+
+
+function buildStudentAiTip({ progressPercent, currentStage, quizScores, status }) {
+  const lowScores = quizScores.filter((score) => typeof score.bestScore === 'number' && score.bestScore < 70);
+  const pendingQuizzes = quizScores.filter((score) => score.hasQuiz && score.attempts === 0);
+
+  if (status === 'COMPLETED' || progressPercent >= 100) {
+    return 'Course completed. Invite this student to an advanced activity or collect feedback while the content is still fresh.';
+  }
+  if (lowScores.length) {
+    return `Review ${lowScores[0].moduleTitle}: the best quiz score is ${Math.round(lowScores[0].bestScore)}%, below the recommended threshold.`;
+  }
+  if (pendingQuizzes.length) {
+    return `Ask the student to complete the quiz for ${pendingQuizzes[0].moduleTitle} so progress can be assessed.`;
+  }
+  if (progressPercent === 0) {
+    return 'Student has not started yet. Send a welcome reminder and point them to the first module.';
+  }
+  if (progressPercent < 50) {
+    return `Student is in progress at ${currentStage || 'the next module'}. Check if they need support before the next milestone.`;
+  }
+  return 'Student is progressing well. Encourage completion of the next module and keep monitoring quiz performance.';
+}
+
+function buildCourseStudentsInclude() {
+  return {
+    owner: { select: { id: true, username: true, email: true, profile: { select: { displayName: true } } } },
+    editors: true,
+    enrollments: {
+      where: { status: { not: 'CANCELLED' } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            profilePicture: true,
+            profile: {
+              select: {
+                displayName: true,
+                headline: true,
+                organization: true,
+                location: true,
+                course: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    },
+    completions: true,
+    courseModules: {
+      orderBy: { orderIndex: 'asc' },
+      include: {
+        placement: true,
+        module: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            coverImage: true,
+            titleFont: true,
+            textColor: true,
+            quizzes: { select: { id: true, title: true } },
+            submissions: {
+              select: {
+                id: true,
+                userId: true,
+                score: true,
+                attemptNumber: true,
+                createdAt: true
+              },
+              orderBy: { createdAt: 'desc' }
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
+async function getStudentsOverview(req, res) {
+  try {
+    const roles = getEffectiveUserRoles(req.user);
+    const canViewAll = roles.has('ADMIN') || roles.has('SUPER_ADMIN') || roles.has('MASTER');
+    const where = canViewAll
+      ? {}
+      : {
+          OR: [
+            { ownerMasterId: req.user.id },
+            { editors: { some: { userId: req.user.id } } }
+          ]
+        };
+
+    const courses = await prisma.course.findMany({
+      where,
+      include: buildCourseStudentsInclude(),
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    const courseSummaries = courses.map((course) => {
+      const students = (course.enrollments || []).map((enrollment) => {
+        const progress = buildCourseProgress(course, enrollment.userId, true);
+        const firstIncomplete = progress.modules.find((module) => !module.completed);
+        const currentStage = firstIncomplete?.title || (progress.modules.length ? 'Course completed' : 'No modules yet');
+        const quizScores = progress.modules
+          .filter((module) => module.hasQuiz)
+          .map((module) => ({
+            moduleId: module.moduleId,
+            moduleTitle: module.title,
+            latestScore: module.latestQuizScore,
+            bestScore: module.bestQuizScore,
+            attempts: module.quizAttemptCount,
+            minimumQuizScore: module.minimumQuizScore,
+            quizPassed: module.quizPassed,
+            hasQuiz: module.hasQuiz
+          }));
+        const student = enrollment.user || {};
+        const profile = student.profile || {};
+        const aiTip = buildStudentAiTip({
+          progressPercent: progress.progressPercent,
+          currentStage,
+          quizScores,
+          status: enrollment.status
+        });
+
+        return {
+          enrollmentId: enrollment.id,
+          userId: enrollment.userId,
+          username: student.username,
+          email: student.email,
+          displayName: profile.displayName || student.username || student.email || 'Student',
+          profilePicture: student.profilePicture,
+          headline: profile.headline,
+          organization: profile.organization,
+          location: profile.location,
+          profileCourse: profile.course,
+          enrollmentStatus: enrollment.status,
+          progressPercent: progress.progressPercent,
+          completedCount: progress.completedCount,
+          moduleCount: progress.modules.length,
+          currentStage,
+          quizScores,
+          aiTip,
+          modules: progress.modules.map((module) => ({
+            moduleId: module.moduleId,
+            title: module.title,
+            orderIndex: module.orderIndex,
+            completed: module.completed,
+            unlocked: module.unlocked,
+            hasQuiz: module.hasQuiz,
+            latestQuizScore: module.latestQuizScore,
+            bestQuizScore: module.bestQuizScore,
+            quizAttemptCount: module.quizAttemptCount,
+            quizPassed: module.quizPassed
+          })),
+          enrolledAt: enrollment.createdAt,
+          updatedAt: enrollment.updatedAt
+        };
+      });
+
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        status: course.status,
+        coverImage: course.coverImage,
+        owner: course.owner ? {
+          id: course.owner.id,
+          username: course.owner.username,
+          email: course.owner.email,
+          displayName: course.owner.profile?.displayName || course.owner.username
+        } : null,
+        moduleCount: course.courseModules.length,
+        studentCount: students.length,
+        students
+      };
+    });
+
+    const flatStudents = courseSummaries.flatMap((course) => course.students.map((student) => ({
+      ...student,
+      courseId: course.id,
+      courseTitle: course.title,
+      courseStatus: course.status,
+      courseModuleCount: course.moduleCount
+    })));
+
+    return res.json({
+      courses: courseSummaries,
+      students: flatStudents,
+      totalCourses: courseSummaries.length,
+      totalStudents: flatStudents.length
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to load students overview.' });
+  }
+}
+
+async function getCourseEditors(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const editors = await prisma.courseEditor.findMany({
+      where: { courseId },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, profile: { select: { displayName: true } } }
+        }
+      }
+    });
+    return res.json(editors);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to load editors' });
+  }
+}
+
+async function addCourseEditor(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const { userId } = req.body;
+    
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (!isCourseManager(req.user, course)) return res.status(403).json({ error: 'Forbidden' });
+
+    if (String(course.ownerMasterId) === String(userId)) {
+        return res.status(400).json({ error: 'User is already the owner' });
+    }
+
+    const newEditor = await prisma.courseEditor.upsert({
+      where: { courseId_userId: { courseId, userId: Number(userId) } },
+      update: {},
+      create: { courseId, userId: Number(userId) },
+      include: { user: { select: { id: true, username: true, email: true } } }
+    });
+
+    if (newEditor) {
+      await createEventInviteNotification({
+        recipientUserId: Number(userId),
+        title: `You have been added as a Co-Editor`,
+        message: `You are now a co-editor for ${course.title}`,
+        actorUserId: req.user.id,
+        sourceEntityType: 'Course',
+        sourceEntityId: course.id
+      });
+    }
+
+    return res.status(201).json(newEditor);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to add editor' });
+  }
+}
+
+async function removeCourseEditor(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (!isCourseManager(req.user, course)) return res.status(403).json({ error: 'Forbidden' });
+
+    await prisma.courseEditor.deleteMany({
+      where: { courseId, userId }
+    });
+    return res.json({ message: 'Editor removed' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to remove editor' });
+  }
+}
+
+async function getCourseInsights(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const { course, managerView } = await assertCourseAccess(courseId, req.user);
+    const progress = buildCourseProgress(course, req.user.id, managerView);
+
+    // Calculate average score for the user in this course
+    let totalScore = 0;
+    let quizCount = 0;
+
+    progress.modules.forEach(m => {
+      if (m.hasQuiz && m.bestQuizScore !== null) {
+        totalScore += m.bestQuizScore;
+        quizCount++;
+      }
+    });
+
+    const averageScore = quizCount > 0 ? Math.round(totalScore / quizCount) : 0;
+
+    const studentStats = {
+      courseTitle: course.title,
+      totalModules: progress.modules.length,
+      completedModules: progress.completedCount,
+      progressPercent: progress.progressPercent,
+      averageScore,
+      recentlyCompleted: progress.modules.filter(m => m.completed).map(m => m.title).slice(-3) // last 3 completed
+    };
+
+    const insights = await generateCourseInsightsForStudent(studentStats);
+    
+    return res.json(insights);
+  } catch (error) {
+    if (error.message === 'COURSE_NOT_FOUND') {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+    if (error.message === 'COURSE_ACCESS_DENIED') {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+    console.error('Error fetching course insights:', error);
+    return res.status(500).json({ error: 'Failed to fetch course insights.' });
+  }
+}
+
 module.exports = {
+  getCourseInsights,
+  addCourseEditor,
+  removeCourseEditor,
+  getStudentsOverview,
+  getCourseEditors,
   getEffectiveUserRoles,
   isCourseManager,
   buildCourseInclude,
@@ -946,6 +1361,7 @@ module.exports = {
   removeCourseModule,
   enrollUser,
   selfEnroll,
+  unsubscribe,
   getEnrolledCourses,
   getCourseRuntime,
   completeCourseModule,

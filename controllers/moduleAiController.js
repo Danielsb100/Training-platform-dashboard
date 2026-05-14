@@ -1,6 +1,6 @@
 const prisma = require('../config/db');
 const { getModuleAssetUrl } = require('../services/openaiQuizService');
-const { generateModuleAssistantResponse } = require('../services/moduleAiService');
+const { chatWithTrainingAi } = require('../services/trainingAiService');
 
 const MANAGER_ROLES = new Set(['ADMIN', 'MASTER', 'SUPER_ADMIN']);
 
@@ -158,8 +158,17 @@ const chatWithModuleAssistant = async (req, res) => {
 
     if (!hasAccess) return res.status(403).json({ error: 'Unauthorized' });
 
-    const answer = await generateModuleAssistantResponse(module, message);
-    res.json({ answer });
+    const courseContext = parsedCourseId
+      ? await prisma.course.findUnique({ where: { id: parsedCourseId }, select: { id: true, title: true, description: true } })
+      : null;
+    const result = await chatWithTrainingAi({
+      prisma,
+      message,
+      conversationId: `module-${module.id}-user-${req.user.id}`,
+      moduleContext: module,
+      courseContext
+    });
+    res.json({ answer: result.answer, citations: result.citations || [] });
   } catch (error) {
     console.error('Module assistant chat failed:', error);
     res.status(error.statusCode || 500).json({ error: error.message || 'Failed to generate assistant response' });

@@ -78,6 +78,34 @@
                 </div>
             </div>
 
+            <div class="card" id="editors-section" style="display: none;">
+                <div class="card-header">
+                    <h3>Co-Editors & Instructors</h3>
+                    <p>Assign other users to help you edit this course and its landing page.</p>
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <input type="text" id="new-editor-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'editor')" onfocus="searchUsersForRole(this.value, 'editor')">
+                    <div id="editor-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
+                </div>
+                <ul id="editors-list" style="list-style: none; padding: 0; margin-top: 15px;">
+                    <!-- Injected by JS -->
+                </ul>
+            </div>
+
+            <div class="card" id="students-section" style="display: none;">
+                <div class="card-header">
+                    <h3>Invite Students</h3>
+                    <p>Manually enroll users directly into this course.</p>
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <input type="text" id="new-student-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'student')" onfocus="searchUsersForRole(this.value, 'student')">
+                    <div id="student-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
+                </div>
+                <ul id="students-list" style="list-style: none; padding: 0; margin-top: 15px;">
+                    <!-- Injected by JS -->
+                </ul>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h3>Construction and Layout</h3>
@@ -167,7 +195,7 @@
             </div>
 
             <div style="background:#f8fafc; padding:20px; border-radius:10px; border: 1px solid #e2e8f0;">
-                <div id="modules-list" style="display:flex; flex-direction:column; gap:10px;">
+                <div id="modules-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">
                     <!-- Módulos atrelados aparecerão aqui -->
                 </div>
             </div>
@@ -317,7 +345,7 @@
                                 <div style="text-align: center; color: #94a3b8; font-weight: bold; margin-bottom: 15px;">OR</div>
                                 
                                 <label style="display:block; margin-bottom:10px; color:#475569; font-weight:bold;">Option 2: Use External Link</label>
-                                <input type="text" id="v-url-input" placeholder="Video URL (YouTube, Vimeo, etc)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <input type="text" id="v-url-input" placeholder="Video URL (YouTube, Vimeo, OneDrive, SharePoint, direct MP4, etc.)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button onclick="submitAddVideo()" style="padding: 10px 15px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save Video</button>
@@ -339,7 +367,7 @@
                             </div>
                             <button id="btn-add-doc" onclick="document.getElementById('doc-upload-input').click()" style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i class="fas fa-file-alt"></i> + Doc</button>
                         </div>
-                        <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,image/*,video/*" style="display: none;" onchange="handleDocUpload(event)">
+                        <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,image/*,video/*" multiple style="display: none;" onchange="handleDocUpload(event)">
                         
                         <div id="d-list" style="display: flex; flex-direction: column; gap: 15px;">
                             <p style="color: #64748b; text-align: center;">No document added.</p>
@@ -511,16 +539,20 @@
             const channelSelect = document.getElementById('course-channel');
             
             // Tenta carregar os canais reais salvos no navegador ANTES de preencher o formulário
-            const savedChannels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            
-            if (savedChannels.length > 0) {
-                savedChannels.forEach(ch => {
-                    const opt = document.createElement('option');
-                    opt.value = ch.id;
-                    opt.innerText = ch.name;
-                    channelSelect.appendChild(opt);
-                });
-            }
+            const tokenForChannels = localStorage.getItem('token');
+            fetch('/channels/my', { headers: { 'Authorization': `Bearer ${tokenForChannels}` } })
+                .then(r => r.json())
+                .then(res => {
+                    const savedChannels = res.data || [];
+                    if (savedChannels.length > 0) {
+                        savedChannels.forEach(ch => {
+                            const opt = document.createElement('option');
+                            opt.value = ch.id;
+                            opt.innerText = ch.name;
+                            channelSelect.appendChild(opt);
+                        });
+                    }
+                }).catch(e => console.error(e));
 
             const coursesLocal = JSON.parse(localStorage.getItem('published_courses') || '[]');
             let course = coursesLocal.find(c => String(c.id) === String(courseId));
@@ -542,6 +574,12 @@
                                 course = data.data;
                                 window.apiCourseData = data.data;
                             }
+                            
+                            // Load editors if saved course
+                            loadCoEditors(window.editingCourseId);
+                            document.getElementById('editors-section').style.display = 'block';
+                            loadStudents(window.editingCourseId);
+                            document.getElementById('students-section').style.display = 'block';
                         }
                     }
                 } catch (err) {
@@ -793,11 +831,22 @@
             }
         }
 
-        function deleteLandingPage() {
+        async function deleteLandingPage() {
             if(!confirm("Are you sure you want to unlink and delete the Landing Page of this course?")) return;
             
+            // Apaga no backend, se existir
+            if (window.apiCourseData && window.apiCourseData.landingPage) {
+                try {
+                    await apiCall(`/api/landing-pages/${window.apiCourseData.landingPage.id}`, 'DELETE');
+                    window.apiCourseData.landingPage = null;
+                } catch (e) {
+                    alert('Error deleting landing page from server: ' + e.message);
+                    return; // Se falhar no servidor, aborta
+                }
+            }
+            
             const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-            const index = courses.findIndex(c => c.id === window.editingCourseId);
+            const index = courses.findIndex(c => String(c.id) === String(window.editingCourseId));
             
             if (index !== -1) {
                 courses[index].modular_content = '';
@@ -813,9 +862,14 @@
                 }
                 
                 localStorage.setItem('published_courses', JSON.stringify(courses));
-                updateConstructionUI();
-                alert("Landing Page removed!");
+            } else if (window.apiCourseData && !window.apiCourseData.custom_thumb && !window.apiCourseData.coverImage) {
+                document.getElementById('cover-preview').style.backgroundImage = 'none';
+                document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'block';
+                document.getElementById('cover-status-text').innerText = '(Cover not selected)';
             }
+            
+            updateConstructionUI();
+            alert("Landing Page removed!");
         }
 
         function handleCourseThumbUpload(event) {
@@ -856,7 +910,146 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        async function loadCoEditors(courseId) {
+            try {
+                const res = await fetch(`/api/courses/${courseId}/editors`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    const editors = await res.json();
+                    const list = document.getElementById('editors-list');
+                    list.innerHTML = '';
+                    editors.forEach(e => {
+                        list.innerHTML += `
+                            <li style="display:flex; justify-content:space-between; align-items:center; background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:8px;">
+                                <span>${e.user.profile?.displayName || e.user.username} (${e.user.email})</span>
+                                <button type="button" onclick="removeCoEditor(${e.userId})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                            </li>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        let searchTimeout;
+        async function searchUsersForRole(query, roleType) {
+            const resultsDiv = document.getElementById(`${roleType}-search-results`);
+            if (!query || query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+                        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const users = data.data?.users || data.users || [];
+                        if (users.length > 0) {
+                            resultsDiv.innerHTML = users.map(u => `
+                                <div style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display:flex; flex-direction:column;" onclick="selectUserForRole('${roleType}', ${u.id}, '${u.username}')">
+                                    <span style="font-weight: 600;">${u.username}</span>
+                                    <span style="font-size: 12px; color: #64748b;">${u.email}</span>
+                                </div>
+                            `).join('');
+                            resultsDiv.style.display = 'block';
+                        } else {
+                            resultsDiv.innerHTML = '<div style="padding: 10px 15px; color: #94a3b8;">No users found.</div>';
+                            resultsDiv.style.display = 'block';
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 300);
+        }
+
+        function selectUserForRole(roleType, userId, username) {
+            document.getElementById(`new-${roleType}-search`).value = username;
+            document.getElementById(`${roleType}-search-results`).style.display = 'none';
+            if (roleType === 'editor') {
+                addCoEditor(userId);
+            } else if (roleType === 'student') {
+                inviteStudent(userId);
+            }
+        }
+
+        async function addCoEditor(userId) {
+            if (!userId) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/editors`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                if (res.ok) {
+                    document.getElementById('new-editor-search').value = '';
+                    loadCoEditors(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to add editor');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error adding editor');
+            }
+        }
+
+        async function inviteStudent(userId) {
+            if (!userId) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/enrollments`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                if (res.ok) {
+                    document.getElementById('new-student-search').value = '';
+                    loadStudents(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to invite student');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error inviting student');
+            }
+        }
+
+        async function loadStudents(courseId) {
+            // we will implement a fetch to get enrollments later if there's an API. For now, it will just notify.
+        }
+
+        async function removeCoEditor(userId) {
+            if (!confirm('Are you sure you want to remove this editor?')) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/editors/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    loadCoEditors(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to remove editor');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error removing editor');
+            }
+        }
     </script>
-    <script src="module_manager.js"></script>
+    <script src="module_manager.js?v=external-video-open-direct-20260512"></script>
 </body>
 </html>

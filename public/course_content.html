@@ -24,23 +24,33 @@
         
         /* New Grid Styles */
         .modules-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 0; }
-        .module-card { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
+        .module-card { position: relative; width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, opacity 0.3s, filter 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: #1e293b; }
         .module-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 0.8; }
-        .module-card:hover .module-cover { opacity: 0.3; transform: scale(1.1); }
-        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
-        .module-card:hover .module-overlay { background: rgba(0,0,0,0.4); justify-content: flex-start; padding-top: 30px; }
+        .module-card.module-card-locked { cursor: not-allowed; opacity: 0.52; filter: grayscale(0.35); }
+        .module-card.module-card-locked:hover { transform: none; z-index: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .module-cover { position: absolute; inset: 0; background-size: cover; background-position: center; transition: 0.3s; opacity: 1.0; }
+        .module-card:hover .module-cover { opacity: 0.8; transform: scale(1.05); }
+        .module-card.module-card-locked:hover .module-cover { opacity: 1; transform: none; }
+        .module-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: white; transition: 0.3s; }
+        .module-card:hover .module-overlay { background: rgba(0,0,0,0.2); justify-content: flex-start; padding-top: 30px; }
+        .module-card.module-card-locked .module-overlay { background: linear-gradient(to bottom, rgba(15,23,42,0.65) 0%, rgba(15,23,42,0.35) 45%, rgba(15,23,42,0.9) 100%); }
+        .module-card.module-card-locked:hover .module-overlay { justify-content: space-between; padding-top: 20px; }
         .module-title { margin: 0; font-size: 1.3rem; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.3s; }
         .module-card:hover .module-title { margin-bottom: 15px; color: #cf9c33; }
+        .module-card.module-card-locked:hover .module-title { margin-bottom: 0; color: inherit; }
         .module-desc { margin: 0; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.5; }
         .module-card:hover .module-desc { opacity: 1; transform: translateY(0); }
+        .module-card.module-card-locked .module-desc { opacity: 1; transform: none; -webkit-line-clamp: 3; }
+        .module-status-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 999px; background: rgba(15,23,42,0.82); border: 1px solid rgba(255,255,255,0.24); color: #f8fafc; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; backdrop-filter: blur(4px); }
+        .module-status-badge.waiting { background: rgba(207,156,51,0.92); color: #111827; border-color: rgba(255,255,255,0.35); }
         
         /* Custom Design Container */
         #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
         #custom-design-container .module-section { position: relative; }
+        #custom-design-container .module-content { max-width: 100% !important; padding-left: 40px !important; padding-right: 40px !important; }
     </style>
 </head>
-<body>
+<body class="view-mode">
 
     <div id="course-content-root">
         <!-- Content injected by JS -->
@@ -72,31 +82,44 @@
                 return;
             }
 
-            fetch(`/courses/${courseId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Course not found');
-                return res.json();
-            })
-            .then(data => {
-                const course = data.data || data;
+            Promise.all([
+                fetch(`/api/profile/me`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()),
+                fetch(`/courses/${courseId}`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => {
+                    if (!res.ok) throw new Error('Course not found');
+                    return res.json();
+                })
+            ])
+            .then(([profileData, courseData]) => {
+                const actualProfileData = profileData.data || profileData;
+                const currentUser = actualProfileData.user || {};
+                const course = courseData.data || courseData;
                 
                 if (!course) {
                     container.innerHTML = '<div class="empty-state">Course not found.</div>';
                     return;
                 }
 
+                const isOwnerOrEditor = course.canManage === true;
+
                 // Handle modules format from DB or Local
                 const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
-                const modules = rawModules.map((m, i) => ({
-                    id: m.courseModuleId || m.id,
-                    title: m.title || `Module ${i+1}`,
-                    content: m.description || m.content || 'No description available for this module.',
-                    coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
-                    titleFont: m.titleFont || 'inherit',
-                    textColor: m.textColor || '#ffffff'
-                }));
+                const modules = rawModules.map((m, i) => {
+                    const status = m.moduleStatus || m.status || 'DRAFT';
+                    return {
+                        id: m.id || m.moduleId,
+                        title: m.title || `Module ${i+1}`,
+                        content: m.description || m.content || 'No description available for this module.',
+                        coverImage: m.coverImage || 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=800',
+                        titleFont: m.titleFont || 'inherit',
+                        textColor: m.textColor || '#ffffff',
+                        status,
+                        isPublished: status === 'PUBLISHED',
+                        isLockedForStudent: !isOwnerOrEditor && status !== 'PUBLISHED',
+                        videos: m.videos || [],
+                        documents: m.documents || [],
+                        quizzes: m.quizzes || []
+                    };
+                });
 
                 let modulesHTML = '';
                 if (modules.length === 0) {
@@ -110,12 +133,27 @@
                 } else {
                     modulesHTML = `<div class="modules-grid">`;
                     modules.forEach(m => {
+                        const lockedMessage = 'Waiting to be published';
+                        const cardClass = m.isLockedForStudent ? 'module-card module-card-locked' : 'module-card';
+                        const clickHandler = m.isLockedForStudent
+                            ? `event.preventDefault(); event.stopPropagation();`
+                            : `window.location.href='module_viewer.html?moduleId=${m.id}&courseId=${course.id}'`;
+                        const statusBadge = m.isLockedForStudent
+                            ? `<div class="module-status-badge waiting"><i class="fas fa-clock"></i> ${lockedMessage}</div>`
+                            : (!m.isPublished && isOwnerOrEditor ? `<div class="module-status-badge"><i class="fas fa-eye-slash"></i> Draft</div>` : '');
+
                         modulesHTML += `
-                            <div class="module-card" onclick="alert('Module access flow to be implemented')">
+                            <div class="${cardClass}" onclick="${clickHandler}" aria-disabled="${m.isLockedForStudent ? 'true' : 'false'}" title="${m.isLockedForStudent ? lockedMessage : 'Open module'}">
                                 <div class="module-cover" style="background-image: url('${m.coverImage}');"></div>
                                 <div class="module-overlay">
+                                    ${statusBadge}
                                     <h3 class="module-title" style="font-family: ${m.titleFont}; color: ${m.textColor};">${m.title}</h3>
-                                    <p class="module-desc">${m.content}</p>
+                                    <p class="module-desc">${m.isLockedForStudent ? 'This module is not available yet.' : m.content}</p>
+                                    <div style="display:flex; gap:10px; margin-top:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); padding-top:15px;">
+                                        <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
+                                        <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
+                                        <span title="Quizzes"><i class="fas fa-question-circle"></i> ${m.quizzes ? m.quizzes.length : 0}</span>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -130,25 +168,48 @@
                     document.head.appendChild(style);
                 }
 
+                const editSettingsButtonHTML = isOwnerOrEditor ? `
+                    <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
+                        <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
+                    </div>
+                ` : '';
+
                 // If the course has a custom design, use it and append modules at the bottom
                 if (course.contentHtml) {
                     let finalHtml = course.contentHtml;
-                    if (finalHtml.includes('id="course-modules-section"')) {
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = finalHtml;
-                        const modSec = tempDiv.querySelector('#course-modules-section');
-                        if (modSec) {
-                            modSec.style.flex = "1";
-                            modSec.innerHTML = `
-                                <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
-                                    <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                                        <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
-                                    </h2>
-                                    ${modulesHTML}
-                                </div>
-                            `;
-                            finalHtml = tempDiv.innerHTML;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = finalHtml;
+                    
+                    const modSec = tempDiv.querySelector('#course-modules-section');
+                    const coursesPlaceholder = tempDiv.querySelector('#courses-placeholder');
+                    
+                    if (coursesPlaceholder) {
+                        coursesPlaceholder.style.display = 'block';
+                        coursesPlaceholder.style.padding = '0';
+                        coursesPlaceholder.style.border = 'none';
+                        coursesPlaceholder.style.background = 'transparent';
+                        coursesPlaceholder.innerHTML = modulesHTML;
+                        
+                        // Setup placeholders for AI fetching
+                        const statsBlock = tempDiv.querySelector('.stat-block h3');
+                        if (statsBlock) {
+                            statsBlock.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            const p = statsBlock.nextElementSibling;
+                            if (p) p.innerText = 'Calculating AI Insights...';
                         }
+                        
+                        finalHtml = tempDiv.innerHTML;
+                    } else if (modSec) {
+                        modSec.style.flex = "1";
+                        modSec.innerHTML = `
+                            <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
+                                <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                    <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
+                                </h2>
+                                ${modulesHTML}
+                            </div>
+                        `;
+                        finalHtml = tempDiv.innerHTML;
                     } else {
                         finalHtml += `
                             <main class="main-content" style="max-width: 1200px; margin: 40px auto; padding: 0 40px;">
@@ -163,56 +224,137 @@
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
                                 <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
                             </div>
-                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
-                            </div>
+                            ${editSettingsButtonHTML}
                             ${finalHtml}
                         </div>
                     `;
-                } else {
-                    // Fallback to default template layout
+                } else {                     // Fallback to default template layout (AGENFOR layout)
                     container.innerHTML = `
-                        <div id="custom-design-container">
+                        <div id="custom-design-container" style="font-family: 'Inter', sans-serif; background-color: #f8fafc; min-height: 100vh;">
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
                                 <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
                             </div>
-                            <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
-                            </div>
+                            ${editSettingsButtonHTML}
                             
-                            <section class="module-section" id="header-section" style="background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=2000');">
-                                <div class="bg-overlay"></div>
-                                <div class="module-content">
-                                    <div class="logo-container">
-                                        <img src="https://placehold.co/200x100/ffffff/111111?text=LOGO" alt="Logo" class="logo-img" id="logo-img">
+                            <!-- Nav -->
+                            <nav style="background-color: #cf9c33; padding: 15px 40px; display: flex; align-items: center; justify-content: flex-end; height: 60px;">
+                                <div style="position: absolute; left: 40px; display:flex; align-items:center; gap:15px; color:white; font-weight:bold; font-size:1.2rem;">
+                                    <i class="fas fa-globe"></i> AGENFOR
+                                </div>
+                            </nav>
+                            
+                            <!-- Header -->
+                            <header style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="max-width: 1200px; margin: 0 auto;">
+                                    <h1 style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">${course.title || 'Advanced Virtual Academy'}</h1>
+                                    <h2 style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">AVA</h2>
+                                    <p style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">${course.description || "To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges."}</p>
+                                </div>
+                            </header>
+
+                            <!-- Main Content -->
+                            <main style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+                                <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                                    <!-- Modules Grid -->
+                                    <div style="flex: 3; min-width: 300px;">
+                                        <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                            <i class="fas fa-layer-group" style="color: #cf9c33;"></i> Módulos do Curso
+                                        </h2>
+                                        ${modulesHTML}
                                     </div>
-                                    <div class="text-block text-white" style="flex: 1;">
-                                        <h1 id="titulo-cabecalho">${course.title || 'My Awesome Title'}</h1>
-                                        <p id="desc-cabecalho">${course.description || 'Esta é a descrição do cabeçalho. Você pode clicar e editar este texto livremente, assim como pode apertar nos botões vermelhos correspondentes e trocar a imagem de fundo ou a logo ao lado.'}</p>
+                                    
+                                    <!-- Methodology Sidebar -->
+                                    <div style="flex: 1; min-width: 300px;">
+                                        <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
+                                            <h3 style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">NOSSA METODOLOGIA</h3>
+                                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is an advanced training platform that supports blended courses to enhance participants knowledge retention.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is trained as legal.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Assessment of trainees' expectations and needs.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design training plans and curricula.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design online training.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Layout on-the-job training.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Record video-based training.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Support to Q&A through avatars.</li>
+                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Build case studies, scenarios and simulation.</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
-                            </section>
+                            </main>
 
-                            <section id="course-modules-section" class="module-section" style="background-color: #f8fafc; padding: 40px; min-height: 300px; flex: 1;">
-                                <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
-                                    <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                                        <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
-                                    </h2>
-                                    ${modulesHTML}
-                                </div>
-                            </section>
-
-                            <footer class="module-section" id="footer-section" style="background-image: url('https://images.unsplash.com/photo-1557683304-673a23048d34?auto=format&fit=crop&q=80&w=2000'); margin-bottom: 0;">
-                                <div class="bg-overlay" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);"></div>
-                                <div class="module-content" style="padding: 20px; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
-                                    <p class="text-white" id="rodape-texto" style="font-size: 0.9rem; margin: 0; text-align: center;">© 2026 Template Modular de Design. Todos os direitos reservados. Você pode visualizar como o público acessará na aba Publicação.</p>
-                                    <div class="body-img-container">
-                                        <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&w=400&q=80" alt="Logos Rodapé" class="body-img" id="footer-img" style="height: auto; max-height: 120px; object-fit: contain; box-shadow: none;">
+                            <!-- Footer -->
+                            <footer style="background: linear-gradient(to right, #1e293b 0%, #cf9c33 100%); padding: 40px; color: white; margin-top: 40px;">
+                                <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Sobre Nós</h3>
+                                        <p style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Somos uma instituição dedicada a entregar o melhor conteúdo educacional. Nosso foco é democratizar o conhecimento através da tecnologia aberta.</p>
+                                    </div>
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Contato</h3>
+                                        <p style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Email: contato@exemplo.com<br>Telefone: (11) 9999-9999<br>Endereço: Avenida Principal, 1000 - Centro</p>
+                                    </div>
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Parceiros</h3>
+                                        <div style="display: flex; gap: 10px;">
+                                            <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 1</div>
+                                            <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 2</div>
+                                            <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 3</div>
+                                        </div>
                                     </div>
                                 </div>
                             </footer>
                         </div>
                     `;
+                }
+
+                // Fetch AI Insights dynamically after rendering
+                if (course.contentHtml && course.contentHtml.includes('courses-placeholder')) {
+                    fetch(`/api/courses/${courseId}/insights`, { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(res => res.json())
+                    .then(insights => {
+                        // Update Performance Dashboard
+                        const statBlocks = document.querySelectorAll('#custom-design-container .stat-block');
+                        if (statBlocks.length > 0 && insights.stats) {
+                            statBlocks[0].innerHTML = `
+                                <h3 style="margin:0; font-size:1.8rem; color:#cf9c33;">${insights.stats.completedModules}</h3>
+                                <p style="margin:5px 0 0 0; font-size:0.9rem; opacity:0.8;">Módulos Concluídos</p>
+                            `;
+                        }
+                        if (statBlocks.length > 1 && insights.stats) {
+                            statBlocks[1].innerHTML = `
+                                <h3 style="margin:0; font-size:1.8rem; color:#cf9c33;">${insights.stats.averageScore}</h3>
+                                <p style="margin:5px 0 0 0; font-size:0.9rem; opacity:0.8;">Média de Notas - ${insights.stats.status}</p>
+                            `;
+                        }
+
+                        // Update tasks list if it exists
+                        const tasksList = document.querySelector('#custom-design-container #ai-tasks-list');
+                        if (tasksList && insights.reminders) {
+                            tasksList.innerHTML = insights.reminders.map(r => `
+                                <li style="display:flex; align-items:flex-start; gap:10px;">
+                                    <i class="fas fa-exclamation-circle" style="color:#cf9c33; margin-top:3px;"></i>
+                                    <div><p style="margin:0; font-size:0.9rem;">${r}</p></div>
+                                </li>
+                            `).join('');
+                        }
+
+                        // Update News / Tips
+                        const newsContainer = document.querySelectorAll('#custom-design-container .glass-panel')[2];
+                        if (newsContainer && insights.news) {
+                            const newsHTML = insights.news.map(n => `
+                                <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                                    <span style="font-size:0.75rem; color:#cf9c33;">${n.date}</span>
+                                    <p style="margin:5px 0 0 0; font-size:0.9rem;">${n.title}</p>
+                                </div>
+                            `).join('');
+                            
+                            // Replace existing news items keeping the title intact
+                            const titleHtml = `<h3 style="margin-top:0; color:#cf9c33; font-size:1.1rem; margin-bottom:15px; display:flex; align-items:center; gap:8px;"><i class="fas fa-bullhorn"></i> Dicas da IA</h3>`;
+                            newsContainer.innerHTML = titleHtml + `<div style="display:flex; flex-direction:column; gap:15px;">${newsHTML}</div>`;
+                        }
+                    })
+                    .catch(err => console.error("Failed to fetch AI Insights", err));
                 }
             })
             .catch(err => {
@@ -244,6 +386,11 @@
                                         <div class="module-overlay">
                                             <h3 class="module-title">${mTitle}</h3>
                                             <p class="module-desc">${mDesc}</p>
+                                            <div style="display:flex; gap:10px; margin-top:auto; font-size:0.85rem; color:rgba(255,255,255,0.7); padding-top:15px;">
+                                                <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
+                                                <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
+                                                <span title="Quizzes"><i class="fas fa-question-circle"></i> ${m.quizzes ? m.quizzes.length : 0}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 `;
@@ -259,7 +406,7 @@
                                     <p>${course.description || 'This course offers structured content for your professional development.'}</p>
                                 </div>
                             </div>
-                            <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s;">
+                            <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="display:${isOwnerOrEditor ? 'flex' : 'none'}; background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:12px 25px; border-radius:30px; font-weight:bold; cursor:pointer; align-items:center; gap:10px; transition:0.3s;">
                                 <i class="fas fa-edit"></i> Edit Course
                             </button>
                         </header>

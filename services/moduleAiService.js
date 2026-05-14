@@ -83,7 +83,90 @@ const generateModuleAssistantResponse = async (module, message) => {
   return answer;
 };
 
+const generateCourseInsightsForStudent = async (studentStats) => {
+  if (!env.openai.apiKey) {
+    console.warn('OPENAI_API_KEY is not configured. Returning fallback insights.');
+    return generateFallbackInsights(studentStats);
+  }
+
+  const prompt = `
+  Analyze the following student progress data for a specific course:
+  ${JSON.stringify(studentStats, null, 2)}
+  
+  Generate a JSON response exactly matching this schema:
+  {
+    "stats": {
+      "completedModules": "Number of modules fully completed / Total",
+      "averageScore": "Average quiz score with a % symbol",
+      "status": "A short, encouraging 2-word status like 'On Track', 'Needs Focus', etc."
+    },
+    "reminders": [
+      "A short actionable reminder based on progress (max 8 words)",
+      "Another short reminder (max 8 words)",
+      "A final short reminder (max 8 words)"
+    ],
+    "news": [
+      { "title": "Encouraging news or recent module info", "date": "Today's date or relevant date" },
+      { "title": "Another news item", "date": "Relevant date" }
+    ]
+  }
+  
+  Keep text extremely concise as it will be rendered in small UI widgets. Do NOT use markdown code block wrappers (like \`\`\`json) in your response, return ONLY the raw JSON string.
+  `;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.openai.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // Using a faster/cheaper model for UI insights
+        messages: [
+          { role: 'system', content: 'You are a strict JSON data generator for a learning platform UI. Never output anything except valid JSON matching the requested schema.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    const responsePayload = await response.json();
+    if (!response.ok) throw new Error(responsePayload?.error?.message || 'Failed to fetch AI insights');
+    
+    let answerText = responsePayload.choices[0].message.content.trim();
+    
+    // Remove potential markdown wrappers if the AI misbehaves
+    if (answerText.startsWith('\`\`\`')) {
+        answerText = answerText.replace(/^\`\`\`(json)?\n?/, '').replace(/\n?\`\`\`$/, '');
+    }
+
+    return JSON.parse(answerText);
+  } catch (error) {
+    console.error('Failed to generate AI insights, using fallback:', error);
+    return generateFallbackInsights(studentStats);
+  }
+};
+
+const generateFallbackInsights = (stats) => ({
+  stats: {
+    completedModules: `${stats.completedModules || 0}/${stats.totalModules || 0}`,
+    averageScore: `${stats.averageScore || 0}%`,
+    status: 'In Progress'
+  },
+  reminders: [
+    "Keep up the good work!",
+    "Review previous modules",
+    "Prepare for the next quiz"
+  ],
+  news: [
+    { title: "Course progress tracked", date: new Date().toLocaleDateString() },
+    { title: "New content available soon", date: "Upcoming" }
+  ]
+});
+
 module.exports = {
   buildAssistantInputContent,
-  generateModuleAssistantResponse
+  generateModuleAssistantResponse,
+  generateCourseInsightsForStudent
 };

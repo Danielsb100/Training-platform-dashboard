@@ -1,10 +1,148 @@
 window.templatePresets = [
+        {
+        id: 'advanced-academy',
+        name: 'AGENFOR Advanced Virtual Academy',
+        thumb: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&q=80',
+        html: `
+            <!-- Nav -->
+            <section class="module-section" style="background-color: #cf9c33; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="width: 100%; display: flex; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap:15px; color:white; font-weight:bold; font-size:1.2rem;">
+                        <div class="editable-image-wrapper" onclick="triggerImageUpload('main-logo', 'src')" style="display: flex; align-items: center;">
+                            <img src="https://placehold.co/40x40/ffffff/1e293b?text=Logo" id="main-logo" style="height: 25px; width: auto; object-fit: contain; border-radius: 4px; background: rgba(255,255,255,0.2); padding: 2px;">
+                        </div>
+                        <span class="editable-text">My Company</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Header -->
+            <section class="module-section" id="header-section" style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
+                <div class="bg-overlay"></div>
+                <button class="bg-edit-btn" onclick="triggerImageUpload('header-section', 'bg')">
+                    <i class="fas fa-image"></i> Change BG
+                </button>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: block;">
+                    <h1 class="editable-text" style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">My Main Title</h1>
+                    <h2 class="editable-text" style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">My Subtitle</h2>
+                    <p class="editable-text" style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">My detailed description of the platform or course objectives goes here. You can edit this text to suit your needs and provide an overview of your training.</p>
+                </div>
+            </section>
+
+            <!-- Main Content & Methodology -->
+            <section class="module-section" style="background-color: #f8fafc; padding: 40px;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 40px; flex-wrap: wrap;">
+                    
+                    <!-- Courses/Modules Grid -->
+                    <div style="flex: 3; min-width: 300px;">
+                        <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <i class="fas fa-layer-group" style="color: #cf9c33;"></i> <span class="editable-text">Cursos no Canal</span>
+                        </h2>
+                        <div id="courses-placeholder" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
+                            <div style="padding: 60px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b; background: white;">
+                                <i class="fas fa-layer-group" style="font-size: 3rem; margin-bottom: 15px; display: block; color: #e2e8f0;"></i>
+                                <p>A grade de cursos aparecerá aqui na página final.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Methodology Sidebar -->
+                    <div style="flex: 1; min-width: 300px;">
+                        <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
+                            <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">OUR METHODOLOGY</h3>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 1: Introduction to the core concepts.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 2: Describe your approach.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 3: Key objectives.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 4: Strategic planning.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 5: Implementation steps.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 6: Practical applications.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 7: Resources and tools.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 8: Evaluation and feedback.</span></li>
+                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 9: Final presentation and metrics.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard -->
+            <section class="module-section" style="background-color: #f8fafc; padding: 40px; border-top: 1px solid #e2e8f0;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap;">
+                    
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Performance Dashboard</h4>
+                            <i class="fas fa-chart-line" style="color:#cf9c33;"></i>
+                        </div>
+                        <h3 class="editable-text" style="margin:0; font-size:1.8rem; color:#1e293b;">1,250</h3>
+                        <p class="editable-text" style="margin:5px 0 0 0; font-size:0.9rem; color:#64748b;">Active Learners</p>
+                    </div>
+
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Course Reminders</h4>
+                            <i class="fas fa-bell" style="color:#cf9c33;"></i>
+                        </div>
+                        <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem; color:#64748b; display:flex; flex-direction:column; gap:8px;">
+                            <li><i class="far fa-square"></i> <span class="editable-text">Review assignments (12 pending)</span></li>
+                            <li><i class="far fa-square"></i> <span class="editable-text">Upcoming live session (June 15th)</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="stat-block" style="flex: 1; min-width: 250px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 class="editable-text" style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:bold;">Latest News</h4>
+                            <i class="fas fa-newspaper" style="color:#cf9c33;"></i>
+                        </div>
+                        <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem; color:#64748b; display:flex; flex-direction:column; gap:8px;">
+                            <li><strong><span class="editable-text">New Module Added!</span></strong><br><small>15 Aug 2026</small></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <section class="module-section" style="background: linear-gradient(to right, #1e293b 0%, #cf9c33 100%); padding: 40px; color: white;">
+                <div class="bg-overlay"></div>
+                <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Sobre Nós</h3>
+                        <p class="editable-text" style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Somos uma instituição dedicada a entregar o melhor conteúdo educacional. Nosso foco é democratizar o conhecimento através da tecnologia aberta.</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Contato</h3>
+                        <p class="editable-text" style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Email: contato@exemplo.com<br>Telefone: (11) 9999-9999<br>Endereço: Avenida Principal, 1000 - Centro</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="editable-text" style="color: white; margin-top: 0; font-size:1.2rem;">Parceiros</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-1', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+1" id="logo-footer-1" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-2', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+2" id="logo-footer-2" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
+                            <div class="editable-image-wrapper" onclick="triggerImageUpload('logo-footer-3', 'src')">
+                                <img src="https://placehold.co/120x60/ffffff/1e293b?text=Logo+3" id="logo-footer-3" style="height: 50px; width: auto; object-fit: contain; background: white; padding: 5px; border-radius: 6px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `
+    },
     {
         id: "corporate",
         name: "Corporate PRO",
         thumb: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- HEADER -->
+            <style>html { scroll-behavior: smooth; }</style>
+            <!-- HEADER -->
             <section class="module-section" style="background-color:#ffffff; padding:20px; align-items:center;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; width:100%;">
                     <div class="editable-image-wrapper" style="width:180px;"><img src="https://placehold.co/400x150/ffffff/0ea5e9?text=Corp+PRO" class="logo-img" style="border-radius:4px;"></div>
@@ -1128,6 +1266,613 @@ window.templatePresets = [
                 </div>
             </section>
         `
-    
-}
+    },
+    {
+        id: "phygital-oc-new",
+        name: "Project Phygital-OC",
+        thumb: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&q=80",
+        html: `<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
+.page{max-width:1100px;margin:0 auto;background:#fff;box-shadow:0 0 60px rgba(0,0,0,0.08);}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 30px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;}
+.header .logo-block{display:flex;align-items:center;gap:8px;}
+.header .logo-block svg{width:28px;height:28px;}
+.header .logo-block span{font-weight:900;font-size:0.7rem;color:#0f172a;text-transform:uppercase;line-height:1.1;}
+.header img{height:28px;}
+.header .partner-text{font-weight:700;font-size:0.65rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#001a2e 0%,#003d5c 40%,#006b6b 100%);position:relative;padding:60px 50px 140px 50px;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80') center/cover;opacity:0.25;mix-blend-mode:screen;}
+.hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.hero-content{flex:1;}
+.hero-logo{flex-shrink:0;max-width:350px;}
+.hero-logo img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(1px 1px 0px #fff) drop-shadow(-1px -1px 0px #fff) drop-shadow(1px -1px 0px #fff) drop-shadow(-1px 1px 0px #fff) drop-shadow(0px 0px 8px rgba(255,255,255,0.5));}
+.hero h1{color:#fff;font-size:2.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
+.hero h2{color:#22d3ee;font-size:1.6rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.5px;}
+.hero p{color:#cbd5e1;font-size:0.95rem;max-width:550px;line-height:1.6;margin-bottom:24px;border-left:3px solid #22d3ee;padding-left:14px;}
+.hero-btn{display:inline-flex;align-items:center;gap:12px;background:#0f172a;color:#fff;padding:10px 28px;border-radius:50px;border:2px solid #06b6d4;font-weight:800;font-size:0.85rem;text-transform:uppercase;text-decoration:none;box-shadow:0 0 20px rgba(6,182,212,0.4);letter-spacing:0.5px;}
+
+/* FEATURES */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 30px;margin-top:-90px;position:relative;z-index:20;}
+.f-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;display:flex;gap:12px;box-shadow:0 8px 25px rgba(0,0,0,0.08);border-top:3px solid #0891b2;}
+.f-icon{width:44px;height:44px;background:#e0f2fe;border:2px solid #7dd3fc;display:flex;align-items:center;justify-content:center;font-size:1.3rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
+.f-card h3{font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
+.f-card ul{font-size:0.78rem;color:#475569;padding-left:16px;margin:0;line-height:1.6;}
+
+/* MISSION */
+.mission{padding:50px 30px;text-align:center;}
+.mission>h2{font-size:1.8rem;font-weight:900;color:#0f172a;margin-bottom:30px;text-transform:uppercase;}
+.mission-grid{display:flex;gap:20px;align-items:center;}
+.mission-col{flex:1;display:flex;flex-direction:column;gap:16px;text-align:left;}
+.m-card{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px;}
+.m-card h4{font-weight:800;font-size:0.9rem;color:#0f172a;margin-bottom:6px;}
+.m-card p{font-size:0.78rem;color:#475569;line-height:1.5;}
+.mission-center{flex:1.1;display:flex;justify-content:center;}
+.mission-center img{width:100%;max-width:320px;border-radius:10px;box-shadow:0 15px 30px rgba(0,0,0,0.12);}
+
+/* JOURNEY */
+.journey{padding:50px 30px 60px;background:#f1f5f9;position:relative;overflow:hidden;}
+.journey-header{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:30px;}
+.journey-header .j-ico{width:36px;height:36px;background:#0f172a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;}
+.journey-header h2{font-size:1.8rem;font-weight:900;color:#0f172a;}
+.journey-body{position:relative;min-height:750px;}
+
+/* SVG Pipeline */
+.journey-body svg.pipe{position:absolute;top:0;left:50%;transform:translateX(-50%);width:700px;height:750px;z-index:1;}
+
+/* Downloads sidebar */
+.dl-sidebar{position:absolute;left:0;top:60px;width:180px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+.dl-sidebar h4{font-size:0.8rem;font-weight:800;margin-bottom:8px;color:#0f172a;}
+.dl-sidebar ul{list-style:none;font-size:0.68rem;color:#0284c7;line-height:2;}
+
+/* Step nodes */
+.step{position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;width:280px;z-index:10;box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+.step h4{font-weight:800;font-size:0.95rem;color:#0f172a;margin-bottom:4px;}
+.step p{font-size:0.75rem;color:#475569;line-height:1.45;}
+.hex{position:absolute;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);z-index:15;}
+
+/* AI AVATAR */
+.avatar-section{padding:50px 30px;background:#fff;}
+.avatar-section>h2{text-align:center;font-size:1.8rem;font-weight:900;color:#0f172a;margin-bottom:35px;}
+.avatar-grid{display:flex;align-items:center;gap:40px;justify-content:center;}
+.avatar-img{position:relative;width:260px;flex-shrink:0;}
+.avatar-img img{width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;}
+.avatar-img::before{content:'';position:absolute;inset:-8px;border:2px dashed #22d3ee;border-radius:16px;z-index:0;}
+.avatar-feats{display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;}
+.av-f{display:flex;gap:10px;}
+.av-f .ico{font-size:1.3rem;color:#06b6d4;flex-shrink:0;margin-top:2px;}
+.av-f h4{font-weight:800;font-size:0.9rem;color:#0f172a;margin-bottom:3px;}
+.av-f p{font-size:0.75rem;color:#475569;line-height:1.4;}
+.mic{width:55px;height:55px;background:#fff;border:2px solid #22d3ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#06b6d4;box-shadow:0 0 20px rgba(6,182,212,0.3);flex-shrink:0;}
+
+/* INTEL LIBRARY */
+.intel{padding:50px 30px;background:#f8fafc;border-top:1px solid #e2e8f0;}
+.intel-grid{display:flex;gap:40px;}
+.intel-left{flex:1;}
+.intel-right{flex:1.2;}
+.intel-left h3,.intel-right h3{font-size:1.2rem;font-weight:900;color:#0f172a;margin-bottom:16px;text-transform:uppercase;}
+.cat-label{font-weight:700;font-size:0.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px;}
+.d-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:0.78rem;color:#475569;}
+.d-item.active{background:#e0f2fe;border-color:#38bdf8;color:#0284c7;font-weight:700;justify-content:center;}
+.d-tag{background:#f0f9ff;border:1px solid #bae6fd;color:#0284c7;padding:3px 8px;font-weight:800;font-size:0.7rem;border-radius:4px;min-width:40px;text-align:center;}
+.bullet-list{list-style:none;margin:0 0 20px;padding:0;font-size:0.8rem;color:#475569;line-height:1.6;}
+.bullet-list li{margin-bottom:10px;display:flex;gap:8px;}
+.bullet-list li::before{content:'•';color:#06b6d4;font-weight:bold;font-size:1.1rem;}
+.square-list{list-style:none;margin:0;padding:0;font-size:0.78rem;color:#334155;line-height:1.6;}
+.square-list li{margin-bottom:8px;display:flex;gap:8px;}
+.square-list li::before{content:'■';color:#334155;font-size:0.6rem;margin-top:3px;}
+
+/* FOOTER */
+.footer{padding:30px 30px 15px;border-top:1px solid #e2e8f0;background:#fff;}
+.footer-top{display:flex;gap:30px;margin-bottom:20px;flex-wrap:wrap;}
+.foot-col h4{font-weight:800;font-size:0.85rem;color:#0f172a;margin-bottom:10px;}
+.foot-col ul{list-style:none;font-size:0.78rem;color:#475569;line-height:2;}
+.partners-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
+.footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
+</style>
+
+<div class="page">
+
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-content">
+            <h1>[PROJECT PHYGITAL-OC]</h1>
+            <h2>DISMANTLING TRANSNATIONAL ORGANIZED CRIME</h2>
+            <p>The core objective of PHYGITAL-OC is to strengthen international cooperation to help dismantle transnational criminal networks. The project utilizes advanced technologies to trace crimes in both the physical and digital worlds.</p>
+            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        </div>
+        <div class="hero-logo">
+            <img src="phygital_logo_transparent.png" alt="Project Phygital-OC">
+        </div>
+    </div>
+</section>
+
+<div class="features" id="features">
+    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCCs, 9 OSINT</li><li>Trace Analysis, Trace Analysis</li><li>Digital Forensics</li></ul></div></div>
+    <div class="f-card"><div><h3>Flexible Learning</h3><ul><li>Online and synchronous for Law Enforcement</li><li>Exlaining and manual for training material.</li></ul></div></div>
+    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
+    <div class="f-card"><div><h3>Operational Readiness</h3><ul><li>Performance Analytics</li><li>Interactive Training</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Assistant Support</h3><ul><li>Content optional international</li><li>and assessed reports.</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Assistant Support</h3><ul><li>Transnational Law &</li><li>Case Law Guide</li></ul></div></div>
+</div>
+
+<section class="mission">
+    <h2>MISSION ADVANTAGE CORE</h2>
+    <div class="mission-grid">
+        <div class="mission-col">
+            <div class="m-card"><h4>Secure & Specialized Intelligence Environment</h4><p>Developed a closed ecosystem to facilitate international cooperation while protecting sensitive operational data and institutional assets.</p></div>
+            <div class="m-card"><h4>Expert Knowledge</h4><p>Developed in closed groups with specialist lectures, integrating reports from Europol, UNODC, and NATO into practical institutional models.</p></div>
+        </div>
+        <div class="mission-center">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard">
+        </div>
+        <div class="mission-col">
+            <div class="m-card"><h4>Operational Readiness</h4><p>Detailed performance analytics from entry to critical skill tracking, preparing teams for successful international operations.</p></div>
+            <div class="m-card"><h4>Practical & Evidence Based</h4><p>Detailed case studies and simulations rooted in real-world environments, accelerating training for successful operations.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="journey">
+    <div class="journey-header">
+        <div class="j-ico">👤</div>
+        <h2>6-Step Learning Journey</h2>
+    </div>
+    <div class="journey-body">
+        <!-- Colorful S-Curve Pipeline SVG -->
+        <svg class="pipe" viewBox="0 0 700 750" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0f172a"/>
+                    <stop offset="15%" stop-color="#0284c7"/>
+                    <stop offset="35%" stop-color="#6366f1"/>
+                    <stop offset="55%" stop-color="#8b5cf6"/>
+                    <stop offset="75%" stop-color="#d946ef"/>
+                    <stop offset="100%" stop-color="#f43f5e"/>
+                </linearGradient>
+            </defs>
+            <path d="M 350 0 C 350 80, 520 80, 520 160 C 520 240, 300 240, 300 320 C 300 400, 500 400, 500 480 C 500 560, 320 560, 320 640 C 320 700, 420 720, 420 750" fill="none" stroke="url(#grad)" stroke-width="28" stroke-linecap="round"/>
+        </svg>
+
+        <!-- Downloads Sidebar -->
+        <div class="dl-sidebar">
+            <h4>Downloads</h4>
+            <ul>
+                <li>• Interactive scenarios</li>
+                <li>• Case studies</li>
+                <li>• Trace analysis</li>
+                <li>• Operational scenarios</li>
+                <li>• Digital forensics</li>
+                <li>• OSINT modules</li>
+                <li>• Training modules</li>
+                <li>• External networks</li>
+                <li>• Other...</li>
+            </ul>
+        </div>
+
+        <!-- Step 1 - Left of curve top -->
+        <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#0284c7,#0ea5e9);">1</div>
+            <h4>Entry Test</h4>
+            <p>A quick assessment to measure initial knowledge before starting.</p>
+        </div>
+
+        <!-- Step 2 - Right of curve -->
+        <div class="step" style="top:130px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#6366f1);">2</div>
+            <h4>Video Lessons</h4>
+            <p>Composed of 2 or 3 sessions led by specialists (30 mins each) that deepen technical subtopics.</p>
+        </div>
+
+        <!-- Step 3 - Left -->
+        <div class="step" style="top:270px;left:180px;width:240px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#6366f1,#8b5cf6);">3</div>
+            <h4>Training Material</h4>
+            <p>Downloadable resources covering key aspects and essential data.</p>
+        </div>
+
+        <!-- Step 4 - Right -->
+        <div class="step" style="top:380px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#8b5cf6,#d946ef);">4</div>
+            <h4>Interactive Simulation</h4>
+            <p>Application of skills in real case studies and operational scenarios.</p>
+        </div>
+
+        <!-- Step 5 - Left -->
+        <div class="step" style="top:520px;left:150px;width:260px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#d946ef,#f43f5e);">5</div>
+            <h4>AI Avatar Support</h4>
+            <p>A closed-circuit avatar for instant clarifications on legislation and manuals.</p>
+        </div>
+
+        <!-- Step 6 - Right -->
+        <div class="step" style="top:620px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#f43f5e,#fb7185);">6</div>
+            <h4>Final Evaluation</h4>
+            <p>Test of acquired skills to successfully complete the module.</p>
+        </div>
+    </div>
+</section>
+
+<section class="avatar-section">
+    <h2>AI Avatar</h2>
+    <div class="avatar-grid">
+        <div class="avatar-img">
+            <img src="ai_avatar_metahuman.png" alt="AI Avatar">
+        </div>
+        <div class="avatar-feats">
+            <div class="av-f"><div><h4>Interactive Guide</h4><p>Explores national and EU jurisprudence on organized crime.</p></div></div>
+            <div class="av-f"><div><h4>Multilingual Interaction</h4><p>Supports voice or text and communicates flawlessly in multiple languages.</p></div></div>
+            <div class="av-f"><div><h4>Legal Disclaimer</h4><p>Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
+            <div class="av-f"><div><h4>Feedback Loop</h4><p>User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
+        </div>
+        <div class="mic">🎤</div>
+    </div>
+</section>
+
+<section class="intel">
+    <div class="intel-grid">
+        <div class="intel-left">
+            <h3>Resource Center</h3>
+            <div class="cat-label">Categories</div>
+            <div class="d-item"><div class="d-tag">PCS</div>Download question, OSINT, Trace Analysis, Digital Forensics.</div>
+            <div class="d-item"><div class="d-tag">SWD</div>Download automatics from the online and several languages.</div>
+            <div class="d-item active">👁️ Quick preview</div>
+            <div class="cat-label">Descriptions</div>
+            <div class="d-item"><div class="d-tag">PPO</div>Download question for realisation directory.</div>
+            <div class="d-item"><div class="d-tag">SMO</div>Download automatics from the multilingua and several languages.</div>
+            <div class="d-item"><div class="d-tag">FILE</div>Download specific and notice to file documents.</div>
+            <div class="d-item"><div class="d-tag">Y5L</div>Download category: technics and certifications.</div>
+        </div>
+        <div class="intel-right">
+            <h3>INTEL LIBRARY & ASSET HUB</h3>
+            <ul class="bullet-list">
+                <li><b>Module Summary Documents:</b> Summaries and key takeaways for each training module.</li>
+                <li><b>Technical Manuals:</b> Serve as a permanent reference for field operations.</li>
+                <li><b>Exclusive Access:</b> Usage is strictly limited to participants.</li>
+                <li><b>Copyright Restriction:</b> External distribution is prohibited by copyright laws.</li>
+            </ul>
+            <h4 style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
+            <ul class="square-list">
+                <li><b>Technical manuals:</b> Profesionar tendilline completing technical manuals.</li>
+                <li><b>Legislation and manual clarifications:</b> indicates are.</li>
+                <li><b>Legislation and manual</b> partitions and income old tentions.</li>
+                <li><b>Legislation and manual clarifications:</b> several addresses of high-level institutional reports.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-top">
+        <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
+        <div class="foot-col" style="flex:2;">
+            <h4>Partners</h4>
+            <div class="partners-row"><div>SCO</div><div>KIMIA</div><div>AGENFOR</div><div>Global Initiative</div><div>REOC</div></div>
+            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101188456</p>
+            <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
+        </div>
+    </div>
+    <div style="padding:20px 0;text-align:center;">
+        <img src="phygital-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;">
+    </div>
+    <div class="footer-bottom">
+        <span>Copyright © 2026 Belte Agency</span>
+        <span>📷 🐦 📘 💼</span>
+    </div>
+</footer>
+
+</div>
+`
+    },
+    {
+        id: "intercepted-new",
+        name: "Project INTERCEPTED",
+        thumb: "intercepted-hero-hand.png",
+        html: `<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
+.page{max-width:1100px;margin:0 auto;background:#fff;box-shadow:0 0 60px rgba(0,0,0,0.08);}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 30px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;}
+.header .logo-block{display:flex;align-items:center;gap:8px;}
+.header .logo-block svg{width:28px;height:28px;}
+.header .logo-block span{font-weight:900;font-size:0.7rem;color:#0f172a;text-transform:uppercase;line-height:1.1;}
+.header img{height:28px;}
+.header .partner-text{font-weight:700;font-size:0.65rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* HERO — darker teal/slate tone */
+.hero{background:linear-gradient(135deg,#0c2d3f 0%,#1a4a5a 40%,#245d6e 100%);position:relative;padding:60px 50px 140px 50px;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url('intercepted-hero-hand.png') center/cover;opacity:0.4;mix-blend-mode:luminosity;}
+.hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.hero-content{flex:1;}
+.hero-logo{flex-shrink:0;max-width:350px;}
+.hero-logo img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(1px 1px 0px #fff) drop-shadow(-1px -1px 0px #fff) drop-shadow(1px -1px 0px #fff) drop-shadow(-1px 1px 0px #fff) drop-shadow(0px 0px 8px rgba(255,255,255,0.5));}
+.hero h1{color:#fff;font-size:2.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
+.hero h2{color:#5eead4;font-size:1.3rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.5px;}
+.hero p{color:#cbd5e1;font-size:0.95rem;max-width:550px;line-height:1.6;margin-bottom:24px;border-left:3px solid #5eead4;padding-left:14px;}
+.hero-btn{display:inline-flex;align-items:center;gap:12px;background:#0f172a;color:#fff;padding:10px 28px;border-radius:50px;border:2px solid #2dd4bf;font-weight:800;font-size:0.85rem;text-transform:uppercase;text-decoration:none;box-shadow:0 0 20px rgba(45,212,191,0.4);letter-spacing:0.5px;}
+
+/* FEATURES */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 30px;margin-top:-90px;position:relative;z-index:20;}
+.f-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;display:flex;gap:12px;box-shadow:0 8px 25px rgba(0,0,0,0.08);border-top:3px solid #0d9488;}
+.f-icon{width:44px;height:44px;background:#ccfbf1;border:2px solid #5eead4;display:flex;align-items:center;justify-content:center;font-size:1.3rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
+.f-card h3{font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
+.f-card ul{font-size:0.78rem;color:#475569;padding-left:16px;margin:0;line-height:1.6;}
+
+/* MISSION */
+.mission{padding:50px 30px;text-align:center;}
+.mission>h2{font-size:1.8rem;font-weight:900;color:#0f172a;margin-bottom:30px;text-transform:uppercase;}
+.mission-grid{display:flex;gap:20px;align-items:center;}
+.mission-col{flex:1;display:flex;flex-direction:column;gap:16px;text-align:left;}
+.m-card{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:16px;}
+.m-card h4{font-weight:800;font-size:0.9rem;color:#0f172a;margin-bottom:6px;}
+.m-card p{font-size:0.78rem;color:#475569;line-height:1.5;}
+.mission-center{flex:1.1;display:flex;justify-content:center;}
+.mission-center img{width:100%;max-width:320px;border-radius:10px;box-shadow:0 15px 30px rgba(0,0,0,0.12);}
+
+/* JOURNEY */
+.journey{padding:50px 30px 60px;background:#f1f5f9;position:relative;overflow:hidden;}
+.journey-header{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:30px;}
+.journey-header .j-ico{width:36px;height:36px;background:#134e4a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;}
+.journey-header h2{font-size:1.8rem;font-weight:900;color:#0f172a;}
+.journey-body{position:relative;min-height:750px;}
+
+/* SVG Pipeline */
+.journey-body svg.pipe{position:absolute;top:0;left:50%;transform:translateX(-50%);width:700px;height:750px;z-index:1;}
+
+/* Downloads sidebar */
+.dl-sidebar{position:absolute;left:0;top:60px;width:180px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+.dl-sidebar h4{font-size:0.8rem;font-weight:800;margin-bottom:8px;color:#0f172a;}
+.dl-sidebar ul{list-style:none;font-size:0.68rem;color:#0d9488;line-height:2;}
+
+/* Step nodes */
+.step{position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;width:280px;z-index:10;box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+.step h4{font-weight:800;font-size:0.95rem;color:#0f172a;margin-bottom:4px;}
+.step p{font-size:0.75rem;color:#475569;line-height:1.45;}
+.hex{position:absolute;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);z-index:15;}
+
+/* AI AVATAR */
+.avatar-section{padding:50px 30px;background:#fff;}
+.avatar-section>h2{text-align:center;font-size:1.8rem;font-weight:900;color:#0f172a;margin-bottom:35px;}
+.avatar-grid{display:flex;align-items:center;gap:40px;justify-content:center;}
+.avatar-img{position:relative;width:260px;flex-shrink:0;}
+.avatar-img img{width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;}
+.avatar-img::before{content:'';position:absolute;inset:-8px;border:2px dashed #2dd4bf;border-radius:16px;z-index:0;}
+.avatar-feats{display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;}
+.av-f{display:flex;gap:10px;}
+.av-f .ico{font-size:1.3rem;color:#0d9488;flex-shrink:0;margin-top:2px;}
+.av-f h4{font-weight:800;font-size:0.9rem;color:#0f172a;margin-bottom:3px;}
+.av-f p{font-size:0.75rem;color:#475569;line-height:1.4;}
+.mic{width:55px;height:55px;background:#fff;border:2px solid #2dd4bf;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#0d9488;box-shadow:0 0 20px rgba(45,212,191,0.3);flex-shrink:0;}
+
+/* INTEL LIBRARY */
+.intel{padding:50px 30px;background:#f8fafc;border-top:1px solid #e2e8f0;}
+.intel-grid{display:flex;gap:40px;}
+.intel-left{flex:1;}
+.intel-right{flex:1.2;}
+.intel-left h3,.intel-right h3{font-size:1.2rem;font-weight:900;color:#0f172a;margin-bottom:16px;text-transform:uppercase;}
+.cat-label{font-weight:700;font-size:0.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px;}
+.d-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:0.78rem;color:#475569;}
+.d-item.active{background:#ccfbf1;border-color:#2dd4bf;color:#0d9488;font-weight:700;justify-content:center;}
+.d-tag{background:#f0fdfa;border:1px solid #99f6e4;color:#0d9488;padding:3px 8px;font-weight:800;font-size:0.7rem;border-radius:4px;min-width:40px;text-align:center;}
+.bullet-list{list-style:none;margin:0 0 20px;padding:0;font-size:0.8rem;color:#475569;line-height:1.6;}
+.bullet-list li{margin-bottom:10px;display:flex;gap:8px;}
+.bullet-list li::before{content:'•';color:#0d9488;font-weight:bold;font-size:1.1rem;}
+.square-list{list-style:none;margin:0;padding:0;font-size:0.78rem;color:#334155;line-height:1.6;}
+.square-list li{margin-bottom:8px;display:flex;gap:8px;}
+.square-list li::before{content:'■';color:#334155;font-size:0.6rem;margin-top:3px;}
+
+/* FOOTER */
+.footer{padding:30px 30px 15px;border-top:1px solid #e2e8f0;background:#fff;}
+.footer-top{display:flex;gap:30px;margin-bottom:20px;flex-wrap:wrap;}
+.foot-col h4{font-weight:800;font-size:0.85rem;color:#0f172a;margin-bottom:10px;}
+.foot-col ul{list-style:none;font-size:0.78rem;color:#475569;line-height:2;}
+.partners-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
+.footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
+</style>
+
+<div class="page">
+
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-content">
+            <h1>[PROJECT INTERCEPTED]</h1>
+            <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
+            <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
+            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
+        </div>
+        <div class="hero-logo">
+            <img src="intercepted_logo_transparent.png" alt="Project INTERCEPTED">
+        </div>
+    </div>
+</section>
+
+<div class="features" id="features">
+    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCG modus operandi in THB</li><li>OSINT & Telecom Surveillance</li><li>Digital Forensics</li></ul></div></div>
+    <div class="f-card"><div><h3>Flexible Learning</h3><ul><li>Online and asynchronous modules</li><li>Adapted for Law Enforcement schedules</li></ul></div></div>
+    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
+    <div class="f-card"><div><h3>Operational Readiness</h3><ul><li>OSINT-HUMINT-SIGINT cycle</li><li>Public-Private cooperation</li></ul></div></div>
+    <div class="f-card"><div><h3>AI Avatar Support</h3><ul><li>Closed-circuit assistant</li><li>Legislation & manual clarifications</li></ul></div></div>
+    <div class="f-card"><div><h3>Legal & Judicial Cooperation</h3><ul><li>LEA & Judicial Authorities</li><li>Private Sector & Civil Society</li></ul></div></div>
+</div>
+
+<section class="mission">
+    <h2>MISSION ADVANTAGE CORE</h2>
+    <div class="mission-grid">
+        <div class="mission-col">
+            <div class="m-card"><h4>Practical & Intelligence-Based Approach</h4><p>Translates the analysis of online dynamics into concrete operational practices for disrupting trafficking networks.</p></div>
+            <div class="m-card"><h4>Expert Knowledge</h4><p>Developed in closed groups with specialist lectures, integrating reports from Europol, UNODC, and NATO into practical institutional models.</p></div>
+        </div>
+        <div class="mission-center">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard">
+        </div>
+        <div class="mission-col">
+            <div class="m-card"><h4>Integrated Digital & Analytical Support</h4><p>Provides tools to interpret online signals and identify trafficking patterns in a secure environment.</p></div>
+            <div class="m-card"><h4>Measured Competence & Operational Readiness</h4><p>Ensures harmonized skill development across different jurisdictions through structured assessments.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="journey">
+    <div class="journey-header">
+        <div class="j-ico">👤</div>
+        <h2>6-Step Learning Journey</h2>
+    </div>
+    <div class="journey-body">
+        <!-- Colorful S-Curve Pipeline SVG -->
+        <svg class="pipe" viewBox="0 0 700 750" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#134e4a"/>
+                    <stop offset="15%" stop-color="#0d9488"/>
+                    <stop offset="35%" stop-color="#6366f1"/>
+                    <stop offset="55%" stop-color="#8b5cf6"/>
+                    <stop offset="75%" stop-color="#d946ef"/>
+                    <stop offset="100%" stop-color="#f43f5e"/>
+                </linearGradient>
+            </defs>
+            <path d="M 350 0 C 350 80, 520 80, 520 160 C 520 240, 300 240, 300 320 C 300 400, 500 400, 500 480 C 500 560, 320 560, 320 640 C 320 700, 420 720, 420 750" fill="none" stroke="url(#grad)" stroke-width="28" stroke-linecap="round"/>
+        </svg>
+
+        <!-- Downloads Sidebar -->
+        <div class="dl-sidebar">
+            <h4>Downloads</h4>
+            <ul>
+                <li>• OSINT scenarios</li>
+                <li>• Case studies</li>
+                <li>• THB analysis</li>
+                <li>• Operational scenarios</li>
+                <li>• Digital forensics</li>
+                <li>• Telecom surveillance</li>
+                <li>• Training modules</li>
+                <li>• AI tools</li>
+                <li>• Other...</li>
+            </ul>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#0d9488,#14b8a6);">1</div>
+            <h4>Entry Test</h4>
+            <p>A quick assessment to measure initial knowledge before starting.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" style="top:130px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#6366f1);">2</div>
+            <h4>Video Lessons</h4>
+            <p>Sessions of 30 minutes with specialists on technical topics.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" style="top:270px;left:180px;width:240px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#6366f1,#8b5cf6);">3</div>
+            <h4>Training Material</h4>
+            <p>Transferable resources with key aspects and essential data.</p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" style="top:380px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#8b5cf6,#d946ef);">4</div>
+            <h4>Interactive Simulation</h4>
+            <p>Application of skills in real case studies and operational scenarios.</p>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step" style="top:520px;left:150px;width:260px;text-align:right;">
+            <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#d946ef,#f43f5e);">5</div>
+            <h4>AI Avatar Support</h4>
+            <p>Closed-circuit AI assistant for instant clarifications on legislation and manuals.</p>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step" style="top:620px;right:30px;width:260px;">
+            <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#f43f5e,#fb7185);">6</div>
+            <h4>Final Evaluation</h4>
+            <p>Test to validate acquired competencies and complete the module.</p>
+        </div>
+    </div>
+</section>
+
+<section class="avatar-section">
+    <h2>AI Avatar</h2>
+    <div class="avatar-grid">
+        <div class="avatar-img">
+            <img src="ai_avatar_metahuman.png" alt="AI Avatar">
+        </div>
+        <div class="avatar-feats">
+            <div class="av-f"><div><h4>Interactive Guide</h4><p>Explores national and EU jurisprudence on human trafficking and organized crime.</p></div></div>
+            <div class="av-f"><div><h4>Multilingual Interaction</h4><p>Supports voice or text and communicates flawlessly in multiple languages.</p></div></div>
+            <div class="av-f"><div><h4>Legal Disclaimer</h4><p>Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
+            <div class="av-f"><div><h4>Feedback Loop</h4><p>User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
+        </div>
+        <div class="mic">🎤</div>
+    </div>
+</section>
+
+<section class="intel">
+    <div class="intel-grid">
+        <div class="intel-left">
+            <h3>Resource Center</h3>
+            <div class="cat-label">Categories</div>
+            <div class="d-item"><div class="d-tag">THB</div>Human Trafficking modus operandi and OSINT analysis.</div>
+            <div class="d-item"><div class="d-tag">SIG</div>OSINT-HUMINT-SIGINT cycle documentation.</div>
+            <div class="d-item active">👁️ Quick preview</div>
+            <div class="cat-label">Descriptions</div>
+            <div class="d-item"><div class="d-tag">DGF</div>Digital Forensics recovery and investigation guides.</div>
+            <div class="d-item"><div class="d-tag">LEA</div>Law Enforcement & Judicial cooperation frameworks.</div>
+            <div class="d-item"><div class="d-tag">TOT</div>Training of Trainers methodology documents.</div>
+            <div class="d-item"><div class="d-tag">AIA</div>AI-driven analysis and investigation resources.</div>
+        </div>
+        <div class="intel-right">
+            <h3>INTEL LIBRARY & ASSET HUB</h3>
+            <ul class="bullet-list">
+                <li><b>Module Summary Documents:</b> Summaries and key takeaways for each of the 9 training modules.</li>
+                <li><b>Technical Manuals:</b> Serve as a permanent reference for field operations.</li>
+                <li><b>Exclusive Access:</b> Usage is strictly limited to participants.</li>
+                <li><b>Copyright Restriction:</b> External distribution is prohibited by copyright laws.</li>
+            </ul>
+            <h4 style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
+            <ul class="square-list">
+                <li><b>Technical manuals:</b> Professional guidelines for field operations.</li>
+                <li><b>Legislation clarifications:</b> National and EU legal frameworks for THB.</li>
+                <li><b>Institutional reports:</b> High-level reports from Europol, UNODC, and NATO.</li>
+                <li><b>Feedback questionnaire:</b> Post-completion survey to improve programs.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-top">
+        <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
+        <div class="foot-col" style="flex:2;">
+            <h4>Partners</h4>
+            <div class="partners-row"><div>KIMIA</div><div>AGENFOR</div><div>Procura della Repubblica</div><div>Tribunale di Trento</div><div>Euro-Arab Foundation</div></div>
+            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101101938</p>
+            <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
+        </div>
+    </div>
+    <div style="padding:20px 0;text-align:center;">
+        <img src="intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;">
+    </div>
+    <div class="footer-bottom">
+        <span>Copyright © 2026 Belte Agency</span>
+        <span>📷 🐦 📘 💼</span>
+    </div>
+</footer>
+
+</div>
+`
+    }
 ];

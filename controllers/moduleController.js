@@ -137,6 +137,15 @@ const getModuleById = async (req, res) => {
                 },
                 quizzes: {
                     include: { questions: { include: { options: true } } }
+                },
+                courseModules: {
+                    include: {
+                        course: {
+                            include: {
+                                editors: true
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -144,17 +153,22 @@ const getModuleById = async (req, res) => {
         if (!module) return res.status(404).json({ error: 'Module not found' });
         
         const isOwner = String(module.ownerMasterId) === String(req.user.id) || req.user.role === 'ADMIN';
+        const isEditor = module.courseModules.some(cm => cm.course && cm.course.editors && cm.course.editors.some(e => String(e.userId) === String(req.user.id)));
+        const canViewDraft = isOwner || isEditor;
 
         // Logic check: Status rules
         if (module.status === 'ARCHIVED') {
-            if (!isOwner) {
+            if (!canViewDraft) {
                 return res.status(403).json({ error: 'Este módulo foi arquivado e não está mais disponível.' });
             }
         } else if (module.status === 'DRAFT') {
-            if (!isOwner) {
+            if (!canViewDraft) {
                 return res.status(403).json({ error: 'Este módulo ainda está em rascunho e não foi publicado.' });
             }
         }
+
+        // Clean up courseModules from the payload to avoid leaking internal data or causing bloat
+        delete module.courseModules;
 
         const format = req.query.format || 'runtime';
         const formatted = formatModuleData(module, format, req.user.role, req.user.id);

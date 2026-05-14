@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelIdParam = urlParams.get('channelId');
 
     if (channelIdParam) {
-        const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        const channel = channels.find(c => c.id === channelIdParam);
+        let channel = null;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                channel = data.data;
+            }
+        } catch (e) { console.error(e); }
         if (channel) {
             editingPageId = 'channel_lp';
             
@@ -117,7 +124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const container = document.getElementById('template-container');
                 if (container) {
-                    container.innerHTML = course.contentHtml;
+                    if (course.contentCss && course.contentCss.length > 100) {
+                        container.innerHTML = course.contentCss;
+                    } else {
+                        container.innerHTML = course.contentHtml;
+                    }
                     container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
                     container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
                 }
@@ -204,6 +215,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bgTypeSelect = document.getElementById('bg-type-select');
     const uploadPanelBtn = document.getElementById('upload-panel-btn');
     const uploadImgPanelBtn = document.getElementById('upload-img-panel-btn');
+    const bgSizeSelect = document.getElementById('bg-size-select');
+    const bgRepeatSelect = document.getElementById('bg-repeat-select');
     const bgColorInput = document.getElementById('bg-color-input');
     const bgGrad1 = document.getElementById('bg-grad1');
     const bgGrad2 = document.getElementById('bg-grad2');
@@ -251,6 +264,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             templateCardsContainer.appendChild(card);
         });
     }
+
+    window.resetToAgenfor = function() {
+        if(confirm('Isso vai resetar a página inteira para o Padrão AGENFOR, apagando suas modificações atuais. Deseja continuar?')) {
+            const tpl = window.templatePresets ? window.templatePresets.find(t => t.id === 'advanced-academy') : null;
+            if (tpl) {
+                const templateContainer = document.getElementById('template-container');
+                if (templateContainer) {
+                    templateContainer.innerHTML = tpl.html;
+                    initDynamicEvents();
+                    alert('Design atualizado para o Padrão AGENFOR com sucesso!');
+                }
+            } else {
+                alert('O template AGENFOR não foi encontrado. Certifique-se de que o arquivo templates.js está carregado corretamente.');
+            }
+        }
+    };
 
     // Text Link & Shadow & Fx inputs
     const textLinkInput = document.getElementById('text-link-input');
@@ -416,7 +445,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.editable-image-wrapper').forEach(w => w.style.outline = 'none');
         
         const container = document.getElementById('template-container');
-        const modularContent = container.innerHTML;
+        const cloneModular = container.cloneNode(true);
+        cloneModular.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+        const modularContent = cloneModular.innerHTML;
         
         const clone = container.cloneNode(true);
         clone.querySelectorAll('.bg-edit-btn').forEach(btn => btn.remove());
@@ -424,17 +455,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         clone.querySelectorAll('.editable-text').forEach(el => {
             el.removeAttribute('contenteditable');
             el.classList.remove('editable-text');
-            delete el.dataset.eventsBound;
+            el.removeAttribute('data-events-bound');
             if (el.className === '') el.removeAttribute('class');
         });
         clone.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
             wrapper.classList.remove('editable-image-wrapper');
             wrapper.removeAttribute('onclick');
-            delete wrapper.dataset.eventsBound;
+            wrapper.removeAttribute('data-events-bound');
             if (wrapper.className === '') wrapper.removeAttribute('class');
         });
         clone.querySelectorAll('.module-section').forEach(section => {
-            delete section.dataset.eventsBound;
+            section.removeAttribute('data-events-bound');
         });
         
         return { modularContent, compiledContent: clone.innerHTML };
@@ -450,7 +481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Save directly to the Course model
             const payload = {
                 contentHtml: compiledContent,
-                contentCss: ''
+                contentCss: modularContent
             };
             
             if (thumbUrl) {
@@ -478,24 +509,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
-        let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-        let channelIdx = channels.findIndex(c => c.id === channelIdParam);
+    async function saveDirectToChannel(thumbUrl, modularContent, compiledContent) {
+        const updateData = {
+            modular_content: modularContent,
+            compiled_content: compiledContent
+        };
+        if (thumbUrl) updateData.thumb = thumbUrl;
         
-        if (channelIdx !== -1) {
-            channels[channelIdx].modular_content = modularContent;
-            channels[channelIdx].compiled_content = compiledContent;
-            if (thumbUrl) channels[channelIdx].thumb = thumbUrl;
-            
-            const titleEl = document.getElementById('titulo-cabecalho');
-            const descEl = document.getElementById('desc-cabecalho');
-            if (titleEl) channels[channelIdx].name = titleEl.innerText;
-            if (descEl) channels[channelIdx].description = descEl.innerText;
+        const titleEl = document.getElementById('titulo-cabecalho');
+        const descEl = document.getElementById('desc-cabecalho');
+        if (titleEl) updateData.name = titleEl.innerText;
+        if (descEl) updateData.description = descEl.innerText;
 
-            localStorage.setItem('my_channels', JSON.stringify(channels));
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/channels/' + channelIdParam, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(updateData)
+            });
+            if(!res.ok) throw new Error('Falha ao salvar no servidor');
+            
             publishModal.classList.add('hidden');
-            alert('Design do Canal salvo com sucesso!');
+            alert('Design do Canal salvo com sucesso (PostgreSQL)!');
             window.location.href = 'channel_view.html?id=' + channelIdParam;
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar canal oficial: ' + error.message);
         }
     }
 
@@ -844,6 +884,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('bg-color-controls').classList.toggle('hidden', bgTypeSelect.value !== 'color');
             document.getElementById('bg-grad-controls').classList.toggle('hidden', bgTypeSelect.value !== 'gradient' && bgTypeSelect.value !== 'radial');
 
+            if (bgTypeSelect.value === 'image') {
+                if (bgSizeSelect) {
+                    let cSize = computed.backgroundSize || 'cover';
+                    if (cSize !== 'cover' && cSize !== 'contain' && cSize !== 'auto' && cSize !== '100% 100%') {
+                        bgSizeSelect.value = 'custom';
+                        const scaleRow = document.getElementById('bg-scale-row');
+                        if (scaleRow) scaleRow.style.display = 'flex';
+                        const slider = document.getElementById('bg-scale-slider');
+                        const valLabel = document.getElementById('bg-scale-val');
+                        let parsedScale = parseInt(cSize);
+                        if (!isNaN(parsedScale) && slider) {
+                            slider.value = parsedScale;
+                            if(valLabel) valLabel.innerText = `${parsedScale}%`;
+                        }
+                    } else {
+                        bgSizeSelect.value = cSize;
+                        const scaleRow = document.getElementById('bg-scale-row');
+                        if (scaleRow) scaleRow.style.display = 'none';
+                    }
+                }
+                if (bgRepeatSelect) bgRepeatSelect.value = computed.backgroundRepeat || 'no-repeat';
+            }
+
             // Ignorando opacidade da div global, pois o slider esta escondido para BGs principais agora.
             bgOpacityRange.value = 100;
         }
@@ -1070,7 +1133,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(imageScaleInput) imageScaleInput.value = val;
         if(activeElement){
             activeElement.dataset.scale = val;
-            applyStyle('width', `${val}%`);
+            applyStyle('width', `${val}px`);
+            applyStyle('height', 'auto');
         }
     };
     imageScaleRange.addEventListener('input', e => updateImgScale(e.target.value));
@@ -1080,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', () => {
             // Imagens e logos estao num container editable-image-wrapper
             const container = activeElement.closest('.editable-image-wrapper') || activeElement.parentElement;
-            container.style.display = 'flex';
+            container.style.display = 'inline-flex';
             container.style.justifyContent = btn.dataset.align;
         });
     });
@@ -1144,11 +1208,90 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     };
+    function applyCinemaMode(el, enable) {
+        let sharpLayer = el.querySelector('.bg-sharp-layer');
+        if (enable) {
+            if (!sharpLayer) {
+                sharpLayer = document.createElement('div');
+                sharpLayer.className = 'bg-sharp-layer';
+                sharpLayer.style.position = 'absolute';
+                sharpLayer.style.inset = '0';
+                sharpLayer.style.pointerEvents = 'none';
+                sharpLayer.style.zIndex = '2';
+                // Insert after bg-overlay so it sits on top of the blur
+                const overlay = el.querySelector('.bg-overlay');
+                if (overlay && overlay.nextSibling) {
+                    el.insertBefore(sharpLayer, overlay.nextSibling);
+                } else {
+                    el.appendChild(sharpLayer);
+                }
+            }
+            sharpLayer.style.backgroundImage = el.style.backgroundImage;
+            sharpLayer.style.backgroundSize = 'contain';
+            sharpLayer.style.backgroundPosition = 'center';
+            sharpLayer.style.backgroundRepeat = 'no-repeat';
+            
+            el.style.backgroundSize = 'cover';
+            
+            // Auto-apply blur to overlay if not set
+            const overlay = el.querySelector('.bg-overlay');
+            if (overlay && (!overlay.style.backdropFilter || overlay.style.backdropFilter === 'blur(0px)')) {
+                overlay.style.backdropFilter = 'blur(15px)';
+                const blurSlider = document.getElementById('bg-blur-slider');
+                if (blurSlider) blurSlider.value = 15;
+            }
+        } else {
+            if (sharpLayer) sharpLayer.remove();
+        }
+    }
 
     bgColorInput.addEventListener('input', updateBgRender);
     bgGrad1.addEventListener('input', updateBgRender);
     bgGrad2.addEventListener('input', updateBgRender);
     bgOpacityRange.addEventListener('input', updateBgRender);
+
+    if (bgSizeSelect) {
+        bgSizeSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            const bgScaleRow = document.getElementById('bg-scale-row');
+            activeElement.style.backgroundPosition = 'center'; // Always center
+            
+            if (e.target.value === 'contain-blur') {
+                if(bgScaleRow) bgScaleRow.style.display = 'none';
+                applyCinemaMode(activeElement, true);
+            } else {
+                applyCinemaMode(activeElement, false);
+                if (e.target.value === 'custom') {
+                    if(bgScaleRow) bgScaleRow.style.display = 'flex';
+                    const slider = document.getElementById('bg-scale-slider');
+                    if(slider) activeElement.style.backgroundSize = `${slider.value}%`;
+                } else {
+                    if(bgScaleRow) bgScaleRow.style.display = 'none';
+                    activeElement.style.backgroundSize = e.target.value;
+                }
+            }
+        });
+    }
+
+    const bgScaleSlider = document.getElementById('bg-scale-slider');
+    const bgScaleVal = document.getElementById('bg-scale-val');
+    if (bgScaleSlider) {
+        bgScaleSlider.addEventListener('input', e => {
+            if (bgScaleVal) bgScaleVal.innerText = `${e.target.value}%`;
+            if (!activeElement || activeElementType !== 'bg') return;
+            if (bgSizeSelect && bgSizeSelect.value === 'custom') {
+                activeElement.style.backgroundPosition = 'center';
+                activeElement.style.backgroundSize = `${e.target.value}%`;
+            }
+        });
+    }
+
+    if (bgRepeatSelect) {
+        bgRepeatSelect.addEventListener('change', e => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            activeElement.style.backgroundRepeat = e.target.value;
+        });
+    }
 
     bgBlurRange.addEventListener('input', e => {
         if (!activeElement || activeElementType !== 'bg') return;
@@ -1251,6 +1394,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById('bg-grad-controls').classList.add('hidden');
 
                     activeElement.style.backgroundImage = `url(${e.target.result})`;
+                    activeElement.style.backgroundPosition = 'center';
+                    
+                    const bgSizeSelect = document.getElementById('bg-size-select');
+                    if (bgSizeSelect && bgSizeSelect.value === 'contain-blur') {
+                        applyCinemaMode(activeElement, true);
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -1293,30 +1442,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('template-container');
         if (!container) return;
 
-        // Find the first module-content to append to, or create a generic container
-        let targetSection = container.querySelector('.module-section .module-content');
-        if (!targetSection) {
-            alert('Não foi possível encontrar uma seção para adicionar o botão. Escolha um template primeiro.');
-            return;
-        }
-
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = 'display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; margin:20px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none; transition:transform 0.2s;';
+        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; transform:translate(-50%, -50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Inscreva-se Agora';
-        // Add course trigger metadata
         btnWrap.dataset.isSubscribeBtn = "true";
 
-        targetSection.appendChild(btnWrap);
+        container.appendChild(btnWrap);
         
-        // Ativar eventos de edição no novo elemento
         if(typeof initDynamicEvents === 'function') {
             initDynamicEvents();
         }
-        
-        // Focar no elemento recém criado
         btnWrap.click();
-        btnWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
 });

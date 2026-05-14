@@ -31,7 +31,7 @@
         .empty-state { text-align: center; padding: 100px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
     </style>
 </head>
-<body>
+<body class="view-mode">
 
     <div id="channel-content">
         <!-- Content injected by JS -->
@@ -70,9 +70,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
             
-            const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            const channel = channels.find(c => c.id === channelId);
-            const linkedIds = channel && channel.linkedCourses ? channel.linkedCourses : [];
+            const token = localStorage.getItem('token');
+            const channelRes = await fetch('/channels/' + channelId, { headers: { 'Authorization': `Bearer ${token}` } });
+            const channelData = await channelRes.json();
+            const channel = channelData.data;
+            const linkedIds = channel && channel.courses ? channel.courses.map(c => c.toString()) : [];
             
             const courses = await fetchMyCourses();
             const available = courses.filter(c => !linkedIds.includes(c.id.toString()));
@@ -106,44 +108,41 @@
             document.getElementById('link-course-modal').style.display = 'none';
         }
 
-        function linkCourseToChannel(courseId) {
+        async function linkCourseToChannel(courseId) {
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            const index = channels.findIndex(c => c.id === channelId);
-            
-            if (index !== -1) {
-                if(!channels[index].linkedCourses) channels[index].linkedCourses = [];
-                if(!channels[index].linkedCourses.includes(courseId.toString())) {
-                    channels[index].linkedCourses.push(courseId.toString());
-                    localStorage.setItem('my_channels', JSON.stringify(channels));
-                }
-                location.reload();
-            }
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('/channels/' + channelId + '/courses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ courseId })
+                });
+                if(res.ok) location.reload();
+                else alert('Erro ao vincular curso');
+            } catch(e) { console.error(e); }
         }
 
-        function deleteChannel() {
+        async function deleteChannel() {
             if(!confirm("Tem certeza que deseja excluir este canal? Os cursos não serão apagados.")) return;
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            channels = channels.filter(c => c.id !== channelId);
-            localStorage.setItem('my_channels', JSON.stringify(channels));
-            
-            window.location.href = 'profile.html?tab=creations';
+            const token = localStorage.getItem('token');
+            try {
+                await fetch('/channels/' + channelId, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                window.location.href = 'profile.html?tab=creations';
+            } catch(e) { console.error(e); }
         }
 
-        function unlinkCourse(courseId) {
+        async function unlinkCourse(courseId) {
             if(!confirm("Desvincular este curso do canal?")) return;
             const urlParams = new URLSearchParams(window.location.search);
             const channelId = urlParams.get('id');
-            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            const index = channels.findIndex(c => c.id === channelId);
-            if (index !== -1 && channels[index].linkedCourses) {
-                channels[index].linkedCourses = channels[index].linkedCourses.filter(id => id !== courseId.toString());
-                localStorage.setItem('my_channels', JSON.stringify(channels));
+            const token = localStorage.getItem('token');
+            try {
+                await fetch('/channels/' + channelId + '/courses/' + courseId, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                 location.reload();
-            }
+            } catch(e) { console.error(e); }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -156,28 +155,22 @@
                 return;
             }
 
-            let channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
-            
-            // Migration: Ensure all channels have linkedCourses
-            let needsMigration = false;
-            channels.forEach(ch => {
-                if (!ch.linkedCourses) {
-                    ch.linkedCourses = [];
-                    const legacyCourses = JSON.parse(localStorage.getItem('published_courses') || '[]');
-                    legacyCourses.forEach(lc => {
-                        if (lc.channelId === ch.id) ch.linkedCourses.push(lc.id.toString());
-                    });
-                    needsMigration = true;
+            const token = localStorage.getItem('token');
+            let channel;
+            try {
+                const res = await fetch('/channels/' + channelId, { headers: { 'Authorization': `Bearer ${token}` } });
+                if(res.ok) {
+                    const d = await res.json();
+                    channel = d.data;
                 }
-            });
-            if (needsMigration) localStorage.setItem('my_channels', JSON.stringify(channels));
-            
-            const channel = channels.find(c => c.id === channelId);
+            } catch(e) { console.error(e); }
             
             if (!channel) {
                 container.innerHTML = '<div class="empty-state">Canal não encontrado.</div>';
                 return;
             }
+            if(!channel.courses) channel.courses = [];
+            channel.linkedCourses = channel.courses.map(c => c.toString());
 
             const courses = await fetchMyCourses();
             const channelCourses = courses.filter(c => channel.linkedCourses.includes(c.id.toString()));
@@ -245,6 +238,7 @@
                 
                 const placeholder = tempDiv.querySelector('#courses-placeholder');
                 if (placeholder) {
+                    placeholder.style.display = 'block';
                     placeholder.innerHTML = `<div style="margin-top:-20px;">${coursesHTML}</div>`;
                     placeholder.style.padding = '0';
                     placeholder.style.border = 'none';
@@ -268,23 +262,79 @@
                 `;
             } else {
                 container.innerHTML = `
-                    <div style="position:relative;">
-                        <header class="channel-header">
-                            <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <div style="font-family: 'Inter', sans-serif; background-color: #f8fafc; min-height: 100vh;">
+                        <!-- Nav -->
+                        <nav style="background-color: #cf9c33; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display:flex; align-items:center; gap:15px; color:white; font-weight:bold; font-size:1.2rem;">
+                                <i class="fas fa-globe"></i> AGENFOR
+                            </div>
+                            <div style="display:flex; gap:15px;">
                                 ${backLinkHtml}
                                 ${editBtnHtml}
                             </div>
-                            <div class="channel-info">
-                                <h1>${channel.name}</h1>
-                                <p>${channel.description || 'Canal dedicado ao compartilhamento de conhecimento e treinamento especializado.'}</p>
+                        </nav>
+                        
+                        <!-- Header -->
+                        <header style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
+                            <div style="max-width: 1200px; margin: 0 auto;">
+                                <h1 style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">${channel.name || 'Advanced Virtual Academy'}</h1>
+                                <h2 style="color: #cf9c33; font-size: 1.5rem; margin: 10px 0;">AVA</h2>
+                                <p style="color: #64748b; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">${channel.description || "To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges."}</p>
                             </div>
                         </header>
-                    </div>
 
-                    <main class="main-content">
-                        ${coursesHTML}
-                        ${dangerZoneHtml}
-                    </main>
+                        <!-- Main Content -->
+                        <main style="max-width: 1200px; margin: 0 auto; padding: 40px;">
+                            <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                                <!-- Courses Grid -->
+                                <div style="flex: 3; min-width: 300px;">
+                                    ${coursesHTML}
+                                </div>
+                                
+                                <!-- Methodology Sidebar -->
+                                <div style="flex: 1; min-width: 300px;">
+                                    <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
+                                        <h3 style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">NOSSA METODOLOGIA</h3>
+                                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is an advanced training platform that supports blended courses to enhance participants knowledge retention.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is trained as legal.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Assessment of trainees' expectations and needs.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design training plans and curricula.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design online training.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Layout on-the-job training.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Record video-based training.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Support to Q&A through avatars.</li>
+                                            <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Build case studies, scenarios and simulation.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${dangerZoneHtml}
+                        </main>
+
+                        <!-- Footer -->
+                        <footer style="background: linear-gradient(to right, #1e293b 0%, #cf9c33 100%); padding: 40px; color: white; margin-top: 40px;">
+                            <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+                                <div style="flex: 1; min-width: 250px;">
+                                    <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Sobre Nós</h3>
+                                    <p style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Somos uma instituição dedicada a entregar o melhor conteúdo educacional. Nosso foco é democratizar o conhecimento através da tecnologia aberta.</p>
+                                </div>
+                                <div style="flex: 1; min-width: 250px;">
+                                    <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Contato</h3>
+                                    <p style="font-size: 0.9rem; opacity: 0.9; line-height:1.6;">Email: contato@exemplo.com<br>Telefone: (11) 9999-9999<br>Endereço: Avenida Principal, 1000 - Centro</p>
+                                </div>
+                                <div style="flex: 1; min-width: 250px;">
+                                    <h3 style="color: white; margin-top: 0; font-size:1.2rem;">Parceiros</h3>
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 1</div>
+                                        <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 2</div>
+                                        <div style="background: white; padding: 8px 20px; border-radius: 4px; color: #1e293b; font-weight: bold; font-size: 0.8rem;">Logo 3</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </footer>
+                    </div>
                 `;
             }
         });

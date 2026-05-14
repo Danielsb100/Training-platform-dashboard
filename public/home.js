@@ -46,11 +46,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .then(res => res.json())
         .then(profileData => {
-            const photoUrl = profileData.user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            const user = profileData.user;
+            const roles = user?.roles || [];
+            const photoUrl = user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            
             if (photoUrl !== cachedProfileImg) {
                 sessionStorage.setItem('cached_profile_img', photoUrl);
                 userAvatarBtn.innerHTML = `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
                 userAvatarBtn.style.border = '2px solid rgba(255,255,255,0.2)';
+            }
+
+            // Hide/Show navigation buttons based on role
+            const navCreations = document.getElementById('nav-creations');
+            const navStudents = document.getElementById('nav-students');
+            const navUsers = document.getElementById('nav-users');
+
+            if (navCreations) {
+                // If only STUDENT, hide the creations button
+                const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
+                if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
+                    navCreations.style.display = 'none';
+                }
+            }
+
+            const canManageStudents = roles.some(r => ['TEACHER', 'TUTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user?.role);
+            if (navStudents && canManageStudents) {
+                navStudents.style.display = 'flex';
+            }
+
+            if (user?.role === 'MASTER') {
+                if (navUsers) navUsers.style.display = 'flex';
+                if (typeof window.enableMasterControls === 'function') {
+                    window.enableMasterControls();
+                }
             }
         })
         .catch(err => console.error('Failed to fetch profile', err));
@@ -61,14 +89,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         let thumbUrl = course.coverImage || course.landingPage?.thumbUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
 
         const rating = (Math.random() * (5 - 4) + 4).toFixed(1); // Mocado por enquanto
-        const clickAction = `window.location.href='viewer.html?id=${course.id}'`;
+        const clickAction = course.externalUrl 
+            ? `window.open('${course.externalUrl}', '_blank')`
+            : `window.location.href='viewer.html?id=${course.id}'`;
+        
+        const description = course.description ? course.description.substring(0, 80) + '...' : 'Explore este incrível curso dentro de nossa plataforma para aprimorar suas habilidades.';
 
         return `
             <div class="course-card" style="cursor: pointer; display: flex; flex-direction: column;" onclick="${clickAction}">
                 <img src="${thumbUrl}" alt="Thumbnail" class="course-thumb" style="width: 100%; object-fit: cover; border-bottom: 1px solid #e2e8f0; height: 180px;">
                 <div style="padding: 20px; flex: 1; display: flex; flex-direction: column;">
                     <h3 class="course-title" style="margin-top:0;">${course.title}</h3>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">By ${course.instructor || 'Instructor'}</p>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">By ${course.instructor || 'Instructor'}</p>
+                    <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px; line-height: 1.4; flex: 1;">${description}</p>
                     <div class="course-meta" style="margin-top: auto; margin-bottom: 15px;">
                         <div class="rating"><i class="fas fa-star" style="color: #cf982e;"></i> ${rating}</div>
                     </div>
@@ -135,31 +168,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-    // --- 4. Render Featured Channels (Legacy from LocalStorage) ---
-    const channels = JSON.parse(localStorage.getItem('my_channels') || '[]');
+    // --- 4. Render Featured Channels (from API) ---
     const featuredContainer = document.getElementById('featured-container');
     if (featuredContainer) {
-        let featuredHtml = '';
+        fetch('/channels/public')
+            .then(res => res.json())
+            .then(resData => {
+                const channels = resData.data || [];
+                let featuredHtml = '';
 
-        channels.forEach(ch => {
-            const thumbHtml = ch.thumb
-                ? `<div style="width:100%; height:120px; background-image:url(${ch.thumb}); background-size:cover; background-position:center; border-radius:8px; margin-bottom:15px;"></div>`
-                : `<div style="width:100%; height:120px; background:#497aa7; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:white; font-size:30px;"><i class="fas fa-tv"></i></div>`;
-                
-            featuredHtml += `
-                <div style="min-width:250px; background:white; border-radius:12px; border:1px solid #e2e8f0; padding:15px; text-align:center; cursor:pointer;" onclick="window.location.href='channel_view.html?id=${ch.id}&view=public'">
-                    ${thumbHtml}
-                    <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
-                    <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
-                    <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
-                </div>
-            `;
-        });
+                channels.forEach(ch => {
+                    const thumbHtml = ch.thumb
+                        ? `<div style="width:100%; height:120px; background-image:url(${ch.thumb}); background-size:cover; background-position:center; border-radius:8px; margin-bottom:15px;"></div>`
+                        : `<div style="width:100%; height:120px; background:#497aa7; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; color:white; font-size:30px;"><i class="fas fa-tv"></i></div>`;
+                        
+                    featuredHtml += `
+                        <div style="min-width:250px; background:white; border-radius:12px; border:1px solid #e2e8f0; padding:15px; text-align:center; cursor:pointer;" onclick="window.location.href='channel_view.html?id=${ch.id}&view=public'">
+                            ${thumbHtml}
+                            <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
+                            <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
+                            <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
+                        </div>
+                    `;
+                });
 
-        if (featuredHtml === '') {
-            featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
-        } else {
-            featuredContainer.innerHTML = featuredHtml;
-        }
+                if (featuredHtml === '') {
+                    featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
+                } else {
+                    featuredContainer.innerHTML = featuredHtml;
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load channels:', err);
+                featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">Falha ao carregar canais.</p>';
+            });
     }
 });

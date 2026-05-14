@@ -27,20 +27,18 @@ exports.uploadDocument = async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const asset = await assetStorage.saveUploadedFile({
-            tempPath: req.file.path,
-            originalName: req.file.originalname,
-            mimeType: req.file.mimetype
-        });
+        // Read the file as binary Buffer to save directly into the Database!
+        // This solves the ephemeral storage issue on Railway deployments.
+        const fileBuffer = await fs.promises.readFile(req.file.path);
 
         const document = await prisma.document.create({
             data: {
                 userId: req.user.id,
                 name: req.file.originalname,
                 type: req.file.mimetype,
-                storageProvider: 'local',
-                sizeBytes: asset.sizeBytes,
-                storageKey: asset.storageKey
+                storageProvider: 'database',
+                sizeBytes: req.file.size,
+                data: fileBuffer
             }
         });
 
