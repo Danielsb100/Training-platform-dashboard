@@ -31,7 +31,7 @@ function buildResetBaseUrl(req) {
 
 function buildPasswordResetUrl(req, token, email) {
   const baseUrl = buildResetBaseUrl(req);
-  return `${baseUrl}/index.html?resetToken=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+  return `${baseUrl}/login.html?resetToken=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 }
 
 function buildPasswordResetTokenHash(token) {

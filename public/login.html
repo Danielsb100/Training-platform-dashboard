@@ -222,7 +222,7 @@
                 
                 if (response.ok && result.ok) {
                     if (result.token) localStorage.setItem('token', result.token);
-                    window.location.href = '/index.html';
+                    window.location.href = '/marketplace.html';
                 } else {
                     const errMsg = document.getElementById('error-msg');
                     errMsg.innerText = result.error || 'Login failed.';

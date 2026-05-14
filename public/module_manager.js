@@ -8,7 +8,7 @@ async function apiCall(endpoint, method = 'GET', body = null, isFormData = false
     const token = getAuthToken();
     if (!token) {
         alert('Session expired. Please log in again.');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         throw new Error('No token');
     }
 

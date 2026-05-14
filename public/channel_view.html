@@ -226,7 +226,7 @@
             }
 
             const backLinkHtml = isPublic 
-                ? '<a href="index.html" class="back-link"><i class="fas fa-home"></i> Voltar para Home</a>'
+                ? '<a href="marketplace.html" class="back-link"><i class="fas fa-home"></i> Voltar para Home</a>'
                 : '<a href="profile.html?tab=creations" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para minhas criações</a>';
                 
             const editBtnHtml = isPublic ? '' : `<button onclick="window.location.href='builder.html?channelId=${channel.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s;" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>`;
