@@ -31,6 +31,7 @@ const moduleAiController = require('./controllers/moduleAiController');
 const aiKnowledgeController = require('./controllers/aiKnowledgeController');
 const trainingAiController = require('./controllers/trainingAiController');
 const aiTipsController = require('./controllers/aiTipsController');
+const systemController = require('./controllers/systemController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
@@ -333,6 +334,10 @@ app.get('/api/documents', authenticateToken, (req, res) => {
 app.get('/api/documents/user/:username', documentController.getUserDocuments);
 app.get('/api/documents/download/:id', documentController.downloadDocument);
 app.delete('/api/documents/:id', authenticateToken, documentController.deleteDocument);
+
+// --- System Settings API ---
+app.get('/api/system/settings/:key', systemController.getSettings);
+app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
 
 app.get('/', (req, res) => {
   return sendSuccess(res, { message: 'Authentication API is running.' });
