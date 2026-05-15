@@ -1,4 +1,4 @@
-﻿function escapeHtml(value) {
+function escapeHtml(value) {
     const div = document.createElement('div');
     div.textContent = value == null ? '' : String(value);
     return div.innerHTML;
@@ -420,8 +420,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('settings-interests').value = profile.interests.join(', ');
             }
             if (profile.spokenLanguages) {
-                document.getElementById('settings-languages').value = profile.spokenLanguages.join(', ');
-                document.getElementById('port-languages').value = profile.spokenLanguages.join(', ');
+                const langStr = profile.spokenLanguages.join(', ');
+                document.getElementById('settings-languages').value = langStr;
+                document.getElementById('port-languages').value = langStr;
+                const headerLang = document.getElementById('header-languages');
+                if (headerLang) headerLang.innerText = langStr;
             }
             if (profile.linkedinUrl) document.getElementById('port-linkedin').value = profile.linkedinUrl;
             if (profile.githubUrl) document.getElementById('port-github').value = profile.githubUrl;
@@ -430,7 +433,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (profile.timezone) document.getElementById('port-timezone').value = profile.timezone;
             if (profile.organization) document.getElementById('port-organization').value = profile.organization;
             if (profile.course) document.getElementById('port-course').value = profile.course;
-            if (profile.location) document.getElementById('port-location').value = profile.location;
+            if (profile.location) {
+                document.getElementById('port-location').value = profile.location;
+                const headerLoc = document.getElementById('header-location');
+                if (headerLoc) headerLoc.innerText = profile.location;
+            }
             if (profile.websiteUrl) document.getElementById('port-website').value = profile.websiteUrl;
             
             const prefs = profileData.preferences || {};
@@ -478,6 +485,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (profile.skills && profile.skills.length > 0) {
                 window.userTags = profile.skills.map(s => ({ name: s, bg: '#f1f5f9', text: '#333' }));
                 if (typeof renderSelectedTags === 'function') renderSelectedTags();
+                
+                const headerSkills = document.getElementById('header-skills');
+                if (headerSkills) {
+                    headerSkills.innerHTML = profile.skills.map(s => `<span style="background:var(--panel-border, #e2e8f0); color:var(--text-secondary, #475569); padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;">${s}</span>`).join('');
+                }
             }
         } else {
             console.error('Failed to load profile, status:', profileRes.status);
@@ -601,17 +613,17 @@ window.saveAdvancedPortfolio = async function() {
 
     const skills = window.userTags ? window.userTags.map(t => t.name) : [];
 
-    const language = document.getElementById('port-pref-language').value;
-    const theme = document.getElementById('port-pref-theme').value;
-    const emailNotifications = document.getElementById('port-pref-email').checked;
-    const allowDirectMessages = document.getElementById('port-pref-contact').checked;
-    const reduceMotion = document.getElementById('port-pref-motion').checked;
-    const highContrast = document.getElementById('port-pref-contrast').checked;
+    const language = document.getElementById('settings-pref-language')?.value || 'en-US';
+    const theme = document.getElementById('settings-pref-theme')?.value || 'system';
+    const emailNotifications = document.getElementById('settings-pref-email')?.checked || false;
+    const allowDirectMessages = document.getElementById('settings-pref-contact')?.checked || false;
+    const reduceMotion = document.getElementById('settings-pref-motion')?.checked || false;
+    const highContrast = document.getElementById('settings-pref-contrast')?.checked || false;
 
-    const termsAndPrivacy = document.getElementById('port-consent-terms').checked;
-    const marketingEmails = document.getElementById('port-consent-marketing').checked;
-    const profileDiscovery = document.getElementById('port-consent-discovery').checked;
-    const worldProfileCard = document.getElementById('port-consent-world').checked;
+    const termsAndPrivacy = document.getElementById('settings-consent-terms')?.checked || false;
+    const marketingEmails = document.getElementById('settings-consent-marketing')?.checked || false;
+    const profileDiscovery = document.getElementById('settings-consent-discovery')?.checked || false;
+    const worldProfileCard = document.getElementById('settings-consent-world')?.checked || false;
 
     try {
         const res = await fetch('/api/profile/me', {
@@ -655,6 +667,8 @@ window.saveAdvancedPortfolio = async function() {
         alert('Error saving portfolio.');
     }
 };
+
+window.saveSettingsProfile = window.saveAdvancedPortfolio;
 
 // --- OPERATIONAL AGENDA & NOTIFICATIONS LOGIC ---
 
@@ -903,14 +917,14 @@ window.loadSubscriptions = async function() {
     const container = document.getElementById('subscriptions-container');
     if (!container) return;
 
-    container.innerHTML = '<p>Carregando inscriÃƒÂ§ÃƒÂµes...</p>';
+    container.innerHTML = '<p>Carregando inscrições...</p>';
 
     try {
         const res = await fetch('/api/courses/enrolled', {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         
-        if (!res.ok) throw new Error('Falha ao buscar inscriÃƒÂ§ÃƒÂµes');
+        if (!res.ok) throw new Error('Falha ao buscar inscrições');
         const courses = await res.json();
 
         window.currentSubscriptionsType = window.currentSubscriptionsType || 'ALL';
@@ -925,8 +939,8 @@ window.loadSubscriptions = async function() {
         if (!filteredCourses || filteredCourses.length === 0) {
             container.innerHTML = `
                 <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma InscriÃƒÂ§ÃƒÂ£o Encontrada</h3>
-                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">VocÃƒÂª nÃƒÂ£o possui inscriÃƒÂ§ÃƒÂµes com esse filtro. Visite o marketplace para explorar novos conteÃƒÂºdos!</p>
+                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma Inscrição Encontrada</h3>
+                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você não possui inscrições com esse filtro. Visite o marketplace para explorar novos conteúdos!</p>
             `;
             return;
         }
@@ -1148,7 +1162,7 @@ window.deleteExternalLink = async function() {
 };
 
 window.deleteChannelCard = async function(channelId) {
-    if(!confirm('Tem certeza que deseja excluir este canal? Os cursos vinculados nÃƒÂ£o serÃƒÂ£o apagados.')) return;
+    if(!confirm('Tem certeza que deseja excluir este canal? Os cursos vinculados não serão apagados.')) return;
     const token = localStorage.getItem('token');
     try {
         const res = await fetch('/channels/' + channelId, { 
@@ -1156,7 +1170,7 @@ window.deleteChannelCard = async function(channelId) {
             headers: { 'Authorization': 'Bearer ' + token } 
         });
         if(res.ok) {
-            alert('Canal excluÃƒÂ­do com sucesso.');
+            alert('Canal excluído com sucesso.');
             location.reload();
         } else {
             const err = await res.json();

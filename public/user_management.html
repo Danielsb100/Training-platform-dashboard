@@ -15,7 +15,7 @@
     <div class="app-container">
         <!-- Floating Sidebar Nav -->
         <nav class="side-nav">
-            <div class="nav-item active" onclick="window.location.href='marketplace.html'" title="Home"><i
+            <div class="nav-item" onclick="window.location.href='marketplace.html'" title="Home"><i
                     class="fas fa-th-large"></i></div>
             <div class="nav-item" onclick="window.location.href='profile.html?tab=subscriptions'"
                 title="My Subscriptions"><i class="fas fa-graduation-cap"></i></div>
@@ -27,7 +27,9 @@
                     class="fas fa-file-alt"></i></div>
             <div class="nav-item" id="nav-students" onclick="window.location.href='students.html'" title="Students" style="display:none;"><i
                     class="fas fa-user-graduate"></i></div>
-            <div class="nav-item" id="nav-users" onclick="window.location.href='user_management.html'" title="User Management" style="display:none;"><i
+            <div class="nav-item" id="nav-sync" onclick="window.location.href='profile.html?tab=sync'" title="Eurobot Sync" style="display:none;"><i
+                    class="fas fa-sync-alt"></i></div>
+            <div class="nav-item active" id="nav-users" onclick="window.location.href='user_management.html'" title="User Management" style="display:none;"><i
                     class="fas fa-users"></i></div>
             <div class="nav-item" onclick="window.location.href='profile.html?tab=portfolio'" title="Portfolio"><i
                     class="fas fa-briefcase"></i></div>
@@ -66,7 +68,7 @@
                 </div>
             </header>
 
-            <div style="padding: 40px; max-width: 1200px; margin: 0 auto;">
+            <div style="padding: 40px; max-width: 1600px; width: 95%; margin: 0 auto;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
                     <div>
                         <h1 style="color: #1e293b; margin: 0 0 10px 0;">Platform Users</h1>

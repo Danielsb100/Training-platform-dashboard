@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('nav-user-avatar').style.display = 'flex';
         const navStudents = document.getElementById('nav-students');
         if (navStudents) navStudents.style.display = 'flex';
+        const navSync = document.getElementById('nav-sync');
+        if (navSync) navSync.style.display = 'flex';
         document.getElementById('nav-users').style.display = 'flex';
 
         // Set avatar
@@ -31,6 +33,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('nav-user-avatar').innerHTML = `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
 
         loadUsers();
+
+        const logoutBtn = document.querySelector('.nav-item.logout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+        }
 
     } catch (err) {
         console.error(err);

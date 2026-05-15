@@ -86,3 +86,20 @@ document.addEventListener('click', function (event) {
         popup.style.display = 'none';
     }
 });
+
+window.applyThemeToBody = function(theme) {
+    document.body.classList.toggle('dark-theme', theme === 'dark');
+    if (theme) {
+        localStorage.setItem('user-theme', theme);
+    } else {
+        localStorage.removeItem('user-theme');
+    }
+};
+
+// Initialize theme globally
+(function() {
+    const savedTheme = localStorage.getItem('user-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+})();

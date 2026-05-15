@@ -57,20 +57,46 @@
 
             <!-- Profile Section (Header) -->
             <section class="profile-header" id="pane-profile">
-                <div class="profile-info-card">
+                <div class="profile-info-card" style="flex-wrap: wrap;">
                     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Photo" class="profile-photo" style="background:#e2e8f0;">
                     <div class="profile-details">
                         <h2>Loading...</h2>
-                        <p class="profile-role">...</p>
+                        <p class="profile-role" style="text-transform: uppercase;">...</p>
                         <p class="profile-bio">...</p>
                         <div class="profile-stats">
                             <div class="stat"><span id="pages-count">0</span> Creations</div>
                             <div class="stat"><span>4.8</span> Average Rating</div>
                         </div>
                     </div>
+                    
+                    <div class="profile-extra-info" style="margin-left: auto; border-left: 1px solid var(--panel-border, #e2e8f0); padding-left: 40px; display: flex; flex-direction: column; gap: 15px; min-width: 250px;">
+                        <div style="display:flex; align-items:flex-start; gap:15px;">
+                            <i class="fas fa-map-marker-alt" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
+                            <div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Location</div>
+                                <div id="header-location" style="font-size:13px; font-weight:600; color:var(--text-primary);">Not specified</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:flex-start; gap:15px;">
+                            <i class="fas fa-language" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
+                            <div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Languages</div>
+                                <div id="header-languages" style="font-size:13px; font-weight:600; color:var(--text-primary);">Not specified</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:flex-start; gap:15px;">
+                            <i class="fas fa-tags" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
+                            <div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Top Skills</div>
+                                <div id="header-skills" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
+                                    <span style="font-size:12px; color:#64748b; font-style:italic;">None</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- AI Tips: student-facing coaching from quiz/material/course progression -->
-                <div id="ai-tips-panel" style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin-top:30px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+                <div id="ai-tips-panel" style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin:30px 60px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px; flex-wrap:wrap;">
                         <div>
                             <h3 style="color:#1e293b; font-size:1.4rem; margin:0; display:flex; align-items:center; gap:10px;"><i class="fas fa-wand-magic-sparkles" style="color:#cf982e;"></i> AI Tips</h3>
@@ -87,7 +113,7 @@
                     </div>
                 </div>
                 <!-- Agenda Operacional (Integrated) -->
-                <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin-top:30px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+                <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin:30px 60px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
                         <h3 style="color:#1e293b; font-size:1.4rem; margin:0;">Operational Agenda</h3>
                         <div style="display:flex; gap:10px; align-items:center;">
@@ -305,50 +331,7 @@
                             </div>
                         </div>
 
-                        <!-- Seção 5: Preferências -->
-                        <div style="margin-bottom: 30px; padding-bottom:30px; border-bottom:1px solid #e2e8f0;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-sliders-h" style="color:#cf982e; margin-right:8px;"></i> Preferences</label>
-                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Language, theme, accessibility and communication.</p>
-                            
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
-                                <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">System Language</label>
-                                    <select id="port-pref-language" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;">
-                                        <option value="pt-BR">Portuguese (Brazil)</option>
-                                        <option value="en-US">English (US)</option>
-                                        <option value="es-ES">Español</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Theme</label>
-                                    <select id="port-pref-theme" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;">
-                                        <option value="system">System</option>
-                                        <option value="light">Light</option>
-                                        <option value="dark">Dark</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-pref-email"> Receive email notifications</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-pref-contact"> Allow direct contact from other participants</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-pref-motion"> Reduce motion and animations</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-pref-contrast"> Enable high contrast</label>
-                            </div>
-                        </div>
 
-                        <!-- Seção 6: Consentimentos -->
-                        <div style="margin-bottom: 30px;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-shield-alt" style="color:#cf982e; margin-right:8px;"></i> Consents</label>
-                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Privacy, profile visibility and communication.</p>
-                            
-                            <div style="display:flex; flex-direction:column; gap:15px;">
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-consent-terms" style="margin-top:3px;"> I confirm the current terms of use and privacy policy.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-consent-marketing" style="margin-top:3px;"> I agree to receive product and opportunity communications by email.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-consent-discovery" style="margin-top:3px;"> Allow basic discovery of my profile in the community.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="port-consent-world" style="margin-top:3px;"> Allow an enriched profile card in the 3D world.</label>
-                            </div>
-                        </div>
 
                         <!-- Botão Salvar -->
                         <div style="text-align:right; margin-top:20px;">
@@ -393,11 +376,49 @@
                             <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Languages</label>
                             <input type="text" id="settings-languages" value="English, Spanish" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
-                        <div style="grid-column: span 2; margin-top:10px; padding-top:20px; border-top:1px solid #e2e8f0;">
-                            <h4 style="margin:0 0 15px 0;">Privacy & Preferences</h4>
-                            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:14px;"><input type="checkbox" checked> Receive email notifications</label>
-                            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:14px;"><input type="checkbox" checked> Allow direct contact</label>
-                            <label style="display:flex; align-items:center; gap:10px; font-size:14px;"><input type="checkbox"> High Contrast</label>
+                        <!-- Seção 5: Preferências -->
+                        <div style="grid-column: span 2; margin-top:20px; padding-top:20px; border-top:1px solid #e2e8f0;">
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-sliders-h" style="color:#cf982e; margin-right:8px;"></i> Preferences</label>
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Language, theme, accessibility and communication.</p>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                                <div>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">System Language</label>
+                                    <select id="settings-pref-language" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;">
+                                        <option value="pt-BR">Portuguese (Brazil)</option>
+                                        <option value="en-US">English (US)</option>
+                                        <option value="es-ES">Español</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Theme</label>
+                                    <select id="settings-pref-theme" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;" onchange="applyThemeToBody(this.value)">
+                                        <option value="system">System</option>
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-email"> Receive email notifications</label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contact"> Allow direct contact from other participants</label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-motion"> Reduce motion and animations</label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contrast"> Enable high contrast</label>
+                            </div>
+                        </div>
+
+                        <!-- Seção 6: Consentimentos -->
+                        <div style="grid-column: span 2; margin-top:20px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-shield-alt" style="color:#cf982e; margin-right:8px;"></i> Consents</label>
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Privacy, profile visibility and communication.</p>
+                            
+                            <div style="display:flex; flex-direction:column; gap:15px;">
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-terms" style="margin-top:3px;"> I confirm the current terms of use and privacy policy.</label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-marketing" style="margin-top:3px;"> I agree to receive product and opportunity communications by email.</label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-discovery" style="margin-top:3px;"> Allow basic discovery of my profile in the community.</label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-world" style="margin-top:3px;"> Allow an enriched profile card in the 3D world.</label>
+                            </div>
                         </div>
                         <div style="grid-column: span 2; margin-top:20px;">
                             <button type="button" class="btn-primary" onclick="saveSettingsProfile()">Save All Changes</button>
