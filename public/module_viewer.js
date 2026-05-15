@@ -10,8 +10,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     const btnBack = document.getElementById('btn-back');
+    const viewerContainer = document.getElementById('app');
+    const worldIframe = document.getElementById('world-iframe');
+    let isWorldMode = false;
+
+    function exitWorldMode() {
+        isWorldMode = false;
+        viewerContainer.classList.remove('world-mode');
+        worldIframe.src = ''; // Free up memory and WebGL context
+        btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> Voltar';
+        btnBack.title = 'Voltar para o Curso';
+        
+        // Reset tabs to overview if coming from world mode
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('[data-tab="overview"]').classList.add('active');
+    }
+
     btnBack.onclick = () => {
-        window.location.href = courseId ? `course_content.html?id=${courseId}` : 'home.html';
+        if (isWorldMode) {
+            exitWorldMode();
+        } else {
+            window.location.href = courseId ? `course_content.html?id=${courseId}` : 'home.html';
+        }
     };
     
     const token = localStorage.getItem('token');
@@ -21,8 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const getMultiplayerUrl = () => {
-        const configuredUrl = window.__APP_CONFIG__?.multiplayerUrl || '';
-        return String(configuredUrl || '').trim().replace(/\/+$/, '');
+        // Point to the newly merged local public/world directory
+        return window.location.origin + '/world';
     };
 
     function buildCourseWorldUrl() {
@@ -30,7 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!multiplayerUrl) return null;
 
         try {
-            const targetUrl = new URL(multiplayerUrl);
+            // Append index.html explicitly
+            const targetUrl = new URL(multiplayerUrl + '/index.html');
             if (courseId) targetUrl.searchParams.set('courseId', courseId);
             if (moduleId) targetUrl.searchParams.set('moduleId', moduleId);
             targetUrl.searchParams.set('token', token);
@@ -48,7 +69,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('3D Course World is not configured yet. Set PUBLIC_MULTIPLAYER_URL in Railway for this environment.');
             return;
         }
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        
+        // Setup iframe and world mode
+        worldIframe.src = targetUrl;
+        isWorldMode = true;
+        viewerContainer.classList.add('world-mode');
+        
+        // Change back button behavior
+        btnBack.innerHTML = '<i class="fas fa-times"></i> Sair do Mundo 3D';
+        btnBack.title = 'Retornar ao conteúdo da aula';
     }
     
     let moduleData = null;

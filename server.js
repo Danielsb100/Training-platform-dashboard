@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
+const http = require('http');
+const { Server } = require('socket.io');
+const { ExpressPeerServer } = require('peer');
 
 const env = require('./config/env');
 const prisma = require('./config/db');
@@ -32,6 +35,7 @@ const aiKnowledgeController = require('./controllers/aiKnowledgeController');
 const trainingAiController = require('./controllers/trainingAiController');
 const aiTipsController = require('./controllers/aiTipsController');
 const systemController = require('./controllers/systemController');
+const multiplayerController = require('./controllers/multiplayerController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
@@ -79,6 +83,22 @@ const handleUploadToDiskError = (fieldName) => (req, res, next) => {
 };
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*", 
+    methods: ["GET", "POST"]
+  }
+});
+
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+  path: '/'
+});
+
+multiplayerController.initSocket(io);
+
 const PORT = env.port;
 
 const corsOptions = env.cors.origins.length
@@ -96,6 +116,9 @@ const corsOptions = env.cors.origins.length
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use('/peerjs', peerServer);
+app.get('/api/catalog', multiplayerController.getCatalog);
 
 app.get('/app-config.js', (req, res) => {
   res.type('application/javascript');
@@ -155,6 +178,8 @@ app.get('/courses/my', authenticateToken, courseController.getMyCourses);
 app.get('/courses/public', courseController.getPublicCourses);
 app.get('/courses/accessible', authenticateToken, courseController.getAccessibleCourses);
 app.get('/courses/:id', authenticateToken, courseController.getCourseDetail);
+app.get('/courses/:id/runtime', authenticateToken, courseController.getCourseRuntime);
+app.post('/courses/:id/modules/:moduleId/complete', authenticateToken, courseController.completeCourseModule);
 app.get(
   '/api/students/overview',
   authenticateToken,
@@ -419,7 +444,7 @@ env.meta.warnings.forEach((warning) => {
   console.warn(`[config] ${warning}`);
 });
 
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
   await seedMasterUser();
   await backfillAllUserIdentities();

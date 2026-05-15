@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelIdParam = urlParams.get('channelId');
 
     if (channelIdParam) {
+        const addViewModulesBtn = document.getElementById('add-view-modules-btn');
+        if (addViewModulesBtn) addViewModulesBtn.style.display = 'none';
+
         let channel = null;
         try {
             const token = localStorage.getItem('token');
@@ -28,131 +31,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (container) {
                 const defaultCoursesAndFooter = `
                     <!-- COURSE GALLERY -->
-                    <section class="module-section" id="channel-courses-section" style="background-color:#f8fafc; padding:40px 0; position:relative;">
-                        <div class="bg-overlay"></div>
+                    <section class="module-section" id="channel-courses-section" style="background-color:#f8fafc; padding:60px 0; position:relative;">
+                        <div class="bg-overlay" style="display:none;"></div>
                         <button class="bg-edit-btn" onclick="triggerImageUpload('channel-courses-section', 'bg')">
                             <i class="fas fa-image"></i> Change BG
                         </button>
-                        <div class="module-content" style="flex-direction:row; gap:30px; max-width:1200px; position:relative; z-index:2;">
-                            <!-- Left: Course Grid -->
-                            <div style="flex:3;">
-                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; padding-bottom:10px;">
-                                    <span class="editable-text" style="font-size:1.5rem; color:#cf9c33;">🏛️</span>
-                                    <h3 class="editable-text" style="font-size:1.3rem; color:#1e293b; margin:0; font-weight:bold;">Courses in Channel</h3>
-                                </div>
-                                <div style="display:flex; flex-wrap:wrap; gap:20px;" id="courses-placeholder">
-                                    <div style="padding: 40px; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b; background: rgba(255,255,255,0.5); width: 100%;">
-                                        <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                                        <p class="editable-text" style="margin: 0; font-size: 1.1rem;">A grade de cursos aparecerá aqui na página final.</p>
-                                    </div>
-                                </div>
+                        <div class="module-content" style="max-width:1200px; margin:0 auto; padding:0 20px; position:relative; z-index:2;">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:30px; border-bottom:2px solid #e2e8f0; padding-bottom:15px;">
+                                <i class="fas fa-university" style="color:#cf9c33; font-size:1.5rem;"></i>
+                                <h3 class="editable-text" style="font-size:1.6rem; color:#1e293b; margin:0; font-weight:bold;">Courses in Channel</h3>
                             </div>
-                            <!-- Right: Methodology Sidebar -->
-                            <div style="flex:1; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:25px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                                <h4 class="editable-text" style="font-size:1rem; color:#cf9c33; margin-top:0; margin-bottom:20px; font-weight:bold;">OUR METHODOLOGY</h4>
-                                <ul style="list-style-type:disc; padding-left:20px; color:#1e293b; font-size:0.85rem; line-height:1.6; margin:0;">
-                                    <li style="margin-bottom:10px;"><span class="editable-text">Advanced training platform that supports blended courses.</span></li>
-                                    <li style="margin-bottom:10px;"><span class="editable-text">Assessment of trainees' expectations and needs.</span></li>
-                                    <li style="margin-bottom:10px;"><span class="editable-text">Design training plans and curricula.</span></li>
-                                    <li style="margin-bottom:10px;"><span class="editable-text">Design online training.</span></li>
-                                    <li style="margin-bottom:10px;"><span class="editable-text">Record video-based training.</span></li>
-                                    <li><span class="editable-text">Support to Q&A through avatars.</span></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- HUB DASHBOARD -->
-                    <section class="module-section" style="background-color:#ffffff; padding:40px 0; border-top:1px solid #e2e8f0;">
-                        <div class="module-content" style="flex-direction:row; gap:20px; align-items:stretch; max-width:1200px;">
-                            <!-- Col 1: Performance -->
-                            <div style="flex:2; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#f8fafc;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
-                                    <h4 class="editable-text" style="margin:0; font-size:1rem; color:#1e293b; font-weight:bold;">Performance Dashboard</h4>
-                                    <span class="editable-text" style="color:#cf9c33;">📊</span>
-                                </div>
-                                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                                    <div style="flex:1; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
-                                        <p class="editable-text" style="margin:0 0 5px 0; font-size:0.75rem; color:#64748b; font-weight:bold;">Active Learners</p>
-                                        <h3 class="editable-text" style="margin:0; font-size:1.5rem; color:#1e293b;">1,250</h3>
-                                    </div>
-                                    <div style="flex:1; background:white; padding:15px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">
-                                        <p class="editable-text" style="margin:0 0 5px 0; font-size:0.75rem; color:#64748b; font-weight:bold;">Top Course</p>
-                                        <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
-                                            <span class="editable-text" style="font-size:1.2rem; color:#cf9c33;">🏅</span>
-                                            <h3 class="editable-text" style="margin:0; font-size:1.5rem; color:#1e293b;">78%</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="editable-image-wrapper" style="width:100%; height:120px; background:white; border-radius:8px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center;">
-                                    <img src="https://placehold.co/400x120/ffffff/cbd5e1?text=User+Engagement+Chart" style="width:100%; height:100%; object-fit:contain; padding:10px;">
-                                </div>
-                            </div>
-                            <!-- Col 2: Reminders -->
-                            <div style="flex:1.5; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#ffffff;">
-                                <h4 class="editable-text" style="margin:0 0 15px 0; font-size:1rem; color:#1e293b; border-bottom:1px solid #e2e8f0; padding-bottom:10px; font-weight:bold;">Course Reminders & Tasks</h4>
-                                <div style="display:flex; flex-direction:column; gap:10px;">
-                                    <div style="display:flex; align-items:flex-start; gap:8px;">
-                                        <input type="checkbox" style="margin-top:4px;">
-                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Review assignments (12 pending)</span>
-                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
-                                    </div>
-                                    <div style="display:flex; align-items:flex-start; gap:8px;">
-                                        <input type="checkbox" style="margin-top:4px;">
-                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Upcoming live session (June 15th)</span>
-                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
-                                    </div>
-                                    <div style="display:flex; align-items:flex-start; gap:8px;">
-                                        <input type="checkbox" style="margin-top:4px;">
-                                        <span class="editable-text" style="font-size:0.85rem; color:#475569; flex:1;">Update content module 3</span>
-                                        <span class="editable-text" style="color:#cf9c33; cursor:pointer;">📝</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Col 3: News -->
-                            <div style="flex:1.5; border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#ffffff;">
-                                <h4 class="editable-text" style="margin:0 0 15px 0; font-size:1rem; color:#1e293b; border-bottom:1px solid #e2e8f0; padding-bottom:10px; font-weight:bold;">Latest News</h4>
-                                <div style="display:flex; flex-direction:column; gap:15px;">
-                                    <div style="display:flex; align-items:flex-start; gap:10px; border-left:3px solid #cf9c33; padding-left:10px;">
-                                        <div style="flex:1;">
-                                            <h5 class="editable-text" style="margin:0 0 3px 0; font-size:0.85rem; color:#1e293b;">New Module Added!</h5>
-                                            <p class="editable-text" style="margin:0; font-size:0.75rem; color:#64748b;">15 Aug 2026</p>
-                                        </div>
-                                        <span class="editable-text" style="color:#cf9c33; font-size:1rem;">📰</span>
-                                    </div>
-                                    <div style="display:flex; align-items:flex-start; gap:10px; border-left:3px solid #cf9c33; padding-left:10px;">
-                                        <div style="flex:1;">
-                                            <h5 class="editable-text" style="margin:0 0 3px 0; font-size:0.85rem; color:#1e293b;">Mentorship Pilot Program</h5>
-                                            <p class="editable-text" style="margin:0; font-size:0.75rem; color:#64748b;">15 Aug 2026</p>
-                                        </div>
-                                        <span class="editable-text" style="color:#cf9c33; font-size:1rem;">📰</span>
-                                    </div>
-                                </div>
+                            <div id="courses-placeholder" style="min-height:300px; border:2px dashed #cbd5e1; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; background:white;">
+                                <i class="fas fa-layer-group" style="font-size:3rem; margin-bottom:15px; opacity:0.5;"></i>
+                                <p style="margin:0;">Este canal ainda nÃ£o possui cursos vinculados.</p>
                             </div>
                         </div>
                     </section>
 
                     <!-- FOOTER -->
                     <footer class="module-section" id="channel-footer-section" style="background:linear-gradient(135deg, #1e293b 0%, #334155 100%); padding:40px 0; color:white; margin-bottom:0; position:relative;">
-                        <div class="bg-overlay"></div>
+                        <div class="bg-overlay" style="display:none;"></div>
                         <button class="bg-edit-btn" onclick="triggerImageUpload('channel-footer-section', 'bg')">
                             <i class="fas fa-image"></i> Change Footer BG
                         </button>
-                        <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:flex-start; gap:40px; max-width:1200px; position:relative; z-index:2;">
-                            <div style="flex:1;">
+                        <div class="module-content" style="max-width:1200px; margin:0 auto; padding:0 20px; display:flex; flex-wrap:wrap; gap:40px; position:relative; z-index:2;">
+                            <div style="flex:1; min-width:250px;">
                                 <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">About Us</h3>
                                 <p class="editable-text" style="opacity:0.8; font-size:0.85rem; line-height:1.6; margin:0;">We are an institution dedicated to delivering the best educational content. Our mission is to democratize knowledge through open technology.</p>
                             </div>
-                            <div style="flex:1;">
+                            <div style="flex:1; min-width:250px;">
                                 <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">Contact</h3>
                                 <p class="editable-text" style="opacity:0.8; font-size:0.85rem; line-height:1.6; margin:0;">Email: contact@example.com<br>Phone: (11) 9999-9999<br>Address: Main Avenue, 1000 - Center</p>
                             </div>
-                            <div style="flex:1;">
+                            <div style="flex:1; min-width:250px;">
                                 <h3 class="editable-text" style="color:#cf9c33; margin-top:0; font-size:1.1rem; margin-bottom:15px;">Partners</h3>
                                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                                     <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+1" style="height:25px;"></div>
                                     <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+2" style="height:25px;"></div>
-                                    <div class="editable-image-wrapper" style="background:white; padding:5px; border-radius:4px;"><img src="https://placehold.co/100x40/ffffff/1e293b?text=Logo+3" style="height:25px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -170,24 +85,78 @@ document.addEventListener('DOMContentLoaded', async () => {
                     container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
                 } else {
                     container.innerHTML = `
-                        <!-- Header & Nav -->
-                        <section class="module-section" id="channel-header-section" style="background-color:#ffffff; padding:20px 40px; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; position:relative;">
-                            <div class="bg-overlay"></div>
+                        <!-- Header -->
+                        <section class="module-section" id="channel-header-section" style="background: white; padding: 60px 40px; border-bottom: 1px solid #e2e8f0; position:relative;">
+                            <div class="bg-overlay" style="display:none;"></div>
                             <button class="bg-edit-btn" onclick="triggerImageUpload('channel-header-section', 'bg')">
-                                <i class="fas fa-image"></i> Change Header BG
+                                <i class="fas fa-image"></i> Change BG
                             </button>
-                            <div class="module-content" style="flex-direction:row; justify-content:space-between; width:100%; max-width:1200px; position:relative; z-index:2;">
-                                <div class="editable-image-wrapper" style="width:120px; flex-shrink:0;">
-                                    <img src="https://placehold.co/200x200/ffffff/0ea5e9?text=Logo" class="logo-img" style="border-radius:8px; width:100%; object-fit:contain;">
+                            <div class="module-content" style="max-width: 1200px; margin: 0 auto; position:relative; z-index:2;">
+                                <h1 class="editable-text" id="titulo-cabecalho" style="color: #1e293b; font-size: 2.8rem; margin: 0; font-weight: 800;">${channel.name || 'meu canal'}</h1>
+                                <h2 class="editable-text" style="color: #cf9c33; font-size: 1.3rem; margin: 8px 0;">AVA</h2>
+                                <p class="editable-text" id="desc-cabecalho" style="color: #475569; font-size: 1.1rem; max-width: 800px; line-height: 1.6; font-weight: 600;">To deliver trainings in a virtual ecosystem to empower public institutions, organisations and professionals with the skills and expertise needed to navigate today's complex challenges.</p>
+                            </div>
+                        </section>
+
+                        <!-- Main Content with Courses and Methodology -->
+                        <section class="module-section" id="channel-main-section" style="background-color: #f8fafc; padding: 40px 0; position:relative;">
+                            <div class="bg-overlay" style="display:none;"></div>
+                            <button class="bg-edit-btn" onclick="triggerImageUpload('channel-main-section', 'bg')">
+                                <i class="fas fa-image"></i> Change BG
+                            </button>
+                            <div class="module-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; position:relative; z-index:2;">
+                                <!-- Courses Placeholder -->
+                                <div id="courses-placeholder" style="flex: 2; min-width: 300px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #94a3b8;">
+                                    <i class="fas fa-layer-group" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                                    <p style="margin: 0 0 10px 0;">Este canal ainda não possui cursos vinculados.</p>
+                                    <a href="#" style="color: #cf9c33; text-decoration: none; font-weight: bold; pointer-events:none;">Vincular um curso agora</a>
                                 </div>
-                                <div style="flex:1; margin-left:40px;">
-                                    <h1 class="editable-text" id="titulo-cabecalho" style="font-size:2.2rem; font-weight:800; color:#1e293b; margin:0; line-height:1.2;">${channel.name}</h1>
-                                    <h2 class="editable-text" style="font-size:1.2rem; color:#cf9c33; margin:5px 0;">Academy Subtitle</h2>
-                                    <p class="editable-text" id="desc-cabecalho" style="font-size:0.95rem; color:#64748b; margin-top:10px; max-width:800px; line-height:1.5;">${channel.description || 'Generic description of the mission and goals, focusing on empowering professionals with skills needed for complex challenges.'}</p>
+                                
+                                <!-- Methodology Box -->
+                                <div style="flex: 1; min-width: 300px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 30px; border-left: 4px solid #cf9c33;">
+                                    <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; text-transform: uppercase;">Nossa Metodologia</h3>
+                                    <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px;">
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">AVA is an advanced training platform that supports blended courses to enhance participants' knowledge retention.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">AVA is trained as legal.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Assessment of trainees' expectations and needs.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Design training plans and curricula.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Design online training.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Layout on-the-job training.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Record video-based training.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Support to Q&A through avatars.</span>
+                                        </li>
+                                        <li style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
+                                            <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Build case studies, scenarios and simulation.</span>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </section>
-                    ` + defaultCoursesAndFooter;
+                    `;
                 }
             }
             const tModal = document.getElementById('template-modal');
@@ -214,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     editingPageId = 'course_lp';
                     
                     const navNameInput = document.getElementById('page-name-input');
-                    if(navNameInput) navNameInput.value = landingPage.title || 'Curso sem título';
+                    if(navNameInput) navNameInput.value = landingPage.title || 'Curso sem tÃ­tulo';
 
                     const container = document.getElementById('template-container');
                     if (container) {
@@ -424,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('scroll', updateDragHandlePos);
     window.addEventListener('resize', updateDragHandlePos);
 
-    // Alternar Visualização
+    // Alternar VisualizaÃ§Ã£o
     if (toggleViewBtn) {
         toggleViewBtn.addEventListener('click', () => {
             isEditMode = !isEditMode;
@@ -448,7 +417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create floating back button
                 const floatBtn = document.createElement('button');
                 floatBtn.id = 'floating-back-btn';
-                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição';
+                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Voltar para EdiÃ§Ã£o';
                 floatBtn.style.cssText = 'position:fixed; top:20px; right:20px; background:#0ea5e9; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
                 floatBtn.addEventListener('click', () => {
                     toggleViewBtn.click();
@@ -458,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Lógica do Modal de Publicação
+    // LÃ³gica do Modal de PublicaÃ§Ã£o
     const publishModal = document.getElementById('publish-modal');
     const publishCancelBtn = document.getElementById('publish-cancel-btn');
     const publishConfirmBtn = document.getElementById('publish-confirm-btn');
@@ -740,7 +709,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initDynamicEvents() {
-        // --- 1. Textos Editáveis ---
+        // --- 1. Textos EditÃ¡veis ---
         document.querySelectorAll('.editable-text').forEach(el => {
             el.setAttribute('contenteditable', isEditMode);
             if(el.dataset.eventsBound) return;
@@ -756,7 +725,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // --- 2. Imagens Editáveis ---
+        // --- 2. Imagens EditÃ¡veis ---
         document.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
             if(wrapper.dataset.eventsBound) return;
             wrapper.dataset.eventsBound = 'true';
@@ -770,7 +739,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Atualizar os observadores caso templates iniciais tragam animacoes novas
         if(typeof observeAnimations === 'function') observeAnimations();
 
-        // --- 3. Fundo Editável (Botões) ---
+        // --- 3. Fundo EditÃ¡vel (BotÃµes) ---
         document.querySelectorAll('.bg-edit-btn').forEach(btn => {
             if(btn.dataset.eventsBound) return;
             btn.dataset.eventsBound = 'true';
@@ -833,7 +802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Manter fallback legacy só por precaução
+    // Manter fallback legacy sÃ³ por precauÃ§Ã£o
     window.triggerImageUpload = function (targetId, type) {
         if (!isEditMode) return;
         if (window.event) window.event.stopPropagation();
@@ -859,11 +828,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         positionOptions.classList.add('hidden');
         if (noSelectionMsg) noSelectionMsg.classList.remove('hidden');
 
-        // Revela mediante seleção
+        // Revela mediante seleÃ§Ã£o
         if (activeElement) {
             if (noSelectionMsg) noSelectionMsg.classList.add('hidden');
-            boxOptions.classList.remove('hidden'); // Box é global 
-            fxOptions.classList.remove('hidden'); // Animações são globais
+            boxOptions.classList.remove('hidden'); // Box Ã© global 
+            fxOptions.classList.remove('hidden'); // AnimaÃ§Ãµes sÃ£o globais
             if (activeElementType !== 'bg') {
                 positionOptions.classList.remove('hidden'); // Offset bloqueado no bg
             }
@@ -895,7 +864,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('opacity-row').classList.add('hidden');
             }
 
-            // Apenas atualiza a UI do dropdown de tipos sem disparar "change" e quebrar a renderização!
+            // Apenas atualiza a UI do dropdown de tipos sem disparar "change" e quebrar a renderizaÃ§Ã£o!
             const type = bgTypeSelect.value;
             document.getElementById('bg-image-controls').classList.toggle('hidden', type !== 'image');
             document.getElementById('bg-color-controls').classList.toggle('hidden', type !== 'color');
@@ -916,8 +885,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         dragHandle.style.display = 'none';
         
-        // Em vez de forçar a abertura do painel quando deseleciona, 
-        // vamos mostrar a mensagem de fallback apenas SE o painel já estiver aberto.
+        // Em vez de forÃ§ar a abertura do painel quando deseleciona, 
+        // vamos mostrar a mensagem de fallback apenas SE o painel jÃ¡ estiver aberto.
         if (isEditMode && !propertiesPanel.classList.contains('hidden')) {
             openSidePanel(); 
         }
@@ -979,7 +948,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else bgTypeSelect.value = 'color';
             }
             
-            // Segurança: Apenas mostra o menu correto sem re-renderizar em cima da DIV
+            // SeguranÃ§a: Apenas mostra o menu correto sem re-renderizar em cima da DIV
             document.getElementById('bg-image-controls').classList.toggle('hidden', bgTypeSelect.value !== 'image');
             document.getElementById('bg-color-controls').classList.toggle('hidden', bgTypeSelect.value !== 'color');
             document.getElementById('bg-grad-controls').classList.toggle('hidden', bgTypeSelect.value !== 'gradient' && bgTypeSelect.value !== 'radial');
@@ -1209,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bsColor.addEventListener('input', updateBoxShadow);
     bsInset.addEventListener('change', updateBoxShadow);
 
-    // --- Fx & Animações ---
+    // --- Fx & AnimaÃ§Ãµes ---
     animSelect.addEventListener('change', e => {
         if(!activeElement) return;
         ['anim-float', 'anim-pulse', 'anim-fade-in', 'anim-slide-up'].forEach(c => activeElement.classList.remove(c));
@@ -1305,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (type === 'image' && activeElementType === 'bg') {
             activeElement.style.opacity = 1;
             if (overlay) {
-                overlay.style.backgroundColor = 'transparent'; // Ficticio - não aplica escuridão global
+                overlay.style.backgroundColor = 'transparent'; // Ficticio - nÃ£o aplica escuridÃ£o global
                 overlay.style.backdropFilter = `blur(${bgBlurRange.value}px)`;
             }
         }
@@ -1357,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (overlay) overlay.style.backdropFilter = `blur(${e.target.value}px)`;
     });
 
-    // --- Controladores de Restrição do Bloco (Box Margin e Borders) ---
+    // --- Controladores de RestriÃ§Ã£o do Bloco (Box Margin e Borders) ---
     marginInput.addEventListener('input', e => applyStyle('margin', `${e.target.value}px`));
     paddingInput.addEventListener('input', e => applyStyle('padding', `${e.target.value}px`));
     borderRadiusInput.addEventListener('input', e => applyStyle('borderRadius', `${e.target.value}px`));
@@ -1381,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             borderRadiusInput.style.opacity = '0.4';
             borderStyleSelect.disabled = true;
             borderStyleSelect.style.opacity = '0.4';
-            applyStyle('borderStyle', 'solid'); // Forçar fallback visual
+            applyStyle('borderStyle', 'solid'); // ForÃ§ar fallback visual
         } else {
             borderRadiusInput.disabled = false;
             borderRadiusInput.style.opacity = '1';
@@ -1458,7 +1427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         imageInput.value = '';
     });
 
-    // --- Ajudantes Úteis ---
+    // --- Ajudantes Ãšteis ---
     function hexToRgba(hex, alpha) {
         let r = parseInt(hex.slice(1, 3), 16) || 0;
         let g = parseInt(hex.slice(3, 5), 16) || 0;
@@ -1480,7 +1449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!btn) {
             btn = document.createElement('button');
             btn.id = 'floating-back-btn';
-            btn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição (Painel)';
+            btn.innerHTML = '<i class="fas fa-edit"></i> Voltar para EdiÃ§Ã£o (Painel)';
             btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#0ea5e9;color:white;border:none;padding:15px 25px;border-radius:30px;font-weight:bold;cursor:pointer;box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
             btn.onclick = () => { toggleBtn.click(); btn.remove(); };
             document.body.appendChild(btn);
@@ -1530,3 +1499,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
 });
+

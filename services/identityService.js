@@ -101,7 +101,7 @@ function inferLegacyRoleFromAssignedRoles(roles) {
     return 'ADMIN';
   }
 
-  if (set.has('TEACHER') || set.has('COORDINATOR')) {
+  if (set.has('MASTER')) {
     return 'MASTER';
   }
 

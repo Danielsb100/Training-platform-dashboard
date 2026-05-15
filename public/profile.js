@@ -1,4 +1,4 @@
-function escapeHtml(value) {
+﻿function escapeHtml(value) {
     const div = document.createElement('div');
     div.textContent = value == null ? '' : String(value);
     return div.innerHTML;
@@ -30,7 +30,7 @@ function renderAiTips(payload = {}) {
         const style = getAiTipSeverityStyle(tip.severity);
         const metadata = tip.metadata || {};
         const focusAreas = Array.isArray(metadata.focusAreas) && metadata.focusAreas.length
-            ? `<div style="margin-top:8px;"><strong style="font-size:12px; color:#475569;">Focus:</strong> <span style="font-size:12px; color:#64748b;">${metadata.focusAreas.map(escapeHtml).join(' • ')}</span></div>`
+            ? `<div style="margin-top:8px;"><strong style="font-size:12px; color:#475569;">Focus:</strong> <span style="font-size:12px; color:#64748b;">${metadata.focusAreas.map(escapeHtml).join(' Ã¢â‚¬Â¢ ')}</span></div>`
             : '';
         const nextSteps = Array.isArray(metadata.nextSteps) && metadata.nextSteps.length
             ? `<ul style="margin:8px 0 0 18px; padding:0; color:#64748b; font-size:12px; line-height:1.45;">${metadata.nextSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>`
@@ -190,7 +190,7 @@ function renderEurobotSyncPanel(payload = {}) {
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:9px 10px;">
                             <div style="min-width:0;">
                                 <div style="font-size:13px; color:#1e293b; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(label)}</div>
-                                <div style="font-size:11px; color:#64748b;">${escapeHtml(item.sourceType || 'MATERIAL')} • Updated ${escapeHtml(formatEurobotDate(item.updatedAt))}</div>
+                                <div style="font-size:11px; color:#64748b;">${escapeHtml(item.sourceType || 'MATERIAL')} Ã¢â‚¬Â¢ Updated ${escapeHtml(formatEurobotDate(item.updatedAt))}</div>
                                 ${item.lastError ? `<div style="font-size:11px; color:#b91c1c; margin-top:3px;">${escapeHtml(item.lastError)}</div>` : ''}
                             </div>
                             <span style="flex-shrink:0; background:${itemStyle.bg}; color:${itemStyle.text}; border:1px solid ${itemStyle.border}; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:900;">${escapeHtml(item.status || 'PENDING')}</span>
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 navUsers.style.display = 'flex';
             }
 
-            // Also load the avatar properly            // Foto de perfil precisa vir de User (que está vinculado)
+            // Also load the avatar properly            // Foto de perfil precisa vir de User (que estÃƒÂ¡ vinculado)
             if (user.profilePicture) {
                 document.getElementById('settings-profile-img-preview').src = user.profilePicture;
                 const headerPhoto = document.querySelector('.profile-photo');
@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Sobrescrevendo a função de salvar no perfil para bater na API
+// Sobrescrevendo a funÃƒÂ§ÃƒÂ£o de salvar no perfil para bater na API
 window.saveSettingsProfile = async function() {
     const token = localStorage.getItem('token');
     const name = document.getElementById('settings-name').value;
@@ -903,14 +903,14 @@ window.loadSubscriptions = async function() {
     const container = document.getElementById('subscriptions-container');
     if (!container) return;
 
-    container.innerHTML = '<p>Carregando inscrições...</p>';
+    container.innerHTML = '<p>Carregando inscriÃƒÂ§ÃƒÂµes...</p>';
 
     try {
         const res = await fetch('/api/courses/enrolled', {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
         
-        if (!res.ok) throw new Error('Falha ao buscar inscrições');
+        if (!res.ok) throw new Error('Falha ao buscar inscriÃƒÂ§ÃƒÂµes');
         const courses = await res.json();
 
         window.currentSubscriptionsType = window.currentSubscriptionsType || 'ALL';
@@ -925,8 +925,8 @@ window.loadSubscriptions = async function() {
         if (!filteredCourses || filteredCourses.length === 0) {
             container.innerHTML = `
                 <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma Inscrição Encontrada</h3>
-                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você não possui inscrições com esse filtro. Visite o marketplace para explorar novos conteúdos!</p>
+                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma InscriÃƒÂ§ÃƒÂ£o Encontrada</h3>
+                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">VocÃƒÂª nÃƒÂ£o possui inscriÃƒÂ§ÃƒÂµes com esse filtro. Visite o marketplace para explorar novos conteÃƒÂºdos!</p>
             `;
             return;
         }
@@ -965,7 +965,7 @@ window.loadSubscriptions = async function() {
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = '<p style="color:#ef4444;">Erro ao carregar suas inscrições.</p>';
+        container.innerHTML = '<p style="color:#ef4444;">Erro ao carregar suas inscriÃƒÂ§ÃƒÂµes.</p>';
     }
 };
 
@@ -978,7 +978,7 @@ window.filterSubscriptions = function(type) {
 };
 
 window.unsubscribeCourse = async function(courseId) {
-    if (!confirm('Tem certeza de que deseja desinscrever-se deste curso? Você perderá seu progresso.')) return;
+    if (!confirm('Tem certeza de que deseja desinscrever-se deste curso? VocÃƒÂª perderÃƒÂ¡ seu progresso.')) return;
     
     try {
         const res = await fetch(`/api/courses/${courseId}/unsubscribe`, {
@@ -991,7 +991,7 @@ window.unsubscribeCourse = async function(courseId) {
             window.loadSubscriptions();
         } else {
             const data = await res.json();
-            alert('Erro: ' + (data.error || 'Não foi possível desinscrever-se.'));
+            alert('Erro: ' + (data.error || 'NÃƒÂ£o foi possÃƒÂ­vel desinscrever-se.'));
         }
     } catch (err) {
         console.error(err);
@@ -1064,7 +1064,7 @@ window.saveExternalLink = async function() {
     const fileInput = document.getElementById('ext-link-cover-file');
 
     if (!title || !externalUrl) {
-        alert('Título e URL são obrigatórios!');
+        alert('TÃƒÂ­tulo e URL sÃƒÂ£o obrigatÃƒÂ³rios!');
         return;
     }
 
@@ -1143,6 +1143,27 @@ window.deleteExternalLink = async function() {
         }
     } catch(err) {
         console.error(err);
-        alert('Erro de conexão ao tentar excluir.');
+        alert('Erro de conexÃƒÂ£o ao tentar excluir.');
+    }
+};
+
+window.deleteChannelCard = async function(channelId) {
+    if(!confirm('Tem certeza que deseja excluir este canal? Os cursos vinculados nÃƒÂ£o serÃƒÂ£o apagados.')) return;
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/channels/' + channelId, { 
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token } 
+        });
+        if(res.ok) {
+            alert('Canal excluÃƒÂ­do com sucesso.');
+            location.reload();
+        } else {
+            const err = await res.json();
+            alert('Erro ao excluir o canal: ' + err.error);
+        }
+    } catch(e) { 
+        console.error(e); 
+        alert('Erro na comunicaÃƒÂ§ÃƒÂ£o com o servidor.');
     }
 };

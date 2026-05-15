@@ -533,12 +533,12 @@ async function performJoin(token, user) {
             }
         }
         sidebarPic.src = finalAvatarSrc;
-        
+
         // Proper Dashboard route
         sidebarPic.onclick = () => {
             let dashboardUrl = AUTH_API.replace('/api', '') + '/dashboard.html';
             if (!dashboardUrl || dashboardUrl.startsWith('/dashboard.html')) {
-                 dashboardUrl = '/dashboard.html';
+                dashboardUrl = '/dashboard.html';
             }
             window.open(dashboardUrl, '_blank');
         };
@@ -973,8 +973,9 @@ container.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.zoomSpeed = 0.8; // More gradual zoom for mouse side-buttons
-controls.minZoom = 0.001; // Guard against scene disappearance
+controls.zoomSpeed = 0.55; // Ajustado conforme feedback do usuário
+controls.minZoom = 0.15; // Limite de recuo
+controls.maxZoom = 3.0; // Limite de avanço
 controls.enablePan = true;
 controls.screenSpacePanning = true;
 controls.panSpeed = 0.9;
@@ -1334,7 +1335,7 @@ function renderCourseRoomShells(runtime) {
         roomGroup.userData.moduleId = module.moduleId;
         const colliderBaseId = `course_room_${module.moduleId}`;
         const proceduralMeshes = [];
-        
+
         // Ensure navmesh array exists in local scope closure
         if (index === 0) {
             window.__navmeshGeometries = [];
@@ -1347,7 +1348,7 @@ function renderCourseRoomShells(runtime) {
         floor.receiveShadow = true;
         floor.userData.courseStructure = true;
         // CRITICAL FIX: Name it so raycasters/logic can identify it as a floor to ignore or walk on correctly
-        floor.name = "procedural_floor_ignore"; 
+        floor.name = "procedural_floor_ignore";
         roomGroup.add(floor);
         proceduralMeshes.push(floor);
 
@@ -1630,10 +1631,10 @@ function createGametag(id, name, color, isLocal, profilePictureUrl = null) {
         imgEl.addEventListener('click', (e) => {
             e.stopPropagation();
             const player = remotePlayers[id];
-            
+
             // Allow showing mini-video only if we are in a call, have a stream, and it's NOT a screen share
             const isInCallWithPlayer = currentCall && currentCall.peer === player.peerId;
-            
+
             if (isInCallWithPlayer && activeRemoteStream && !player.isScreenShare) {
                 // Check if video already exists
                 let videoEl = element.querySelector('.gametag-video');
@@ -2552,6 +2553,11 @@ function handlePrimaryWorldClick(event) {
 
     if (!hitPoint) return;
 
+    // Prevent wandering into the infinite void
+    if (hitPoint.x < -15 || hitPoint.x > 150 || hitPoint.z < -20 || hitPoint.z > 20) {
+        return;
+    }
+
     const startPos = playerGroup.position.clone();
     try {
         const zoneData = _pathfinding.zones[_navmeshZone];
@@ -2927,6 +2933,10 @@ function updatePlayer(delta) {
         targetPos.x += moveX;
         targetPos.z += moveZ;
 
+        // Clamping to prevent getting lost in the void via WASD
+        targetPos.x = Math.max(-15, Math.min(150, targetPos.x));
+        targetPos.z = Math.max(-20, Math.min(20, targetPos.z));
+
         // Collision check with sliding
         if (!checkCollision(targetPos)) {
             playerGroup.position.copy(targetPos);
@@ -3046,7 +3056,7 @@ function animate() {
         // Update remote players with time-based interpolation
         const SMOOTHING_FACTOR = 8.0; // Diminuído para 8.0 para um "deslizamento" mais constante sem "teleporte"
         const alpha = 1.0 - Math.exp(-SMOOTHING_FACTOR * delta);
-        
+
         for (const id in remotePlayers) {
             const p = remotePlayers[id];
 
@@ -4329,7 +4339,7 @@ function buildModuleMaterialProgressSection(module = currentModulePayload) {
             }
         })),
         viewedCount === items.length ? 'Complete' : 'In progress',
-        () => {}
+        () => { }
     );
     section.style.borderColor = viewedCount === items.length ? 'rgba(52,211,153,0.24)' : 'rgba(255,255,255,0.08)';
     section.style.background = viewedCount === items.length ? 'rgba(16,185,129,0.08)' : 'rgba(15,23,42,0.45)';
@@ -4621,7 +4631,7 @@ function renderModuleVideos(videos) {
     videos.forEach(v => {
         const card = document.createElement('div');
         // Solid background and border to make it undeniably a separate container
-        card.style.background = '#1e293b'; 
+        card.style.background = '#1e293b';
         card.style.border = '1px solid #334155';
         card.style.borderRadius = '12px';
         card.style.padding = '15px';
@@ -4683,7 +4693,7 @@ function renderModuleVideos(videos) {
             videoElem.style.pointerEvents = 'none';
 
             videoElem.addEventListener('loadedmetadata', () => {
-                try { videoElem.currentTime = 0.1; } catch (e) {}
+                try { videoElem.currentTime = 0.1; } catch (e) { }
             });
 
             thumb.appendChild(videoElem);
@@ -4699,7 +4709,7 @@ function renderModuleVideos(videos) {
         card.appendChild(thumb);
 
         card.onclick = () => openModuleVideoAsset(v);
-        
+
         grid.appendChild(card);
     });
 }
@@ -5803,13 +5813,13 @@ async function stopScreenShare() {
     }
     btnScreen.classList.remove('active');
     if (socket) socket.emit('setStreamType', { isScreenShare: false });
-    
+
     // Remove screen track
     const currentVideoTrack = localStream.getVideoTracks()[0];
     if (currentVideoTrack) {
         localStream.removeTrack(currentVideoTrack);
     }
-    
+
     // Try to restore the camera automatically
     try {
         const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -5818,7 +5828,7 @@ async function stopScreenShare() {
         localVideo.srcObject = localStream;
         btnCamera.classList.add('active');
         videoContainer.classList.remove('hidden');
-        
+
         if (currentCall && currentCall.peerConnection) {
             const senders = currentCall.peerConnection.getSenders();
             const sender = senders.find(s => s.track && s.track.kind === 'video');
@@ -5830,28 +5840,28 @@ async function stopScreenShare() {
         console.warn('Could not restore camera after screen share', err);
         videoContainer.classList.add('hidden');
     }
-    
+
     // Reset any expanded state
     audioCallLayer.classList.remove('expanded');
     audioCallLayer.classList.remove('expanded-screen');
     btnExpand.innerText = '⛶';
     const column = document.getElementById('left-ui-column');
     if (column) column.style.zIndex = '1100';
-    
+
     // Call the camera logic to re-enable it if needed, or just let user click camera again
     // For now, let's just leave it blank or simulate camera click to turn it back on
     btnCamera.classList.remove('active');
     localVideo.srcObject = localStream;
-    
+
     if (currentCall && currentCall.peerConnection) {
         const senders = currentCall.peerConnection.getSenders();
         const videoSender = senders.find(s => s.track && s.track.kind === 'video');
         if (videoSender) {
             // Replace with dummy or stop video for remote
-             const canvas = document.createElement('canvas');
-             canvas.width = 1; canvas.height = 1;
-             const dummyStream = canvas.captureStream();
-             videoSender.replaceTrack(dummyStream.getVideoTracks()[0]);
+            const canvas = document.createElement('canvas');
+            canvas.width = 1; canvas.height = 1;
+            const dummyStream = canvas.captureStream();
+            videoSender.replaceTrack(dummyStream.getVideoTracks()[0]);
         }
     }
 }
@@ -5860,7 +5870,7 @@ async function stopScreenShare() {
 btnExpand.onclick = () => {
     // Check if the local user is sharing OR if the remote peer is sharing
     let isScreenShare = false;
-    
+
     if (screenStream) {
         // If I am sharing my screen, I want to expand my own screen share fully
         isScreenShare = true;
@@ -6379,7 +6389,7 @@ if (btnToggleCourseInfo) {
         const courseTrailPanelElement = document.getElementById('course-trail-panel');
 
         let isActive = false;
-        
+
         if (courseRoomContextCardElement) {
             courseRoomContextCardElement.classList.toggle('hidden');
             if (!courseRoomContextCardElement.classList.contains('hidden')) isActive = true;

@@ -131,7 +131,7 @@
 
         <script src="global_notifications.js"></script>
 
-        <main class="main-content" style="position: relative;">
+        <main class="main-content" style="position: relative; min-height: 100vh; display: flex; flex-direction: column;">
             <!-- Top Header -->
             <header class="top-header" style="position: sticky; top: 0; z-index: 1000;">
                 <div class="logo">
@@ -143,9 +143,7 @@
                     Building Knowledge Through Training and Inclusion
                 </div>
                 <div class="top-links">
-                    <a href="#about" onclick="event.preventDefault(); document.querySelector('.hero-section').scrollIntoView({behavior: 'smooth'})">About</a>
                     <a href="#services" onclick="event.preventDefault(); document.getElementById('courses-grid').scrollIntoView({behavior: 'smooth'})">Services</a>
-                    <a href="#">Database</a>
                     <a href="#news" onclick="event.preventDefault(); document.getElementById('news-section').scrollIntoView({behavior: 'smooth'})">News</a>
                     <a href="#contact" onclick="event.preventDefault(); document.getElementById('contact-footer').scrollIntoView({behavior: 'smooth'})">Contact</a>
                 </div>
@@ -162,7 +160,7 @@
                 <div class="hero-bg-carousel" id="heroBgCarousel">
                     <!-- Images dynamically injected here -->
                 </div>
-                <button class="master-gear-btn" id="masterGearBtn" onclick="openHeroModal()" title="Manage Carousel" style="display: none;">ÔÜÖ´©Å</button>
+                <button class="master-gear-btn" id="masterGearBtn" onclick="openHeroModal()" title="Manage Carousel" style="display: none;"><i class="fas fa-cog"></i></button>
                 <div class="hero-content-wrapper">
                     <p class="hero-label">HERO</p>
                     <h1>Discover your next course on the Training Platform</h1>
@@ -171,23 +169,6 @@
             </section>
 
             <div class="content-layout">
-                <!-- Sidebar filters -->
-                <aside class="filters-sidebar">
-                    <h2 class="section-title">Filters:</h2>
-                    <ul class="filter-list">
-                        <li class="active">Categories <i class="fas fa-chevron-right"></i></li>
-                        <li>Course Catalogs <i class="fas fa-chevron-right"></i></li>
-                        <li>Date Listed <i class="fas fa-chevron-right"></i></li>
-                    </ul>
-
-                    <div class="filter-dropdown">
-                        Price <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="filter-dropdown">
-                        Instructor <i class="fas fa-chevron-down"></i>
-                    </div>
-                </aside>
-
                 <!-- Main Area -->
                 <div class="courses-area">
                     <!-- Channels and Standalone Courses -->
@@ -211,7 +192,7 @@
             <div id="news-section" class="news-section" style="padding: 40px 60px; background-color: #e2e8f0; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 class="section-title" style="margin: 0;">LATEST NEWS</h2>
-                    <button id="addNewsContainerBtn" class="btn-primary" style="display: none; font-size: 13px; padding: 8px 16px;">Ô×ò Add News Container</button>
+                    <button id="addNewsContainerBtn" class="btn-primary" style="display: none; font-size: 13px; padding: 8px 16px;"><i class="fas fa-plus"></i> Add News Container</button>
                 </div>
                 <div class="news-grid-wrapper">
                     <div class="news-grid" id="newsGrid" onmouseenter="pauseNewsMarquee()" onmouseleave="resumeNewsMarquee()">
@@ -221,20 +202,18 @@
             </div>
 
             <!-- Footer -->
-            <footer id="contact-footer" class="animated-gradient" style="color: white; padding: 60px; margin-top: 20px; display: flex; justify-content: space-between; border-radius: 12px; margin-bottom: 20px; margin-left: 60px; margin-right: 60px;">
+            <footer id="contact-footer" class="animated-gradient" style="color: white; padding: 60px 80px; margin-top: auto; display: flex; justify-content: space-between;">
                 <div style="font-size: 14px; line-height: 1.6; max-width: 50%;">
-                    <div class="logo" style="margin-bottom: 20px;">
-                        <i class="fas fa-link" style="font-size: 24px;"></i>
-                        <span style="font-size: 24px;">AGENFOR</span>
-                        <span style="font-size: 10px; margin-left: 5px; opacity: 0.8; letter-spacing: 1px;">INTERNATIONAL</span>
+                    <div class="logo" style="margin-bottom: 20px; width: 340px; height: 160px; overflow: hidden; position: relative;">
+                        <img src="agenfor_logo.png" style="width: 340px; height: auto; position: absolute; top: -90px; left: 0; filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white) drop-shadow(0 0 3px white);" alt="Agenfor Logo">
                     </div>
                     <h3 style="margin-bottom: 20px; font-weight: normal; font-size: 18px; color: white;">Fondazione Agenfor International Impresa Sociale</h3>
                     
                     <p style="color: white;"><strong>Head Office:</strong> Via Flaminia 171, 47923 Rimini (Italy)<br>
                     <strong>Decentralised HQ:</strong> Via del Tritone 132, 00187 Rome (Italy); Via Dufour 1, 6900 Lugano (Switzerland)<br>
-                    <strong>VAT N┬░:</strong> 09669240963<br>
-                    <strong>Chamber of Commerce N┬░:</strong> REA 436491<br>
-                    <strong>RUNTS N┬░:</strong> Iscritta al repertorio RUNTS 135235 dd. 28/03/2024</p>
+                    <strong>VAT Nº:</strong> 09669240963<br>
+                    <strong>Chamber of Commerce Nº:</strong> REA 436491<br>
+                    <strong>RUNTS Nº:</strong> Iscritta al repertorio RUNTS 135235 dd. 28/03/2024</p>
                     
                     <p style="margin-top: 20px; color: white;">communication@agenformedia.com<br>
                     agenfor.international@pec.it</p>
@@ -243,18 +222,10 @@
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-size: 14px; line-height: 1.6;">
                     <p style="max-width: 300px; margin-bottom: 20px; color: white;">Security through a better protection of human rights and socio-political participation.</p>
-                    <button style="background: #f8fafc; color: #1e293b; border: none; padding: 10px 30px; border-radius: 30px; font-weight: 600; cursor: pointer; margin-bottom: 40px; transition: 0.3s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Subscribe</button>
                     
                     <a href="#" style="color: white; text-decoration: none; margin-bottom: 10px;">News</a>
-                    <a href="#" style="color: white; text-decoration: none; margin-bottom: 10px;">About</a>
                     <a href="#" style="color: white; text-decoration: none; margin-bottom: 10px;">Contact</a>
                     <a href="#" style="color: white; text-decoration: none; margin-bottom: 20px;">Privacy & Cookie Policy</a>
-                    
-                    <div style="display: flex; align-items: center; gap: 15px; margin-top: auto;">
-                        <span style="color: white;">Follow us:</span>
-                        <a href="#" style="color: white; font-size: 1.5rem;"><i class="fab fa-youtube"></i></a>
-                        <a href="#" style="color: white; font-size: 1.5rem;"><i class="fab fa-linkedin"></i></a>
-                    </div>
                 </div>
             </footer>
         </main>
@@ -268,8 +239,8 @@
                 <div class="cm-close" id="cmClose">&times;</div>
             </div>
             <div class="cm-actions">
-                <button class="cm-btn cm-add-btn" id="cmAddUrlBtn">­ƒöù Add URL</button>
-                <button class="cm-btn cm-add-btn" id="cmUploadBtn" style="background: #10b981;">­ƒôü Upload File</button>
+                <button class="cm-btn cm-add-btn" id="cmAddUrlBtn"><i class="fas fa-link"></i> Add URL</button>
+                <button class="cm-btn cm-add-btn" id="cmUploadBtn" style="background: #10b981;"><i class="fas fa-upload"></i> Upload File</button>
                 <input type="file" id="cmFileInput" accept="image/*" style="display: none;">
             </div>
             
@@ -281,8 +252,8 @@
                 <button class="cm-nav-btn cm-nav-next" id="cmNextBtn">&#10095;</button>
                 
                 <div class="cm-slide-controls">
-                    <button class="cm-btn cm-swap-btn" id="cmSwapBtn">­ƒöä Swap</button>
-                    <button class="cm-btn cm-remove-btn" id="cmRemoveBtn">Ô×û Delete</button>
+                    <button class="cm-btn cm-swap-btn" id="cmSwapBtn"><i class="fas fa-exchange-alt"></i> Swap</button>
+                    <button class="cm-btn cm-remove-btn" id="cmRemoveBtn"><i class="fas fa-trash"></i> Delete</button>
                 </div>
             </div>
             <div class="cm-slide-indicator" id="cmIndicator">Slide 1 of 5</div>
@@ -451,7 +422,7 @@
             if(isMaster) {
                 const gearBtn = document.createElement('button');
                 gearBtn.className = 'news-gear-btn';
-                gearBtn.innerHTML = 'ÔÜÖ´©Å';
+                gearBtn.innerHTML = '<i class="fas fa-cog"></i>';
                 gearBtn.style.display = 'flex';
                 gearBtn.title = 'Edit News Carousel';
                 gearBtn.onclick = () => openNewsModal(item.id);
@@ -459,7 +430,7 @@
 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'news-delete-container-btn';
-                delBtn.innerHTML = '­ƒùæ´©Å';
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
                 delBtn.style.display = 'flex';
                 delBtn.title = 'Delete News Container';
                 delBtn.onclick = () => deleteNewsContainer(item.id);

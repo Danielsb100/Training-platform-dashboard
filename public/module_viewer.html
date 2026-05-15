@@ -7,7 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #0f172a; color: #fff; overflow: hidden; }
+        html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #0f172a; color: #fff; overflow: hidden !important; width: 100vw; height: 100vh; }
         .viewer-container { display: flex; height: 100vh; flex-direction: column; }
         .viewer-header { 
             height: 60px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); 
@@ -125,6 +125,14 @@
         .modal h2 { margin-top: 0; }
         .btn-close-modal { margin-top: 20px; background: rgba(255,255,255,0.1); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
         
+        /* World Mode Integration */
+        .world-mode .viewer-sidebar { width: 0; min-width: 0; padding: 0; overflow: hidden; border-right: none; opacity: 0; margin: 0; }
+        .world-mode .viewer-main { padding: 0; overflow: hidden; }
+        .world-mode .hub-section, .world-mode .player-view { display: none !important; }
+        .world-mode #section-world { display: block !important; width: 100%; height: 100%; }
+        #section-world { display: none; width: 100%; height: 100%; }
+        #section-world iframe { width: 100%; height: 100%; border: none; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -174,6 +182,11 @@
             </div>
             
             <div class="viewer-main" id="viewer-main">
+                <!-- 3D World Section -->
+                <div id="section-world">
+                    <iframe id="world-iframe" allow="camera; microphone; display-capture; autoplay"></iframe>
+                </div>
+                
                 <!-- Hub Sections -->
                 <div class="hub-section active" id="section-overview">
                     <div class="hub-header">

@@ -28,7 +28,8 @@
     padding: 0;
 }
 
-body {
+html, body {
+    overflow: hidden !important;
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-primary);

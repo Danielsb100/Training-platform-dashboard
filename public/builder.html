@@ -27,7 +27,6 @@
         <div style="display: flex; flex-direction: column; gap: 5px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <h2>Editing Panel</h2>
-                <input type="text" id="page-name-input" placeholder="Nome da Landing Page..." style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.9rem; outline: none; width: 250px;">
             </div>
             <p style="font-size: 0.8rem; opacity: 0.8; margin-top: 0;">Clique nos textos e imagens para alterar. Os limites estão destacados!</p>
         </div>
@@ -35,7 +34,6 @@
             <button id="add-subscribe-btn" class="toggle-btn" style="background: #10b981; color: white;" onclick="injectSubscribeButton()"><i class="fas fa-plus-circle"></i> Add Subscribe Button</button>
             <button id="add-view-modules-btn" class="toggle-btn" style="background: #4f46e5; color: white;" onclick="injectViewModulesButton()"><i class="fas fa-list"></i> Add View Modules Button</button>
             <a href="profile.html" class="toggle-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; background: #334155; color: white;"><i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Voltar ao Perfil</a>
-            <button onclick="resetToAgenfor()" class="toggle-btn" style="background: #eab308; color: white;"><i class="fas fa-sync"></i> Padrão AGENFOR</button>
             <button id="toggle-view-btn" class="toggle-btn" style="background: #0ea5e9; color: white;"><i class="fas fa-eye"></i> Visualizar</button>
             <button id="publish-btn" class="toggle-btn" style="background: #4f46e5; color: white;"><i class="fas fa-upload"></i> Publicar Página</button>
         </div>
@@ -71,45 +69,44 @@
             </div>
         </section>
 
-        <!-- Body 1 Section -->
-        <section class="module-section" id="body1-section"
-            style="background-image: url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2000');">
-            <div class="bg-overlay"></div>
+        <!-- Body 1 Section (About) -->
+        <section class="module-section" id="body1-section" style="background-color: #f8fafc; padding: 60px 40px; border-bottom: 1px solid #e2e8f0;">
+            <div class="bg-overlay" style="display: none;"></div>
 
             <button class="bg-edit-btn" onclick="triggerImageUpload('body1-section', 'bg')">
-                <i class="fas fa-image"></i> Change Body 1 BG
+                <i class="fas fa-image"></i> Change BG
             </button>
 
-            <div class="module-content">
-                <!-- Representative Image (corpo 1 imagem representativa) -->
-                <div class="body-img-container editable-image-wrapper" onclick="triggerImageUpload('body1-img', 'src')">
-                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800"
-                        alt="Imagem Representativa" class="body-img" id="body1-img">
+            <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 40px; align-items: center;">
+                <div class="text-block" style="flex: 1; color: #1e293b;">
+                    <h1 class="editable-text" id="titulo-corpo1" style="font-size: 2.2rem; font-weight: bold; margin-bottom: 15px; color: #0f172a;">Sobre Nós</h1>
+                    <p class="editable-text" id="texto-corpo1" style="font-size: 1.1rem; line-height: 1.6; color: #475569;">Aqui você pode descrever sua missão e visão. Este é um bloco de texto projetado para apresentar informações de maneira clara e direta, mantendo uma estética limpa.</p>
                 </div>
-
-                <div class="text-block text-white" style="flex: 1;">
-                    <h1 class="editable-text" id="titulo-corpo1">Body Title 1</h1>
-                    <p class="editable-text" id="texto-corpo1">Este é o texto associado ao primeiro bloco do corpo da
-                        página. A imagem ao lado é a imagem representativa, clique nela para alterar o arquivo fonte, e
-                        clique no botão acima para alterar o background desta "Div", conforme o seu esquema.</p>
+                
+                <div class="body-img-container editable-image-wrapper" onclick="triggerImageUpload('body1-img', 'src')" style="flex: 1;">
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800"
+                        alt="Imagem Representativa" class="body-img" id="body1-img" style="border-radius: 12px; width: 100%; height: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                 </div>
             </div>
         </section>
 
-        <!-- Body 2 Section -->
-        <section class="module-section" id="body2-section"
-            style="background-image: url('https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?auto=format&fit=crop&q=80&w=2000');">
-            <div class="bg-overlay"></div>
+        <!-- Body 2 Section (Featured Info) -->
+        <section class="module-section" id="body2-section" style="background-color: white; padding: 60px 40px;">
+            <div class="bg-overlay" style="display: none;"></div>
 
             <button class="bg-edit-btn" onclick="triggerImageUpload('body2-section', 'bg')">
-                <i class="fas fa-image"></i> Change Body 2 BG
+                <i class="fas fa-image"></i> Change BG
             </button>
 
-            <div class="module-content" style="justify-content: center; text-align: center;">
-                <div class="text-block text-white" style="max-width: 800px;">
-                    <p class="editable-text text-large" id="texto-corpo2">Este é o texto descritivo do bloco Corpo 2.
-                        Como definido na arquitetura visual, ele não possui um título específico, apenas um longo
-                        parágrafo (texto corpo 2) que serve de apoio, o qual você pode modificar de forma dinâmica.</p>
+            <div class="module-content" style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div class="body-img-container editable-image-wrapper" onclick="triggerImageUpload('body2-img', 'src')" style="margin-bottom: 30px;">
+                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600"
+                        alt="Featured" class="body-img" id="body2-img" style="border-radius: 12px; max-width: 400px; width: 100%; height: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                </div>
+                
+                <div class="text-block" style="max-width: 800px; color: #1e293b;">
+                    <h2 class="editable-text" id="titulo-corpo2" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 15px; color: #0f172a;">Informações Adicionais</h2>
+                    <p class="editable-text text-large" id="texto-corpo2" style="font-size: 1.1rem; line-height: 1.6; color: #475569;">Esta seção secundária foi simplificada. Agora inclui uma imagem de destaque e um parágrafo que você pode modificar livremente para destacar características importantes do seu projeto.</p>
                 </div>
             </div>
         </section>

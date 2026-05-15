@@ -158,7 +158,7 @@
                         <button class="btn-tab" onclick="switchCreationTab('channels')" id="tab-creations-channels" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:transparent; color:#64748b; border:1px solid #cbd5e1;">My Channels</button>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> New Course</button>
+                        <button id="creation-action-btn" onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> New Course</button>
                         <button onclick="openExternalLinkModal()" class="btn-primary" style="background:#0f172a;"><i class="fas fa-link"></i> New Link</button>
                     </div>
                 </div>
@@ -508,6 +508,7 @@
 
             const btnCourses = document.getElementById('tab-creations-courses');
             const btnChannels = document.getElementById('tab-creations-channels');
+            const actionBtn = document.getElementById('creation-action-btn');
             
             if (tab === 'courses') {
                 btnCourses.style.background = '#1e293b';
@@ -517,6 +518,11 @@
                 btnChannels.style.background = 'transparent';
                 btnChannels.style.color = '#64748b';
                 btnChannels.style.border = '1px solid #cbd5e1';
+
+                if (actionBtn) {
+                    actionBtn.innerHTML = '<i class="fas fa-plus"></i> New Course';
+                    actionBtn.onclick = function() { window.location.href='course_builder.html'; };
+                }
             } else {
                 btnChannels.style.background = '#1e293b';
                 btnChannels.style.color = 'white';
@@ -525,6 +531,11 @@
                 btnCourses.style.background = 'transparent';
                 btnCourses.style.color = '#64748b';
                 btnCourses.style.border = '1px solid #cbd5e1';
+
+                if (actionBtn) {
+                    actionBtn.innerHTML = '<i class="fas fa-plus"></i> New Channel';
+                    actionBtn.onclick = function() { openChannelModal(); };
+                }
             }
         }
 
@@ -648,7 +659,8 @@
                     body: JSON.stringify({ name, description: desc, thumb })
                 });
                 if(!res.ok) throw new Error('Falha ao criar canal');
-                location.reload();
+                const data = await res.json();
+                window.location.href = `channel_view.html?id=${data.data.id}`;
             } catch (err) {
                 alert(err.message);
             }
@@ -681,8 +693,9 @@
                                 <div class="course-info" style="flex:1; display:flex; flex-direction:column; padding: 15px;">
                                     <h3 class="course-title" style="margin:0 0 5px 0;">${ch.name}</h3>
                                     <p class="course-meta" style="flex:1; margin:0 0 15px 0;">${ch.description || 'No description'}</p>
-                                    <div class="course-actions" style="margin-top:auto;">
-                                        <button onclick="window.location.href='channel_view.html?id=${ch.id}'" style="width:100%; padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; background:white; color:#1e293b; border:1px solid #cbd5e1; transition:all 0.2s;">Manage Channel</button>
+                                    <div class="course-actions" style="margin-top:auto; display:flex; gap:10px;">
+                                        <button onclick="window.location.href='channel_view.html?id=${ch.id}'" style="flex:1; padding:8px 15px; border-radius:30px; font-weight:600; cursor:pointer; background:white; color:#1e293b; border:1px solid #cbd5e1; transition:all 0.2s;">Manage Channel</button>
+                                        <button onclick="deleteChannelCard('${ch.id}')" style="padding:8px 15px; border-radius:30px; background:#fee2e2; color:#ef4444; border:none; cursor:pointer; transition:all 0.2s;" title="Excluir Canal"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </div>
                             </div>
