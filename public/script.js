@@ -1501,8 +1501,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
         btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
-        btnWrap.innerText = 'Inscreva-se Agora';
+        btnWrap.innerText = 'Subscribe';
         btnWrap.dataset.isSubscribeBtn = "true";
+        
 
         container.appendChild(btnWrap);
         
@@ -1521,17 +1522,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
         btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
-        btnWrap.innerText = 'Show Content';
+        btnWrap.innerText = 'Open course';
         btnWrap.dataset.isViewModulesBtn = "true";
+        
 
         container.appendChild(btnWrap);
         
         if(typeof initDynamicEvents === 'function') {
             initDynamicEvents();
         }
-        
         btnWrap.click();
     };
 
 });
-

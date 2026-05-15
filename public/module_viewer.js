@@ -556,7 +556,7 @@ btnBackHub.addEventListener('click', () => {
                 const msViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(publicUrl)}`;
                 
                 playerContent.innerHTML = `
-                    <div class="doc-viewer-wrapper" style="width:100%; height:100%; max-width:1200px; display:flex; flex-direction:column; background:#f8fafc;">
+                    <div class="doc-viewer-wrapper" style="width:100%; height:100%; max-width:1200px; margin: 0 auto; display:flex; flex-direction:column; background:#f8fafc; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                         <div style="padding: 15px; background: #fff3cd; color: #856404; border-bottom: 1px solid #ffeeba; font-size: 0.9rem; text-align: center;">
                             <i class="fas fa-info-circle"></i> O visualizador de PowerPoint utiliza um serviço da Microsoft que exige que a plataforma esteja online. Se você estiver testando em <b>localhost</b>, o slide não carregará abaixo.
                         </div>
@@ -569,7 +569,7 @@ btnBackHub.addEventListener('click', () => {
             } else if (docType === 'word') {
                 // Word DOCX Rendering
                 playerContent.innerHTML = `
-                    <div class="doc-viewer-wrapper" id="docx-container" style="background:#fff; padding: 40px; color: #000; overflow-x: auto;">
+                    <div class="doc-viewer-wrapper" id="docx-container" style="background:#fff; padding: 40px; color: #000; overflow-x: auto; max-width: 900px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 8px;">
                         <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Carregando Documento...</div>
                     </div>
                 `;
@@ -597,7 +597,7 @@ btnBackHub.addEventListener('click', () => {
                     });
             } else {
                 playerContent.innerHTML = `
-                    <div class="quiz-container" style="text-align:center;">
+                    <div class="quiz-container" style="text-align:center; margin: 0 auto; max-width: 600px;">
                         <i class="fas fa-file-alt" style="font-size: 5rem; color:#94a3b8; margin-bottom: 20px;"></i>
                         <h2 style="color:#0f172a; margin-bottom: 10px;">Documento Genérico</h2>
                         <p style="color:#64748b; margin-bottom: 25px;">Visualização web não disponível para este formato.</p>

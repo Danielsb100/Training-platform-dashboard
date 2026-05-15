@@ -104,6 +104,7 @@ nav h2 {
     padding-bottom: 40px;
     max-width: 1100px;
     margin: 0 auto;
+    position: relative;
 }
 
 .module-section {
@@ -292,7 +293,7 @@ body.view-mode .bg-edit-btn {
 
 /* Deixa a centralização correta quando alarga tudo 100% da viewport */
 body.view-mode .module-content {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -479,8 +480,8 @@ body.view-mode .module-content {
 /* Reserve space for panel but stay centered */
 body.edit-mode.panel-open #template-container {
     margin: 0 auto;
-    padding-right: 320px;
-    box-sizing: content-box;
+    transform: translateX(-160px);
+    transition: transform 0.3s ease;
 }
 
 /* Active Highlight Element */
@@ -931,4 +932,4 @@ body.edit-mode .anim-slide-up {
         grid-column: auto;
     }
 }
-body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -125px !important; }
+body.view-mode div[data-is-subscribe-btn='true'], body.view-mode div[data-is-view-modules-btn='true'] { margin-top: -125px !important; }

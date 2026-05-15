@@ -951,22 +951,36 @@ window.loadSubscriptions = async function() {
             const progress = course.progressPercent || 0;
             
             html += `
+                <style>
+                    body.dark-theme .btn-3d-world { background: #1e1e1e !important; border-color: rgba(80, 80, 80, 0.8) !important; }
+                    body.dark-theme .btn-3d-world:hover { background: #333333 !important; }
+                    body.dark-theme .btn-3d-world i { color: #38bdf8 !important; }
+                    body.dark-theme .btn-3d-world span { color: #94a3b8 !important; }
+                    body.dark-theme .course-card .card-thumb { background-color: #ffffff !important; }
+                    body.dark-theme .progress-track { background: #1e1e1e !important; }
+                </style>
                 <div class="course-card" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display:flex; flex-direction:column; cursor:pointer;" onclick="window.location.href='course_content.html?id=${course.id}'">
-                    <div style="height:140px; background-image:url('${thumbUrl}'); background-size:cover; background-position:center;"></div>
+                    <div class="card-thumb" style="height:140px; background-image:url('${thumbUrl}'); background-size:cover; background-position:center;"></div>
                     <div style="padding:20px; flex:1; display:flex; flex-direction:column;">
-                        <h4 style="margin:0 0 10px 0; color:#1e293b; font-size:1.1rem;">${course.title}</h4>
-                        <p style="font-size:0.85rem; color:#64748b; flex:1;">By: ${course.creator}</p>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
+                            <h4 style="margin:0; color:#1e293b; font-size:1.1rem; flex:1; padding-right:10px;">${course.title}</h4>
+                            <button class="btn-3d-world" onclick="event.stopPropagation(); window.location.href='/world/index.html?courseId=${course.id}&token=' + localStorage.getItem('token') + '&source=training-platform'" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 8px; width: 65px; height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; padding: 0;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Enter 3D Course World">
+                                <i class="fas fa-cube" style="color: #44749f; font-size: 1.6rem;"></i>
+                                <span style="font-size: 0.55rem; color: #64748b; margin-top: 5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">3D World</span>
+                            </button>
+                        </div>
+                        <p style="font-size:0.85rem; color:#64748b; flex:1; margin-top:0;">By: ${course.creator}</p>
                         
                         <div style="margin-top: 15px;">
-                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#475569; margin-bottom:5px;">
+                            <div class="progress-text" style="display:flex; justify-content:space-between; font-size:0.8rem; color:#475569; margin-bottom:5px;">
                                 <span>Progresso</span>
                                 <span>${progress}%</span>
                             </div>
-                            <div style="background:#e2e8f0; border-radius:10px; height:6px; overflow:hidden;">
+                            <div class="progress-track" style="background:#e2e8f0; border-radius:10px; height:6px; overflow:hidden;">
                                 <div style="background:#10b981; height:100%; width:${progress}%"></div>
                             </div>
                         </div>
-                        <button onclick="event.stopPropagation(); window.unsubscribeCourse(${course.id})" style="margin-top:15px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:6px 12px; font-size:0.85rem; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+                        <button class="btn-unsubscribe" onclick="event.stopPropagation(); window.unsubscribeCourse(${course.id})" style="margin-top:15px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:6px 12px; font-size:0.85rem; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
                             <i class="fas fa-times-circle" style="margin-right:5px;"></i> Desinscrever
                         </button>
                     </div>
