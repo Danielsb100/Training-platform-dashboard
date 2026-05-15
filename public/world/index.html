@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Environment Viewer</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "three-pathfinding": "https://cdn.jsdelivr.net/npm/three-pathfinding@1.3.0/dist/three-pathfinding.module.js"
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    <!-- Cursor customizado (Círculo Vermelho) -->
+    <div id="custom-cursor"></div>
+
+    <!-- Tela de Carregamento Inicial / Login (HIDDEN BY DEFAULT) -->
+    <div id="login-screen" class="login-overlay ui-layer hidden" style="display: none !important;">
+        <div class="login-box">
+            <h1>Welcome!</h1>
+            <p>Enter your credentials to join</p>
+
+            <!-- Auth Tabs to toggle between Login and Register -->
+            <div class="auth-tabs">
+                <button id="tab-login" class="auth-tab active">Login</button>
+                <button id="tab-register" class="auth-tab">Register</button>
+            </div>
+
+            <!-- Login Section -->
+            <div id="login-section">
+                <h1>Welcome!</h1>
+                <p>Enter your credentials to join</p>
+                <div id="login-error" class="hidden"
+                    style="color: #ef4444; margin-bottom: 10px; font-size: 0.9rem; text-align: center;"></div>
+                <input type="email" id="email-input" placeholder="Email" autocomplete="off">
+                <input type="password" id="password-input" placeholder="Password" autocomplete="off">
+
+                <div
+                    style="font-size: 0.85rem; margin-top: 5px; margin-bottom: 15px; text-align: center; color: var(--text-secondary);">
+                    Don't have an account? <a id="register-link" href="#"
+                        target="_blank"
+                        style="color: var(--accent-color); text-decoration: none; font-weight: 500;">Create one</a>
+                </div>
+
+
+                <!-- Seleção de Cor do Usuário -->
+                <div class="login-color-section">
+                    <span>Choose your color:</span>
+                    <div id="login-color-options" class="login-color-grid">
+                        <div class="login-color-option" style="background: #ef4444;" data-color="#ef4444"></div>
+                        <div class="login-color-option" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                        <div class="login-color-option" style="background: #10b981;" data-color="#10b981"></div>
+                        <div class="login-color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                        <div class="login-color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                        <div class="login-color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                        <div class="login-color-option" style="background: #ffffff;" data-color="#ffffff"></div>
+                        <div class="login-color-option" style="background: #94a3b8;" data-color="#94a3b8"></div>
+                    </div>
+                </div>
+
+                <div class="login-actions">
+                    <button id="join-btn">Enter the World</button>
+                </div>
+            </div>
+
+            <!-- Register Section -->
+            <div id="register-section" class="hidden">
+                <h1>Create Account</h1>
+                <p>Join our community today</p>
+                <input type="text" id="reg-username" placeholder="Username" required>
+                <input type="email" id="reg-email" placeholder="Email" required>
+                <input type="password" id="reg-password" placeholder="Password" required>
+                <button id="register-btn">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Right UI Toggles -->
+    <div id="top-right-toggles" class="top-right-toggles ui-layer">
+        <button id="btn-toggle-notifications" class="icon-toggle-btn" title="Toggle Notifications">
+            🔔
+        </button>
+        <button id="btn-toggle-course-info" class="icon-toggle-btn" title="Toggle Course Info">
+            📖
+        </button>
+    </div>
+
+    <!-- UI Modals -->
+    <!-- Player Action Menu (Small popup for Call / View Assets) -->
+    <div id="player-action-menu" class="context-menu hidden ui-layer">
+        <div class="menu-header">
+            <span id="action-menu-name">Username</span>
+        </div>
+        <div class="menu-item" id="btn-call-player">Call</div>
+        <div class="menu-item" id="btn-view-assets">View Assets</div>
+    </div>
+
+    <!-- Assets Modal (Download shared documents) -->
+    <div id="asset-modal-overlay" class="asset-modal-overlay hidden ui-layer">
+        <div class="asset-modal glassmorphism">
+            <div class="modal-header">
+                <h2>Shared Assets - <span id="modal-username">User</span></h2>
+                <div class="header-actions">
+                    <input type="file" id="self-asset-upload" accept=".pdf,.doc,.docx,image/*,video/*" class="hidden">
+                    <input type="file" id="placement-model-upload" accept=".glb,.gltf" class="hidden">
+                    <button id="btn-upload-asset" class="upload-btn hidden"
+                        style="padding: 0.5rem 1rem; font-size: 0.8rem; width: auto; margin-right: 1rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="margin-right: 4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload File
+                    </button>
+                    <button id="close-asset-modal" class="close-btn">&times;</button>
+                </div>
+            </div>
+            <div class="asset-tabs">
+                <button class="tab-btn active" data-tab="image">Imagens</button>
+                <button class="tab-btn" data-tab="video">Videos</button>
+                <button class="tab-btn" data-tab="pdf">PDF</button>
+                <button class="tab-btn" data-tab="word">Word</button>
+            </div>
+            <div class="asset-list-container">
+                <table class="asset-table">
+                    <thead>
+                        <tr>
+                            <th>Arquivo</th>
+                            <th id="asset-th-date" class="hidden">Data</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asset-list-body">
+                        <!-- List populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="asset-grid-container" class="asset-grid hidden">
+                <!-- Grid populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Preview Modal -->
+    <div id="media-preview-modal" class="media-preview-overlay hidden ui-layer">
+        <div class="media-preview-card glassmorphism">
+            <button id="close-media-preview" class="close-btn preview-close">&times;</button>
+            <div id="preview-content" class="preview-content">
+                <!-- Image or Video frame here -->
+            </div>
+            <button id="prev-preview" class="nav-arrow prev">&lsaquo;</button>
+            <button id="next-preview" class="nav-arrow next">&rsaquo;</button>
+            <div class="preview-footer">
+                <button id="btn-download-preview" class="upload-btn"
+                    style="width: auto; padding: 0.75rem 2rem;">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container onde o Three.js irá renderizar a cena 3D -->
+    <div id="canvas-container"></div>
+
+    <!-- Left Vertical Sidebar -->
+    <div id="left-sidebar" class="ui-layer">
+        <img id="sidebar-profile-pic" src="https://ui-avatars.com/api/?name=User&background=random" title="Open Dashboard">
+        <div class="sidebar-actions">
+            <button id="btn-toggle-ai-assistant" class="sidebar-btn" title="Open General AI Assistant">🤖</button>
+            <button id="btn-toggle-ai-tips" class="sidebar-btn" title="Toggle AI Tips">💡</button>
+            <button id="btn-toggle-players" class="sidebar-btn" title="Toggle Player List">👥</button>
+            <button id="btn-toggle-chat" class="sidebar-btn" title="Toggle Chat">💬</button>
+            <button id="btn-settings" class="sidebar-btn" title="Settings">⚙️</button>
+        </div>
+        <button id="btn-toggle-theme" class="sidebar-btn" title="Toggle Theme" style="margin-top: auto;">☀️</button>
+    </div>
+
+    <!-- Left UI Column Wrapper -->
+    <div id="left-ui-column" class="ui-layer">
+        <!-- Player List Container -->
+        <div id="player-list-container" class="hidden">
+            <div class="player-list-header">
+                <h3>Online Players</h3>
+            </div>
+            <div id="player-list-content"></div>
+        </div>
+
+        <!-- Audio call UI Elements -->
+        <div id="audio-call-layer" class="hidden">
+            <div class="audio-call-card glass">
+                <div id="video-container" class="video-grid hidden">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <video id="local-video" autoplay playsinline muted></video>
+                </div>
+                <h2 id="calling-name">Chamando...</h2>
+                <div id="call-timer" class="call-timer">00:00</div>
+                <div class="audio-visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <div class="call-actions">
+                    <button id="btn-camera" class="secondary-btn" title="Toggle Camera">📷</button>
+                    <button id="btn-screen" class="secondary-btn" title="Share Screen">🖥️</button>
+                    <button id="btn-mute" class="secondary-btn" title="Toggle Mute">🎤</button>
+                    <button id="btn-expand" class="secondary-btn" title="Fullscreen">⛶</button>
+                    <button id="btn-hangup" class="danger-btn" title="Hangup">✖</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Wrapper -->
+        <div id="chat-wrapper">
+            <!-- Estrutura do Chat Global - Histórico -->
+            <div id="chat-history-container" class="hidden">
+                <div class="chat-panel-header">
+                    <div>
+                        <span class="chat-panel-eyebrow">Room chat</span>
+                        <strong>Conversation</strong>
+                    </div>
+                    <span class="chat-panel-hint">Enter to focus</span>
+                </div>
+                <div id="chat-history-empty">No messages yet. Press <kbd>Enter</kbd> or use the field below to start chatting.</div>
+                <div id="chat-history"></div>
+            </div>
+
+            <!-- Estrutura do Chat Global - Entrada de Texto -->
+            <div id="chat-input-container" class="hidden">
+                <input type="text" id="chat-input" placeholder="Type your message and press Enter" autocomplete="off">
+                <button type="button" id="chat-send-btn">Send</button>
+            </div>
+        </div>
+
+        <!-- General AI Assistant: Training-wide, all selected Eurobot KBs -->
+        <div id="general-ai-wrapper" class="general-ai-wrapper hidden">
+            <div class="general-ai-panel module-assistant-panel">
+                <div class="general-ai-header">
+                    <div class="module-assistant-intro general-ai-intro">
+                        <span class="module-assistant-eyebrow">General AI assistant</span>
+                        <h3>Ask across all selected knowledge bases</h3>
+                        <p>This assistant uses the Training AI knowledge-base selection configured in the dashboard, not only the current module.</p>
+                    </div>
+                    <button id="general-ai-close" class="close-btn" type="button" title="Close AI assistant">&times;</button>
+                </div>
+                <div id="general-ai-history" class="module-assistant-history" aria-live="polite"></div>
+                <div id="general-ai-status" class="module-assistant-status" role="status"></div>
+                <div class="module-assistant-input-row general-ai-input-row">
+                    <textarea id="general-ai-input" class="module-assistant-input" rows="2" placeholder="Ask the general AI assistant..."></textarea>
+                    <button id="general-ai-voice" class="btn-open secondary" type="button">Record</button>
+                    <button id="general-ai-speak" class="btn-open secondary" type="button">Play</button>
+                    <button id="general-ai-send" class="btn-open" type="button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="world-operations-card" class="ui-layer world-operations-card hidden">
+        <div class="world-operations-header">
+            <div>
+                <span class="world-operations-eyebrow">Operational Agenda</span>
+                <h3>Pending actions</h3>
+            </div>
+            <a id="world-operations-link" href="#" target="_blank">Open dashboard</a>
+        </div>
+        <div class="world-operations-counts">
+            <span id="world-operations-unread" class="world-operations-pill">0 unread</span>
+            <span id="world-operations-urgent" class="world-operations-pill warning">0 urgent</span>
+        </div>
+        <ul id="world-operations-list" class="world-operations-list">
+            <li class="world-operations-empty">No pending items right now.</li>
+        </ul>
+    </div>
+
+    <div id="world-ai-tips-card" class="ui-layer world-operations-card hidden">
+        <div class="world-operations-header">
+            <div>
+                <span class="world-operations-eyebrow">AI Tips</span>
+                <h3>Study guidance</h3>
+            </div>
+            <button id="world-ai-tips-close" class="close-btn" type="button" title="Close AI tips">&times;</button>
+        </div>
+        <div class="world-operations-counts">
+            <span id="world-ai-tips-total" class="world-operations-pill">0 tips</span>
+            <span id="world-ai-tips-attention" class="world-operations-pill warning">0 attention</span>
+        </div>
+        <ul id="world-ai-tips-list" class="world-operations-list">
+            <li class="world-operations-empty">Open this card to load AI study tips.</li>
+        </ul>
+        <div class="world-ai-tips-footer">
+            <button id="world-ai-tips-refresh" type="button">Refresh tips</button>
+        </div>
+    </div>
+
+    <div id="world-ai-tip-modal" class="ui-layer world-ai-tip-modal hidden" role="dialog" aria-modal="true" aria-labelledby="world-ai-tip-modal-title">
+        <div class="world-ai-tip-dialog">
+            <div class="world-ai-tip-dialog-header">
+                <div>
+                    <span id="world-ai-tip-modal-meta" class="world-operations-eyebrow">AI Tip</span>
+                    <h3 id="world-ai-tip-modal-title">Study guidance</h3>
+                </div>
+                <button id="world-ai-tip-modal-close" class="close-btn" type="button" title="Close AI tip details">&times;</button>
+            </div>
+            <p id="world-ai-tip-modal-summary" class="world-ai-tip-dialog-summary"></p>
+            <div id="world-ai-tip-modal-reason" class="world-ai-tip-dialog-reason hidden"></div>
+            <div id="world-ai-tip-modal-focus" class="world-ai-tip-dialog-section"></div>
+            <div id="world-ai-tip-modal-steps" class="world-ai-tip-dialog-section"></div>
+            <div id="world-ai-tip-modal-diagnostics" class="world-ai-tip-dialog-section muted"></div>
+        </div>
+    </div>
+
+    <div id="course-room-context" class="ui-layer hidden" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:1200; width:min(760px, calc(100vw - 24px)); padding:0.85rem 1.25rem; border-radius:16px; background:var(--panel-bg); border:1px solid var(--panel-border); box-shadow:0 20px 60px rgba(0,0,0,0.15); backdrop-filter:blur(18px); text-align:center;">
+        <div id="course-room-context-course" style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent-color); margin-bottom:0.25rem;">Course world</div>
+        <div id="course-room-context-room" style="font-size:1rem; font-weight:700; color:var(--text-primary);">Entering course world...</div>
+        <button id="btn-show-course-landing" class="hidden" style="margin-top: 0.6rem; background: var(--accent-color); color: white; border: none; padding: 0.35rem 1.2rem; border-radius: 999px; cursor: pointer; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: all 150ms ease;">Ver Landing Page</button>
+    </div>
+
+    <aside id="course-trail-panel" class="ui-layer hidden" style="position:fixed; right:16px; top:96px; bottom:16px; width:min(360px, calc(100vw - 24px)); overflow:auto; padding:1rem; border-radius:20px; background:var(--panel-bg); border:1px solid var(--panel-border); box-shadow:0 20px 60px rgba(0,0,0,0.15); backdrop-filter:blur(18px); overscroll-behavior:contain; z-index:1150;">
+        <div style="display:flex; flex-direction:column; gap:0.35rem; margin-bottom:1rem;">
+            <span style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent-color);">Course world</span>
+            <h3 id="course-trail-title" style="margin:0; font-size:1.15rem; color:var(--text-primary);">Course trail</h3>
+            <p id="course-trail-summary" style="margin:0; font-size:0.85rem; color:var(--text-secondary);">Loading course trail...</p>
+        </div>
+        <div id="course-trail-progress" style="margin-bottom:1rem; font-size:0.82rem; color:var(--text-secondary);">0% complete</div>
+        <div id="course-trail-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+    </aside>
+
+    <!-- Course Landing Page Modal -->
+    <div id="course-landing-modal" class="hidden ui-layer" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(12px); z-index:1300; display:flex; justify-content:center; align-items:center; padding: 2rem;">
+        <div style="background:var(--bg-color); border:1px solid var(--panel-border); border-radius:24px; width:100%; max-width:1000px; height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,0.2); overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:1.25rem 1.5rem; border-bottom:1px solid var(--panel-border);">
+                <h2 id="course-landing-title" style="margin:0; font-size:1.25rem; color:var(--text-primary); font-weight:600;">Course Information</h2>
+                <button id="close-course-landing" style="background:none; border:none; color:var(--text-secondary); font-size:1.75rem; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:color 0.2s;">&times;</button>
+            </div>
+            <style id="course-landing-custom-css"></style>
+            <div id="course-landing-content" style="flex:1; overflow-y:auto; padding:0; position:relative; background:var(--bg-color);">
+                <!-- Compiled HTML will be injected here -->
+                <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">Loading landing page...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Sidebar -->
+    <div id="module-sidebar" class="ui-layer hidden module-sidebar">
+        <div id="sidebar-preview-banner" class="preview-banner">PREVIEW MODE: Unpublished module</div>
+        <div class="sidebar-header">
+            <h2 id="module-sidebar-title">Module Name</h2>
+            <button id="close-module-sidebar" class="close-btn">&times;</button>
+        </div>
+        <div class="sidebar-tabs">
+            <button class="module-tab-btn active" data-tab="general">General</button>
+            <button class="module-tab-btn" data-tab="videos">Videos</button>
+            <button class="module-tab-btn" data-tab="docs">Documentos</button>
+            <button class="module-tab-btn" data-tab="quiz">Quiz</button>
+            <button class="module-tab-btn" data-tab="forum">Forum</button>
+            <button class="module-tab-btn" data-tab="reports">Reports</button>
+        </div>
+        <div class="sidebar-content">
+            <div id="module-tab-general" class="tab-pane active">
+                <div id="module-description" class="module-description"></div>
+                <div class="module-general-layout">
+                    <div class="module-general-section">
+                        <div class="module-general-section-head">
+                            <h3>Quick access</h3>
+                            <span>Open any module content from here.</span>
+                        </div>
+                        <div id="module-general-shortcuts" class="module-general-shortcuts"></div>
+                    </div>
+                    <div class="module-general-section">
+                        <div class="module-general-section-head">
+                            <h3>Module assets</h3>
+                            <span>Videos, docs, quizzes and tools in one place.</span>
+                        </div>
+                        <div id="module-general-assets" class="module-general-assets"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="module-tab-videos" class="tab-pane">
+                <div id="module-videos-grid" class="video-grid"></div>
+            </div>
+            <div id="module-tab-docs" class="tab-pane">
+                <div class="inner-tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+                    <button type="button" class="inner-tab-btn module-doc-sub-tab active" data-type="pdf" onclick="switchModuleDocTab('pdf')" style="background: none; border: none; color: var(--primary); outline: none; padding: 0.3rem 0; cursor: pointer; border-bottom: 2px solid var(--primary); font-weight: 500;">PDF</button>
+                    <button type="button" class="inner-tab-btn module-doc-sub-tab" data-type="word" onclick="switchModuleDocTab('word')" style="background: none; border: none; color: var(--text-muted); outline: none; padding: 0.3rem 0; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;">Word</button>
+                    <button type="button" class="inner-tab-btn module-doc-sub-tab" data-type="img" onclick="switchModuleDocTab('img')" style="background: none; border: none; color: var(--text-muted); outline: none; padding: 0.3rem 0; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;">Imagens</button>
+                </div>
+                <div id="module-doc-pane-pdf" class="module-doc-sub-pane active">
+                    <ul id="module-pdf-list" class="content-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.8rem;"></ul>
+                </div>
+                <div id="module-doc-pane-word" class="module-doc-sub-pane hidden" style="display: none; opacity: 0; transition: opacity 0.2s;">
+                    <ul id="module-word-list" class="content-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.8rem;"></ul>
+                </div>
+                <div id="module-doc-pane-img" class="module-doc-sub-pane hidden" style="display: none; opacity: 0; transition: opacity 0.2s;">
+                    <div id="module-img-grid" class="asset-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;"></div>
+                </div>
+            </div>
+            <div id="module-tab-quiz" class="tab-pane">
+                <div id="module-quiz-container" class="quiz-container"></div>
+                <button id="btn-submit-quiz" class="btn-open" style="margin-top: 20px;">Submit Answers</button>
+            </div>
+            <div id="module-tab-forum" class="tab-pane">
+                <div id="module-forum-container" class="forum-container"></div>
+            </div>
+            <div id="module-tab-reports" class="tab-pane">
+                <div id="module-reports-container" class="reports-container"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Menu de Contexto (Botão Direito) -->
+    <div id="context-menu" class="context-menu hidden">
+        <div id="menu-ground-section">
+            <div id="menu-create-block" class="menu-item">📦 Place Cube</div>
+            <div id="menu-place-module" class="menu-item">🎓 Place Interactive Module</div>
+            <div id="menu-catalog-models" class="menu-item">🧱 Object Catalog</div>
+            <div class="menu-item" id="menu-import-glb">📦 Importar Local (.glb)</div>
+        </div>
+        <div id="menu-cube-section" class="hidden">
+            <div class="menu-item color-trigger">🎨 Mudar Cor
+                <div class="color-matrix">
+                    <div class="color-option" style="background: #ef4444;" data-color="#ef4444"></div>
+                    <div class="color-option" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                    <div class="color-option" style="background: #10b981;" data-color="#10b981"></div>
+                    <div class="color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                    <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                    <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                    <div class="color-option" style="background: #ffffff;" data-color="#ffffff"></div>
+                    <div class="color-option" style="background: #94a3b8;" data-color="#94a3b8"></div>
+                </div>
+            </div>
+            <div class="menu-item" id="menu-delete-cube">🗑️ Deletar Cubo</div>
+        </div>
+        <div id="menu-model-section" class="hidden">
+            <div class="menu-item" id="menu-rotate-90-right">↪️ Girar 90° Direita</div>
+            <div class="menu-item" id="menu-rotate-90-left">↩️ Girar 90° Esquerda</div>
+            <div class="menu-item" id="menu-rotate-45-right">↪️ Girar 45° Direita</div>
+            <div class="menu-item" id="menu-rotate-45-left">↩️ Girar 45° Esquerda</div>
+            <div class="menu-item" id="menu-delete-model">🗑️ Deletar Modelo</div>
+        </div>
+        <!-- Section for Module Placement -->
+        <div id="menu-placement-section" class="hidden">
+            <div class="menu-item" id="menu-assign-module">🎯 Link Module</div>
+            <div class="menu-item" id="menu-import-placement-glb">📦 Importar GLB</div>
+            <div class="menu-item" id="menu-delete-placement" style="color: #ef4444;">🗑️ Delete</div>
+        </div>
+    </div>
+
+    <!-- Input oculto para importação via menu -->
+    <input type="file" id="context-glb-upload" accept=".glb,.gltf" class="hidden">
+
+    <!-- Indicador de Carregamento (Spinner) para modelos pesados -->
+    <div id="loading-indicator" class="hidden">
+        <div class="spinner"></div>
+        <span>Loading model...</span>
+    </div>
+
+    <!-- Biblioteca Socket.io para comunicação em tempo real -->
+    <script src="/socket.io/socket.io.js"></script>
+
+
+
+    <!-- Incoming Call Notification -->
+    <div id="incoming-modal" class="modal hidden ui-layer">
+        <div class="modal-content glass">
+            <h3>Chamada de <span id="incoming-caller">...</span></h3>
+            <div class="modal-actions">
+                <button id="btn-answer" class="success-btn">Atender</button>
+                <button id="btn-reject" class="danger-btn">Recusar</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="remote-audio" autoplay></audio>
+
+    <!-- Catalog de Assets (Overlay) -->
+    <div id="catalog-overlay" class="hidden ui-layer">
+        <div class="catalog-card">
+            <div class="catalog-header">
+                <h2 id="catalog-title">Catalog</h2>
+                <button id="close-catalog">×</button>
+            </div>
+            <div id="catalog-grid" class="catalog-grid">
+                <!-- Itens injetados via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Logic -->
+    <script type="module" src="main.js?v=1.3.5"></script>
+    <script src="course-world.js?v=1"></script>
+    <div style="position: fixed; bottom: 5px; right: 5px; font-size: 0.6rem; color: #475569; z-index: 1000; pointer-events: none;">v1.3.5</div>
+</body>
+</html>
