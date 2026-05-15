@@ -92,19 +92,24 @@
                 </ul>
             </div>
 
-            <div class="card" id="students-section" style="display: none;">
-                <div class="card-header">
-                    <h3>Invite Students</h3>
-                    <p>Manually enroll users directly into this course.</p>
+                <div class="card" id="students-section" style="display: none;">
+                    <div class="card-header">
+                        <h3>Invite Students</h3>
+                        <p>Manually enroll users directly into this course.</p>
+                    </div>
+                    <div class="form-group" style="position: relative;">
+                        <input type="text" id="new-student-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'student')" onfocus="searchUsersForRole(this.value, 'student')">
+                        <div id="student-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.1rem;">Enrolled Students</h4>
+                        <input type="text" id="enrolled-student-filter" placeholder="Filter enrolled students..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px;" oninput="filterEnrolledStudents()">
+                        <ul id="students-list" style="list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
+                            <!-- Injected by JS -->
+                        </ul>
+                    </div>
                 </div>
-                <div class="form-group" style="position: relative;">
-                    <input type="text" id="new-student-search" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'student')" onfocus="searchUsersForRole(this.value, 'student')">
-                    <div id="student-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
-                </div>
-                <ul id="students-list" style="list-style: none; padding: 0; margin-top: 15px;">
-                    <!-- Injected by JS -->
-                </ul>
-            </div>
 
             <div class="card">
                 <div class="card-header">
@@ -216,7 +221,7 @@
     </div>
 
     <!-- Gerenciador de Módulos (Full Screen Overlay) -->
-    <div id="module-editor-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f8fafc; z-index:1100; overflow-y:auto; padding-bottom:50px;">
+    <div id="module-editor-modal" style="display:none; background:#f8fafc; padding-bottom:50px; min-height: 100vh;">
         <div style="max-width:1100px; margin:0 auto; padding: 40px 20px;">
             <!-- Header do Gerenciador -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
@@ -1027,8 +1032,71 @@
             }
         }
 
+        window.enrolledStudentsData = [];
+        
         async function loadStudents(courseId) {
-            // we will implement a fetch to get enrollments later if there's an API. For now, it will just notify.
+            try {
+                const res = await fetch(`/api/courses/${courseId}/enrollments`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    window.enrolledStudentsData = data.map(e => e.user).filter(u => u);
+                    renderEnrolledStudents();
+                }
+            } catch (err) {
+                console.error('Error loading students', err);
+            }
+        }
+
+        function renderEnrolledStudents() {
+            const query = document.getElementById('enrolled-student-filter').value.toLowerCase();
+            const list = document.getElementById('students-list');
+            
+            const filtered = window.enrolledStudentsData.filter(u => 
+                (u.username && u.username.toLowerCase().includes(query)) || 
+                (u.email && u.email.toLowerCase().includes(query))
+            );
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<li style="padding: 15px; color: #64748b; text-align: center;">No students found.</li>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(u => `
+                <li style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: white;">
+                    <div>
+                        <strong style="display: block; color: #1e293b; font-size: 0.95rem;">${u.username || 'Unknown'}</strong>
+                        <span style="color: #64748b; font-size: 0.85rem;">${u.email}</span>
+                    </div>
+                    <button onclick="unenrollStudent(${u.id})" style="background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;" title="Unsubscribe Student">
+                        <i class="fas fa-user-minus"></i>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        function filterEnrolledStudents() {
+            renderEnrolledStudents();
+        }
+
+        async function unenrollStudent(userId) {
+            if (!confirm('Are you sure you want to unsubscribe this student from the course?')) return;
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/enrollments/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    loadStudents(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to remove student');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error removing student');
+            }
         }
 
         async function removeCoEditor(userId) {

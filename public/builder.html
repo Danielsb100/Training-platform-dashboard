@@ -13,11 +13,11 @@
 <body class="edit-mode">
     <!-- Template Selector Modal -->
     <div id="template-modal"
-        style="position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px;">
-        <h2 style="color:white; margin-bottom: 30px; font-size: 2.5rem; text-align: center;">Choose a Starting Layout
+        style="position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 2vh 2vw; overflow: hidden;">
+        <h2 style="color:white; margin-bottom: 3vh; font-size: max(1.5rem, 4vh); text-align: center; flex-shrink: 0;">Choose a Starting Layout
         </h2>
         <div id="template-cards-container"
-            style="display:flex; gap:30px; flex-wrap:wrap; max-width: 1200px; justify-content:center;">
+            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.5vw; max-width: 1400px; width: 90%; max-height: 80vh;">
             <!-- Rendered by JS -->
         </div>
     </div>
@@ -445,7 +445,7 @@
     </div>
 
     <script src="templates.js?v=2"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 
 </html>

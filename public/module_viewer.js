@@ -211,18 +211,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>`;
         }).join('') : '<p style="color:#94a3b8;">Nenhum vídeo disponível neste módulo.</p>';
         
-        // --- Documents List ---
-        const docsList = document.getElementById('documents-list');
-        docsList.innerHTML = documents.length ? documents.map(d => `
-            <div class="list-item" onclick="downloadDocument(${d.documentId})">
-                <div class="list-icon"><i class="fas fa-file-pdf"></i></div>
-                <div class="list-content">
-                    <div class="list-title">${d.title}</div>
-                    <p class="list-desc">Arquivo PDF para estudos complementares.</p>
-                </div>
-                <div class="list-action"><i class="fas fa-download"></i> Baixar</div>
-            </div>
-        `).join('') : '<p style="color:#94a3b8;">Nenhum documento disponível neste módulo.</p>';
+        // --- Documents ---
+        renderDocuments('all');
         
         // --- Quizzes List ---
         const quizzesList = document.getElementById('quizzes-list');
@@ -239,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // --- Overview Grid (Combines everything for the home page of the module) ---
         const overviewGrid = document.getElementById('overview-grid');
-        const allItems = [...videos, ...quizzes].sort((a,b) => a.order - b.order);
+        const allItems = [...videos, ...documents, ...quizzes].sort((a,b) => a.order - b.order);
         overviewGrid.innerHTML = allItems.map(item => {
             if (item.contentType === 'video') {
                 const i = videos.indexOf(item);
@@ -267,6 +257,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="card-meta"><i class="fas fa-pencil-alt"></i> Avaliação Prática</div>
                     </div>
                 </div>`;
+            } else if (item.contentType === 'document') {
+                const docType = getDocType(item.title);
+                const i = documents.indexOf(item);
+                let icon = 'fa-file-alt';
+                let color = '#64748b';
+                
+                if (docType === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; }
+                else if (docType === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; }
+                else if (docType === 'ppt') { icon = 'fa-file-powerpoint'; color = '#f97316'; }
+                else if (docType === 'image') { icon = 'fa-image'; color = '#10b981'; }
+                
+                return `
+                <div class="card" onclick="openPlayer('document', ${i})">
+                    <div class="card-thumb" style="background:#f1f5f9;">
+                        <i class="fas ${icon}" style="font-size: 5rem; color:${color}; opacity:0.8;"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${escapeHtml(item.title)}</div>
+                        <div class="card-meta"><i class="fas ${icon}"></i> Documento</div>
+                    </div>
+                </div>`;
             }
         }).join('');
         
@@ -274,6 +285,121 @@ document.addEventListener('DOMContentLoaded', async () => {
             overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">Este módulo ainda não possui conteúdos interativos.</p>';
         }
     }
+    
+    function getDocType(filename) {
+        const ext = (filename || '').split('.').pop().toLowerCase();
+        if (['pdf'].includes(ext)) return 'pdf';
+        if (['doc', 'docx'].includes(ext)) return 'word';
+        if (['ppt', 'pptx'].includes(ext)) return 'ppt';
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'image';
+        return 'other';
+    }
+
+    function renderDocuments(filter = 'all') {
+        const container = document.getElementById('documents-container');
+        
+        // Update Filter Buttons
+        document.querySelectorAll('.doc-filter').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === filter);
+        });
+
+        const filteredDocs = documents.filter(d => filter === 'all' || getDocType(d.title) === filter);
+
+        if (filteredDocs.length === 0) {
+            container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">Nenhum documento encontrado para este filtro.</p>';
+            return;
+        }
+
+        let html = '';
+        
+        // Split into List (PDF/Word/Other) and Grid (Images/PPT)
+        const listItems = [];
+        const gridItems = [];
+        
+        filteredDocs.forEach(d => {
+            const type = getDocType(d.title);
+            const originalIndex = documents.indexOf(d);
+            
+            if (type === 'image' || type === 'ppt') {
+                const icon = type === 'image' ? 'fa-image' : 'fa-file-powerpoint';
+                const color = type === 'image' ? '#10b981' : '#f97316';
+                
+                let thumbContent = `<i class="fas ${icon}" style="color: ${color}"></i>`;
+                if (type === 'image') {
+                    // Try to load actual thumbnail if inline view is available
+                    // Use fetch to bypass auth limits, or keep icon if it fails
+                    thumbContent = `<div class="auth-img-thumb" data-url="/api/documents/download/${d.documentId}?inline=true" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"><i class="fas fa-spinner fa-spin" style="color: #cbd5e1;"></i></div>`;
+                }
+
+                gridItems.push(`
+                    <div class="doc-grid-item" onclick="openPlayer('document', ${originalIndex})">
+                        <div class="doc-grid-thumb">${thumbContent}</div>
+                        <div class="doc-grid-body">
+                            <div class="doc-grid-title">${escapeHtml(d.title)}</div>
+                            <div class="doc-grid-meta">
+                                <span><i class="fas ${icon}"></i> ${type.toUpperCase()}</span>
+                                <i class="fas fa-eye" style="color:#cf9c33;"></i>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            } else {
+                let icon = 'fa-file-alt';
+                let color = '#94a3b8';
+                let desc = 'Documento genérico';
+                
+                if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = 'Arquivo PDF interativo'; }
+                if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = 'Documento de Texto'; }
+
+                listItems.push(`
+                    <div class="list-item">
+                        <div class="list-icon" style="color:${color}; background:#f0f9ff;"><i class="fas ${icon}"></i></div>
+                        <div class="list-content" style="cursor:pointer;" onclick="openPlayer('document', ${originalIndex})">
+                            <div class="list-title">${escapeHtml(d.title)}</div>
+                            <p class="list-desc">${desc}</p>
+                        </div>
+                        <div class="list-action">
+                            <button class="btn-action-icon" title="Visualizar" onclick="openPlayer('document', ${originalIndex})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action-icon download" title="Baixar" onclick="downloadDocument(${d.documentId})">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                `);
+            }
+        });
+
+        // Construct final HTML
+        if (listItems.length > 0) {
+            html += `<div class="list-layout" style="margin-bottom: 25px;">${listItems.join('')}</div>`;
+        }
+        if (gridItems.length > 0) {
+            html += `<div class="grid-layout">${gridItems.join('')}</div>`;
+        }
+
+        container.innerHTML = html;
+        
+        // Load authenticated thumbnails
+        document.querySelectorAll('.auth-img-thumb').forEach(async (el) => {
+            try {
+                const res = await fetch(el.dataset.url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    el.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Thumbnail" style="width:100%; height:100%; object-fit:cover;">`;
+                } else {
+                    el.innerHTML = `<i class="fas fa-image" style="color: #10b981;"></i>`;
+                }
+            } catch (err) {
+                el.innerHTML = `<i class="fas fa-image" style="color: #10b981;"></i>`;
+            }
+        });
+    }
+
+    document.querySelectorAll('.doc-filter').forEach(btn => {
+        btn.addEventListener('click', () => renderDocuments(btn.dataset.type));
+    });
     
     // Tab Navigation
     navTabs.forEach(tab => {
@@ -284,21 +410,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (!tab.dataset.tab) return;
-            navTabs.forEach(t => {
-                if (t.dataset.tab) t.classList.remove('active');
-            });
-            tab.classList.add('active');
-            
-            hubSections.forEach(s => s.classList.remove('active'));
-            document.getElementById('section-' + tab.dataset.tab).classList.add('active');
+        
+        // Force close player view when navigating
+        playerView.classList.remove('active');
+        document.querySelector('.viewer-main').classList.remove('no-padding');
+        playerContent.innerHTML = '';
+        playerContent.style.padding = '40px';
+
+        navTabs.forEach(t => {
+            if (t.dataset.tab) t.classList.remove('active');
         });
+        tab.classList.add('active');
+        
+        hubSections.forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + tab.dataset.tab).classList.add('active');
     });
+});
+
+btnBackHub.addEventListener('click', () => {
+    playerView.classList.remove('active');
+    document.querySelector('.viewer-main').classList.remove('no-padding');
+    playerContent.innerHTML = ''; // Stop video playback
+    playerContent.style.padding = '40px';
+    
+    // Reactivate the currently selected tab's section
+    const activeTab = document.querySelector('.nav-tab.active');
+    if (activeTab && activeTab.dataset.tab) {
+        document.getElementById('section-' + activeTab.dataset.tab).classList.add('active');
+    } else {
+        document.getElementById('section-overview').classList.add('active');
+    }
+});
     
     // Player Logic
     window.openPlayer = function(type, index) {
-        playerContent.innerHTML = '';
-        
-        if (type === 'video') {
+    const hubSections = document.querySelectorAll('.hub-section');
+    hubSections.forEach(s => s.classList.remove('active'));
+    
+    document.querySelector('.viewer-main').classList.add('no-padding');
+    
+    if (type === 'video') {
+        playerView.classList.add('active');
+        playerContent.style.overflowY = 'auto';
+        playerContent.style.padding = '40px';
             const v = videos[index];
             const title = escapeHtml(v.title);
             playerTitle.textContent = v.title;
@@ -349,8 +503,112 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `;
             }
+        }
+        else if (type === 'document') {
+            playerView.classList.add('active');
+            const d = documents[index];
+            const title = escapeHtml(d.title);
+            playerTitle.textContent = title;
+            const docType = getDocType(title);
+            const downloadUrl = `/api/documents/download/${d.documentId}?inline=true`;
+            const rawDownloadUrl = `/api/documents/download/${d.documentId}`;
+
+            // Telemetry call for opening document
+            fetch(`/modules/${moduleId}/documents/${d.documentId}/download`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ source: 'dashboard_view' })
+            }).catch(e => console.error(e));
+
+            if (docType === 'pdf') {
+                playerContent.style.padding = '0'; // Remove padding for full bleed
+                const downloadUrlWithToken = `/api/documents/download/${d.documentId}?inline=true&token=${token}`;
+                playerContent.innerHTML = `
+                    <div class="doc-viewer-wrapper" id="pdf-container" style="width:100%; height:100%; max-width:100%; max-height:100%; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+                        <iframe src="${downloadUrlWithToken}" style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
+                    </div>
+                `;
+            } else if (docType === 'image') {
+                playerContent.innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;" id="img-container">
+                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Carregando Imagem...</div>
+                    </div>
+                `;
+                
+                fetch(downloadUrl, { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network response was not ok');
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        const blobUrl = URL.createObjectURL(blob);
+                        document.getElementById('img-container').innerHTML = `
+                            <img src="${blobUrl}" class="doc-viewer-image" alt="${title}" style="max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; margin-top:20px; text-decoration:none;"><i class="fas fa-download"></i> Fazer Download Original</a>
+                        `;
+                    })
+                    .catch(err => {
+                        document.getElementById('img-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>Falha ao carregar a imagem.</div>`;
+                    });
+            } else if (docType === 'ppt') {
+                // PowerPoint Fallback to Office Viewer (Requires Public URL)
+                const publicUrl = window.location.origin + rawDownloadUrl;
+                const msViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(publicUrl)}`;
+                
+                playerContent.innerHTML = `
+                    <div class="doc-viewer-wrapper" style="width:100%; height:100%; max-width:1200px; display:flex; flex-direction:column; background:#f8fafc;">
+                        <div style="padding: 15px; background: #fff3cd; color: #856404; border-bottom: 1px solid #ffeeba; font-size: 0.9rem; text-align: center;">
+                            <i class="fas fa-info-circle"></i> O visualizador de PowerPoint utiliza um serviço da Microsoft que exige que a plataforma esteja online. Se você estiver testando em <b>localhost</b>, o slide não carregará abaixo.
+                        </div>
+                        <iframe src="${msViewerUrl}" class="doc-viewer-iframe" style="flex:1; border-radius:0;"></iframe>
+                        <div style="text-align:center; padding: 15px; background:#fff; border-top: 1px solid #e2e8f0;">
+                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; text-decoration:none;"><i class="fas fa-download"></i> Baixar Arquivo PPTX Original</a>
+                        </div>
+                    </div>
+                `;
+            } else if (docType === 'word') {
+                // Word DOCX Rendering
+                playerContent.innerHTML = `
+                    <div class="doc-viewer-wrapper" id="docx-container" style="background:#fff; padding: 40px; color: #000; overflow-x: auto;">
+                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Carregando Documento...</div>
+                    </div>
+                `;
+                
+                fetch(rawDownloadUrl, { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network response was not ok');
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        const container = document.getElementById('docx-container');
+                        container.innerHTML = '';
+                        // Render with docx-preview
+                        docx.renderAsync(blob, container, null, {
+                            className: 'docx-viewer',
+                            inWrapper: true,
+                            ignoreWidth: false,
+                            ignoreHeight: false
+                        }).catch(err => {
+                            container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-exclamation-triangle fa-2x"></i><br>Erro ao renderizar documento. O arquivo pode não estar no formato .docx moderno.<br><br><a href="${rawDownloadUrl}" class="btn-submit-quiz" style="display:inline-block; width:auto; text-decoration:none; margin-top:15px;"><i class="fas fa-download"></i> Fazer Download Tradicional</a></div>`;
+                        });
+                    })
+                    .catch(err => {
+                        document.getElementById('docx-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>Falha ao baixar arquivo.</div>`;
+                    });
+            } else {
+                playerContent.innerHTML = `
+                    <div class="quiz-container" style="text-align:center;">
+                        <i class="fas fa-file-alt" style="font-size: 5rem; color:#94a3b8; margin-bottom: 20px;"></i>
+                        <h2 style="color:#0f172a; margin-bottom: 10px;">Documento Genérico</h2>
+                        <p style="color:#64748b; margin-bottom: 25px;">Visualização web não disponível para este formato.</p>
+                        <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="text-decoration:none; display:inline-block; width:auto;"><i class="fas fa-download"></i> Baixar Arquivo</a>
+                    </div>
+                `;
+            }
         } 
         else if (type === 'quiz') {
+            playerContent.style.padding = '40px'; // Reset padding for quiz
+            playerContent.style.overflowY = 'auto';
             playerView.classList.add('active');
             const q = quizzes[index];
             playerTitle.textContent = q.title;

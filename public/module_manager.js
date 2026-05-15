@@ -60,12 +60,17 @@ async function fetchModulesFromDB() {
 }
 
 function openModuleManager() {
+    document.querySelector('.course-header').style.display = 'none';
+    document.querySelector('.main-container').style.display = 'none';
     document.getElementById('module-editor-modal').style.display = 'block';
     document.getElementById('active-module-editor').style.display = 'none'; // hide detail panel initially
+    window.scrollTo({ top: 0, behavior: 'instant' });
     renderAttachedModules();
 }
 
 function closeModuleEditor() {
+    document.querySelector('.course-header').style.display = 'flex';
+    document.querySelector('.main-container').style.display = 'grid';
     document.getElementById('module-editor-modal').style.display = 'none';
     if(typeof updateConstructionUI === 'function') {
         updateConstructionUI();
@@ -132,10 +137,10 @@ function renderAttachedModules() {
         const color = m.textColor || '#ffffff';
 
         return `
-        <div style="background: ${bgColor}; background-image: ${bgImg}; background-size: cover; background-position: center; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); aspect-ratio: 1; position: relative; overflow: hidden;"
-             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.2)';"
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"
-             onclick="openModuleEditor(${m.dbId})">
+        <div id="module-card-${m.dbId || m.id}" class="module-card-item" style="background: ${bgColor}; background-image: ${bgImg}; background-size: cover; background-position: center; border-radius:12px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s, outline 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); aspect-ratio: 1; position: relative; overflow: hidden;"
+             onmouseover="if(this.style.outline === 'none' || !this.style.outline) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.2)'; }"
+             onmouseout="if(this.style.outline === 'none' || !this.style.outline) { this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; }"
+             onclick="openModuleEditor(${m.dbId || `'${m.id}'`})">
 
             <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0; pointer-events: none;"></div>
 
@@ -189,6 +194,22 @@ window.removeModule = removeModuleFromCourse;
 async function openModuleEditor(moduleId = null) {
     editingModuleId = moduleId;
 
+    // Remove highlight from all cards
+    document.querySelectorAll('.module-card-item').forEach(el => {
+        el.style.outline = 'none';
+        el.style.outlineOffset = '0';
+        el.style.transform = 'translateY(0)';
+    });
+
+    // Highlight selected card
+    if (moduleId) {
+        const card = document.getElementById(`module-card-${moduleId}`);
+        if (card) {
+            card.style.outline = '3px solid #cf982e';
+            card.style.outlineOffset = '4px';
+        }
+    }
+
     // Reset UI
     document.getElementById('module-basics-form').reset();
     document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading videos...</p>';
@@ -231,6 +252,7 @@ async function openModuleEditor(moduleId = null) {
                     renderAttachedModules();
                 } catch (err) {
                     console.error('Failed to link new module to course', err);
+                    alert('Falha ao vincular módulo ao curso: ' + err.message);
                 }
             } else if (window.editingCourseId) {
                 if (!window.courseModules) window.courseModules = [];
@@ -257,6 +279,10 @@ async function openModuleEditor(moduleId = null) {
         document.getElementById('btn-delete-module').style.display = 'block';
         loadModuleData(moduleId);
     }
+
+    setTimeout(() => {
+        document.getElementById('active-module-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
 }
 
 function switchModuleTab(tabName) {

@@ -553,10 +553,7 @@ async function updateCourse(req, res) {
 async function deleteCourse(req, res) {
   try {
     const courseId = Number(req.params.id);
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: { courseModules: true }
-    });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { courseModules: true, editors: true } });
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
@@ -587,7 +584,7 @@ async function addModuleToCourse(req, res) {
     const moduleId = Number(req.body.moduleId);
     const requireQuizPass = Boolean(req.body.requireQuizPass);
     const minimumQuizScore = requireQuizPass ? normalizeMinimumQuizScore(req.body.minimumQuizScore) : null;
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
     }
@@ -606,7 +603,7 @@ async function addModuleToCourse(req, res) {
     if (!module) {
       return res.status(404).json({ error: 'Module not found.' });
     }
-    if (module.ownerMasterId !== req.user.id && !getEffectiveUserRoles(req.user).has('ADMIN') && !getEffectiveUserRoles(req.user).has('SUPER_ADMIN')) {
+    if (String(module.ownerMasterId) !== String(req.user.id) && !getEffectiveUserRoles(req.user).has('ADMIN') && !getEffectiveUserRoles(req.user).has('SUPER_ADMIN')) {
       return res.status(403).json({ error: 'Only the module owner can attach this module to the course.' });
     }
     if (requireQuizPass && module._count.quizzes === 0) {
@@ -711,7 +708,7 @@ async function reorderCourseModules(req, res) {
   try {
     const courseId = Number(req.params.id);
     const orderedIds = Array.isArray(req.body.orderedCourseModuleIds) ? req.body.orderedCourseModuleIds.map(Number) : [];
-    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { courseModules: true } });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { courseModules: true, editors: true } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
     }
@@ -744,7 +741,7 @@ async function removeCourseModule(req, res) {
     const courseModuleId = Number(req.params.courseModuleId);
     const current = await prisma.courseModule.findUnique({
       where: { id: courseModuleId },
-      include: { course: true }
+      include: { course: { include: { editors: true } } }
     });
     if (!current) {
       return res.status(404).json({ error: 'Course module not found.' });
@@ -769,7 +766,7 @@ async function enrollUser(req, res) {
   try {
     const courseId = Number(req.params.id);
     const userId = Number(req.body.userId);
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
     }
@@ -904,7 +901,7 @@ async function selfEnroll(req, res) {
     const courseId = Number(req.params.id);
     const userId = req.user.id;
 
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
     }
@@ -1337,7 +1334,70 @@ async function getCourseInsights(req, res) {
   }
 }
 
+async function getCourseStudents(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { editors: true }
+    });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+
+    if (!isCourseManager(req.user, course)) {
+      return res.status(403).json({ error: 'Not authorized to view students.' });
+    }
+
+    const enrollments = await prisma.enrollment.findMany({
+      where: { courseId },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true }
+        }
+      }
+    });
+
+    res.json(enrollments);
+  } catch (error) {
+    console.error('Error fetching course students:', error);
+    res.status(500).json({ error: 'Failed to fetch course students.' });
+  }
+}
+
+async function removeStudent(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { editors: true }
+    });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+
+    if (!isCourseManager(req.user, course)) {
+      return res.status(403).json({ error: 'Not authorized to remove students.' });
+    }
+
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    if (!enrollment) return res.status(404).json({ error: 'Student not enrolled in this course.' });
+
+    await prisma.enrollment.delete({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    res.json({ message: 'Student removed successfully.' });
+  } catch (error) {
+    console.error('Error removing student:', error);
+    res.status(500).json({ error: 'Failed to remove student.' });
+  }
+}
+
 module.exports = {
+  getCourseStudents,
+  removeStudent,
   getCourseInsights,
   addCourseEditor,
   removeCourseEditor,

@@ -4,7 +4,11 @@ const { sendError } = require('../utils/http');
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  let token = authHeader && authHeader.split(' ')[1];
+
+  if (!token && req.query && req.query.token) {
+      token = req.query.token;
+  }
 
   if (!token) {
     return sendError(res, {

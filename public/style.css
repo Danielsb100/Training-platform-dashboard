@@ -302,14 +302,14 @@ body.view-mode .module-content {
 
 #properties-panel {
     position: fixed;
-    top: 0;
+    top: 75px;
     right: 0;
     width: 320px;
-    height: 100vh;
+    height: calc(100vh - 75px);
     background-color: var(--diagram-dark);
     color: #fff;
     box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
-    z-index: 2000;
+    z-index: 1500;
     transform: translateX(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -410,6 +410,8 @@ body.view-mode .module-content {
     border-radius: 4px;
     outline: none;
     font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .prop-row input[type="text"]:focus,
@@ -929,3 +931,4 @@ body.edit-mode .anim-slide-up {
         grid-column: auto;
     }
 }
+body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -125px !important; }

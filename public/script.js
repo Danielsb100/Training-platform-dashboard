@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const body = document.body;
     let editingPageId = null;
+    let isSyncing = false;
 
     // Load existing page if ID is in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -296,9 +297,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(window.templatePresets && templateModal && templateCardsContainer) {
         window.templatePresets.forEach(tpl => {
             const card = document.createElement('div');
-            card.style.cssText = 'background:#1e293b; border-radius:12px; overflow:hidden; width:280px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;';
-            card.innerHTML = `<img src="${tpl.thumb}" style="width:100%; height:180px; object-fit:cover;">
-                              <div style="padding:15px;text-align:center;color:white;font-weight:bold;">${tpl.name}</div>`;
+            card.style.cssText = 'background:#1e293b; border-radius:12px; overflow:hidden; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;';
+            card.innerHTML = `<img src="${tpl.thumb}" style="width:100%; height:16vh; min-height:80px; object-fit:cover;">
+                              <div style="padding:1vh 1vw;text-align:center;color:white;font-weight:bold;font-size:max(0.75rem, 1.5vh);">${tpl.name}</div>`;
             card.onmouseover = () => { card.style.transform = 'translateY(-5px)'; card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)'; };
             card.onmouseout = () => { card.style.transform = 'none'; card.style.boxShadow = 'none'; };
             card.onclick = () => {
@@ -417,7 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create floating back button
                 const floatBtn = document.createElement('button');
                 floatBtn.id = 'floating-back-btn';
-                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Voltar para EdiÃ§Ã£o';
+                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição';
                 floatBtn.style.cssText = 'position:fixed; top:20px; right:20px; background:#0ea5e9; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
                 floatBtn.addEventListener('click', () => {
                     toggleViewBtn.click();
@@ -916,6 +917,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // SINCROCINZAR UI DO PAINEL COM O ELEMENTO
     // ==========================================
     function syncPanelWithElement() {
+        isSyncing = true;
+        
+        // Desativa transições temporariamente para ler o estilo real instantaneamente
+        const oldTransition = activeElement.style.transition;
+        activeElement.style.transition = 'none';
+        
+        const wasSelected = activeElement.classList.contains('selected-element');
+        if (wasSelected) activeElement.classList.remove('selected-element');
+        const wasEditMode = document.body.classList.contains('edit-mode');
+        if (wasEditMode) document.body.classList.remove('edit-mode');
+
+        // Força recálculo do estilo (evita otimização do browser que ignora o remove/add síncrono)
+        void activeElement.offsetHeight; 
         const computed = window.getComputedStyle(activeElement);
 
         const px = activeElement.dataset.posX || 0;
@@ -930,8 +944,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         marginInput.value = parseInt(computed.margin) || 0;
         paddingInput.value = parseInt(computed.padding) || 0;
         borderRadiusInput.value = parseInt(computed.borderRadius) || 0;
-        borderStyleSelect.value = computed.borderStyle !== 'none' ? computed.borderStyle : 'none';
-        borderWidthInput.value = parseInt(computed.borderWidth) || 0;
+        
+        const bStyle = computed.borderStyle;
+        const bWidth = parseInt(computed.borderWidth) || 0;
+        
+        if (bWidth === 0 || !bStyle || bStyle === 'none' || bStyle === '' || bStyle.includes('none')) {
+            borderStyleSelect.value = 'none';
+        } else {
+            borderStyleSelect.value = bStyle.split(' ')[0];
+        }
+        
+        borderWidthInput.value = bWidth;
 
         borderColorType.value = activeElement.dataset.borderType || 'solid-color';
         borderColorType.dispatchEvent(new Event('change'));
@@ -1027,12 +1050,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Sync Box Shadow Global
         if (computed.boxShadow && computed.boxShadow !== 'none') {
-            const isInset = computed.boxShadow.includes('inset');
+            const isInset = computed.boxShadow.toLowerCase().includes('inset');
             bsInset.checked = isInset;
             const colorMatch = computed.boxShadow.match(/rgba?\([^)]+\)|#[0-9a-fA-F]+/);
             if(colorMatch) bsColor.value = rgbToHex(colorMatch[0]);
 
-            let shadowStr = computed.boxShadow.replace(/rgba?\([^)]+\)|#[0-9a-fA-F]+/g, '').replace('inset', '').trim();
+            let shadowStr = computed.boxShadow.replace(/rgba?\([^)]+\)|#[0-9a-fA-F]+/g, '').replace(/inset/i, '').trim();
             const pxVals = shadowStr.match(/-?\d+/g);
             if(pxVals && pxVals.length >= 2){
                 bsX.value = parseInt(pxVals[0]);
@@ -1041,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 bsSpread.value = pxVals[3] ? parseInt(pxVals[3]) : 0;
             }
         } else {
-            bsX.value=0; bsY.value=0; bsBlur.value=0; bsSpread.value=0; bsInset.checked=false;
+            bsX.value=0; bsY.value=0; bsBlur.value=5; bsSpread.value=0; bsInset.checked=false; bsColor.value='#000000';
         }
 
         // Sync FX
@@ -1052,6 +1075,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const delBtn = document.getElementById('delete-element-btn');
         if (delBtn) delBtn.style.display = (activeElementType === 'bg') ? 'none' : 'flex';
+        
+        if (wasSelected) activeElement.classList.add('selected-element');
+        if (wasEditMode) document.body.classList.add('edit-mode');
+        
+        // Restaura a transição
+        void activeElement.offsetHeight; // Força aplicar as classes antes de restaurar a transição
+        activeElement.style.transition = oldTransition;
+        
+        isSyncing = false;
     }
 
     // ==========================================
@@ -1168,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tsColor.addEventListener('input', updateTextShadow);
 
     const updateBoxShadow = () => { 
+        if (isSyncing) return;
         const inset = bsInset.checked ? 'inset ' : '';
         applyStyle('boxShadow', `${inset}${bsX.value}px ${bsY.value}px ${bsBlur.value}px ${bsSpread.value}px ${bsColor.value}`); 
     };
@@ -1350,16 +1383,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             borderRadiusInput.style.opacity = '0.4';
             borderStyleSelect.disabled = true;
             borderStyleSelect.style.opacity = '0.4';
-            applyStyle('borderStyle', 'solid'); // ForÃ§ar fallback visual
+            if (!isSyncing) applyStyle('borderStyle', 'solid'); // ForÃ§ar fallback visual
         } else {
             borderRadiusInput.disabled = false;
             borderRadiusInput.style.opacity = '1';
             borderStyleSelect.disabled = false;
             borderStyleSelect.style.opacity = '1';
-            applyStyle('borderImage', 'none');
-            applyStyle('borderStyle', borderStyleSelect.value); // Retorna a config original
+            if (!isSyncing) {
+                applyStyle('borderImage', 'none');
+                applyStyle('borderStyle', borderStyleSelect.value); // Retorna a config original
+            }
         }
-        updateBorderRender();
+        if (!isSyncing) updateBorderRender();
     });
 
     const updateBorderRender = () => {
@@ -1449,7 +1484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!btn) {
             btn = document.createElement('button');
             btn.id = 'floating-back-btn';
-            btn.innerHTML = '<i class="fas fa-edit"></i> Voltar para EdiÃ§Ã£o (Painel)';
+            btn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição (Painel)';
             btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#0ea5e9;color:white;border:none;padding:15px 25px;border-radius:30px;font-weight:bold;cursor:pointer;box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
             btn.onclick = () => { toggleBtn.click(); btn.remove(); };
             document.body.appendChild(btn);
@@ -1465,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const scrollY = window.scrollY || document.documentElement.scrollTop;
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; transform:translate(-50%, -50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Inscreva-se Agora';
         btnWrap.dataset.isSubscribeBtn = "true";
 
@@ -1485,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const scrollY = window.scrollY || document.documentElement.scrollTop;
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; transform:translate(-50%, -50%); z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Show Content';
         btnWrap.dataset.isViewModulesBtn = "true";
 
