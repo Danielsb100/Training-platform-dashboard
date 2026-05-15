@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Preenche Header Visual
             const nameToDisplay = profile.displayName || user.username || 'No Name';
-            document.getElementById('settings-name').value = nameToDisplay;
+            if (document.getElementById('settings-name')) document.getElementById('settings-name').value = nameToDisplay;
             const headerName = document.querySelector('.profile-details h2');
             if (headerName) headerName.innerText = nameToDisplay;
 
@@ -407,52 +407,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (headerRole) {
                 const userRole = (user.roles && user.roles.length > 0) ? user.roles[0] : (user.role || 'USER');
                 headerRole.innerText = profile.headline || userRole;
-                document.getElementById('settings-role').value = userRole;
+                if (document.getElementById('settings-role')) document.getElementById('settings-role').value = userRole;
             }
 
             const headerBio = document.querySelector('.profile-bio');
             if (headerBio) {
                 headerBio.innerText = profile.bio || 'Add a biography in Settings.';
-                document.getElementById('settings-bio').value = profile.bio || '';
-                document.getElementById('port-bio').value = profile.bio || '';
+                if (document.getElementById('settings-bio')) document.getElementById('settings-bio').value = profile.bio || '';
+                if (document.getElementById('port-bio')) document.getElementById('port-bio').value = profile.bio || '';
             }
-            if (profile.interests) {
+            if (profile.interests && document.getElementById('settings-interests')) {
                 document.getElementById('settings-interests').value = profile.interests.join(', ');
             }
             if (profile.spokenLanguages) {
                 const langStr = profile.spokenLanguages.join(', ');
-                document.getElementById('settings-languages').value = langStr;
-                document.getElementById('port-languages').value = langStr;
+                if (document.getElementById('settings-languages')) document.getElementById('settings-languages').value = langStr;
+                if (document.getElementById('port-languages')) document.getElementById('port-languages').value = langStr;
                 const headerLang = document.getElementById('header-languages');
                 if (headerLang) headerLang.innerText = langStr;
             }
-            if (profile.linkedinUrl) document.getElementById('port-linkedin').value = profile.linkedinUrl;
-            if (profile.githubUrl) document.getElementById('port-github').value = profile.githubUrl;
-            if (profile.behanceUrl) document.getElementById('port-behance').value = profile.behanceUrl;
-            if (profile.artstationUrl) document.getElementById('port-artstation').value = profile.artstationUrl;
-            if (profile.timezone) document.getElementById('port-timezone').value = profile.timezone;
-            if (profile.organization) document.getElementById('port-organization').value = profile.organization;
-            if (profile.course) document.getElementById('port-course').value = profile.course;
+            if (profile.linkedinUrl && document.getElementById('port-linkedin')) document.getElementById('port-linkedin').value = profile.linkedinUrl;
+            if (profile.githubUrl && document.getElementById('port-github')) document.getElementById('port-github').value = profile.githubUrl;
+            if (profile.behanceUrl && document.getElementById('port-behance')) document.getElementById('port-behance').value = profile.behanceUrl;
+            if (profile.artstationUrl && document.getElementById('port-artstation')) document.getElementById('port-artstation').value = profile.artstationUrl;
+            if (profile.timezone && document.getElementById('port-timezone')) document.getElementById('port-timezone').value = profile.timezone;
+            if (profile.organization && document.getElementById('port-organization')) document.getElementById('port-organization').value = profile.organization;
+            if (profile.course && document.getElementById('port-course')) document.getElementById('port-course').value = profile.course;
             if (profile.location) {
-                document.getElementById('port-location').value = profile.location;
+                if (document.getElementById('port-location')) document.getElementById('port-location').value = profile.location;
                 const headerLoc = document.getElementById('header-location');
                 if (headerLoc) headerLoc.innerText = profile.location;
             }
-            if (profile.websiteUrl) document.getElementById('port-website').value = profile.websiteUrl;
+            if (profile.websiteUrl && document.getElementById('port-website')) document.getElementById('port-website').value = profile.websiteUrl;
             
             const prefs = profileData.preferences || {};
-            if (prefs.language) document.getElementById('port-pref-language').value = prefs.language;
-            if (prefs.theme) document.getElementById('port-pref-theme').value = prefs.theme;
-            if (prefs.emailNotifications !== undefined) document.getElementById('port-pref-email').checked = prefs.emailNotifications;
-            if (prefs.allowDirectMessages !== undefined) document.getElementById('port-pref-contact').checked = prefs.allowDirectMessages;
-            if (prefs.reduceMotion !== undefined) document.getElementById('port-pref-motion').checked = prefs.reduceMotion;
-            if (prefs.highContrast !== undefined) document.getElementById('port-pref-contrast').checked = prefs.highContrast;
+            if (prefs.language && document.getElementById('settings-pref-language')) document.getElementById('settings-pref-language').value = prefs.language;
+            if (prefs.theme && document.getElementById('settings-pref-theme')) document.getElementById('settings-pref-theme').value = prefs.theme;
+            if (prefs.emailNotifications !== undefined && document.getElementById('settings-pref-email')) document.getElementById('settings-pref-email').checked = prefs.emailNotifications;
+            if (prefs.allowDirectMessages !== undefined && document.getElementById('settings-pref-contact')) document.getElementById('settings-pref-contact').checked = prefs.allowDirectMessages;
+            if (prefs.reduceMotion !== undefined && document.getElementById('settings-pref-motion')) document.getElementById('settings-pref-motion').checked = prefs.reduceMotion;
+            if (prefs.highContrast !== undefined && document.getElementById('settings-pref-contrast')) document.getElementById('settings-pref-contrast').checked = prefs.highContrast;
 
             const consents = profileData.consents || {};
-            if (consents.termsAndPrivacy) document.getElementById('port-consent-terms').checked = consents.termsAndPrivacy.granted;
-            if (consents.marketingEmails) document.getElementById('port-consent-marketing').checked = consents.marketingEmails.granted;
-            if (consents.profileDiscovery) document.getElementById('port-consent-discovery').checked = consents.profileDiscovery.granted;
-            if (consents.worldProfileCard) document.getElementById('port-consent-world').checked = consents.worldProfileCard.granted;
+            if (consents.termsAndPrivacy && document.getElementById('settings-consent-terms')) document.getElementById('settings-consent-terms').checked = consents.termsAndPrivacy.granted;
+            if (consents.marketingEmails && document.getElementById('settings-consent-marketing')) document.getElementById('settings-consent-marketing').checked = consents.marketingEmails.granted;
+            if (consents.profileDiscovery && document.getElementById('settings-consent-discovery')) document.getElementById('settings-consent-discovery').checked = consents.profileDiscovery.granted;
+            if (consents.worldProfileCard && document.getElementById('settings-consent-world')) document.getElementById('settings-consent-world').checked = consents.worldProfileCard.granted;
 
             // Global Navigation Visibility Rules
             const navCreations = document.getElementById('nav-creations');

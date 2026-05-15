@@ -232,6 +232,16 @@ async function openModuleEditor(moduleId = null) {
                 } catch (err) {
                     console.error('Failed to link new module to course', err);
                 }
+            } else if (window.editingCourseId) {
+                if (!window.courseModules) window.courseModules = [];
+                window.courseModules.push({
+                    id: `local_${Date.now()}`,
+                    dbId: newModule.id,
+                    title: newModule.title,
+                    content: newModule.description || '',
+                    status: newModule.status
+                });
+                renderAttachedModules();
             }
 
             renderVideos([]);
@@ -319,6 +329,8 @@ async function saveModuleBasics() {
             localMod.status = status;
             if(typeof saveDraft === 'function') saveDraft(true);
         }
+        
+        if (typeof renderAttachedModules === 'function') renderAttachedModules();
 
         alert('General changes saved successfully!');
         fetchModulesFromDB(); // update list in background

@@ -46,9 +46,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .then(res => res.json())
         .then(profileData => {
-            const user = profileData.user;
-            const roles = user?.roles || [];
-            const photoUrl = user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            const actualData = profileData.data || profileData;
+            const user = actualData.user || {};
+            const roles = user.roles || [];
+            const photoUrl = user.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
             
             if (photoUrl !== cachedProfileImg) {
                 sessionStorage.setItem('cached_profile_img', photoUrl);

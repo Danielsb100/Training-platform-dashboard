@@ -2,6 +2,7 @@ const prisma = require('../config/db');
 const { notifyQuizSubmitted } = require('../services/notificationService');
 const { generateQuizFromModule, getModuleAssetUrl } = require('../services/openaiQuizService');
 const { scheduleKnowledgeBaseRefresh } = require('../services/aiKnowledgeSyncService');
+const { assertModuleAccess } = require('./moduleController');
 
 const queueAiKnowledgeRefresh = (reason) => {
     scheduleKnowledgeBaseRefresh({ prisma, reason }).catch((error) => {
@@ -9,20 +10,7 @@ const queueAiKnowledgeRefresh = (reason) => {
     });
 };
 
-const getEffectiveUserRoles = (user) => new Set([
-    ...(Array.isArray(user?.roles) ? user.roles : []),
-    user?.primaryRole,
-    user?.legacyRole,
-    user?.role
-].filter(Boolean));
 
-const isModuleManager = (user, module) => {
-    const roles = getEffectiveUserRoles(user);
-    return String(module?.ownerMasterId) === String(user?.id)
-        || roles.has('ADMIN')
-        || roles.has('MASTER')
-        || roles.has('SUPER_ADMIN');
-};
 
 const normalizeQuizOptions = (options) => {
     if (!Array.isArray(options) || options.length < 2) {
@@ -58,16 +46,18 @@ const addVideo = async (req, res) => {
         const { id } = req.params; // moduleId
         const { title, url, order } = req.body;
 
-        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(id) } });
+        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (!isModuleManager(req.user, module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         console.log(`[DEBUG] Adding video to module ${id}:`, { title, url, order });
         const video = await prisma.moduleVideo.create({
             data: {
-                moduleId: parseInt(id),
+                moduleId: parseInt(req.params.id),
                 title,
                 url,
                 order: parseInt(order) || 0
@@ -92,8 +82,10 @@ const updateVideo = async (req, res) => {
         });
 
         if (!video) return res.status(404).json({ error: 'Video not found' });
-        if (!isModuleManager(req.user, video.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(video.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const dataToUpdate = {};
@@ -121,8 +113,10 @@ const deleteVideo = async (req, res) => {
         });
 
         if (!video) return res.status(404).json({ error: 'Video not found' });
-        if (video.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(video.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         await prisma.moduleVideo.delete({ where: { id: parseInt(videoId) } });
@@ -140,16 +134,18 @@ const addDocument = async (req, res) => {
         const { id } = req.params; // moduleId
         const { title, documentId, order } = req.body;
 
-        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(id) } });
+        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (!isModuleManager(req.user, module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         console.log(`[DEBUG] Linking document ${documentId} to module ${id} as "${title}"`);
         const doc = await prisma.moduleDocument.create({
             data: {
-                moduleId: parseInt(id),
+                moduleId: parseInt(req.params.id),
                 documentId: parseInt(documentId),
                 title,
                 order: parseInt(order) || 0
@@ -174,8 +170,10 @@ const updateDocument = async (req, res) => {
         });
 
         if (!modDoc) return res.status(404).json({ error: 'Module document link not found' });
-        if (modDoc.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(modDoc.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const updated = await prisma.moduleDocument.update({
@@ -198,8 +196,10 @@ const deleteDocument = async (req, res) => {
         });
 
         if (!modDoc) return res.status(404).json({ error: 'Module document link not found' });
-        if (modDoc.module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(modDoc.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         await prisma.moduleDocument.delete({ where: { id: parseInt(documentId) } });
@@ -217,16 +217,18 @@ const createQuiz = async (req, res) => {
         const { id } = req.params; // moduleId
         const { title, order } = req.body;
 
-        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(id) } });
+        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (!isModuleManager(req.user, module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         console.log(`[DEBUG] Creating quiz for module ${id}: "${title}"`);
         const quiz = await prisma.quiz.create({
             data: {
-                moduleId: parseInt(id),
+                moduleId: parseInt(req.params.id),
                 title,
                 order: parseInt(order) || 0
             }
@@ -245,13 +247,15 @@ const deleteQuiz = async (req, res) => {
         const quizId = parseInt(req.params.quizId, 10);
 
         const quiz = await prisma.quiz.findUnique({
-            where: { id: quizId },
-            include: { module: true }
+            where: { id: quizId }
         });
 
         if (!quiz || quiz.moduleId !== moduleId) return res.status(404).json({ error: 'Quiz not found' });
-        if (!isModuleManager(req.user, quiz.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         await prisma.quiz.delete({
@@ -272,13 +276,15 @@ const updateQuiz = async (req, res) => {
         const { title, order } = req.body || {};
 
         const quiz = await prisma.quiz.findUnique({
-            where: { id: quizId },
-            include: { module: true }
+            where: { id: quizId }
         });
 
         if (!quiz || quiz.moduleId !== moduleId) return res.status(404).json({ error: 'Quiz not found' });
-        if (!isModuleManager(req.user, quiz.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const data = {};
@@ -311,6 +317,12 @@ const createAiGeneratedQuiz = async (req, res) => {
         const moduleId = parseInt(req.params.id, 10);
         const { questionCount, optionsPerQuestion, title } = req.body || {};
 
+        try {
+            await assertModuleAccess(parseInt(req.params.id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
+        }
+
         const module = await prisma.trainingModule.findUnique({
             where: { id: moduleId },
             include: {
@@ -320,9 +332,6 @@ const createAiGeneratedQuiz = async (req, res) => {
         });
 
         if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (!isModuleManager(req.user, module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
 
         const videoAssetIds = [...new Set((module.videos || [])
             .map((video) => getModuleAssetUrl(video.url))
@@ -376,10 +385,13 @@ const addQuizQuestion = async (req, res) => {
         const { quizId } = req.params;
         const { text, order, options } = req.body;
 
-        const quiz = await prisma.quiz.findUnique({ where: { id: parseInt(quizId) }, include: { module: true } });
+        const quiz = await prisma.quiz.findUnique({ where: { id: parseInt(quizId) } });
         if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
-        if (!isModuleManager(req.user, quiz.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        
+        try {
+            await assertModuleAccess(quiz.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const normalizedOptions = normalizeQuizOptions(options);
@@ -412,12 +424,15 @@ const updateQuizQuestion = async (req, res) => {
 
         const question = await prisma.quizQuestion.findUnique({ 
             where: { id: parsedQuestionId },
-            include: { quiz: { include: { module: true } } }
+            include: { quiz: true }
         });
 
         if (!question) return res.status(404).json({ error: 'Question not found' });
-        if (!isModuleManager(req.user, question.quiz.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        
+        try {
+            await assertModuleAccess(question.quiz.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const data = {};
@@ -469,12 +484,15 @@ const deleteQuizQuestion = async (req, res) => {
         const { questionId } = req.params;
         const question = await prisma.quizQuestion.findUnique({ 
             where: { id: parseInt(questionId) },
-            include: { quiz: { include: { module: true } } }
+            include: { quiz: true }
         });
 
         if (!question) return res.status(404).json({ error: 'Question not found' });
-        if (!isModuleManager(req.user, question.quiz.module)) {
-            return res.status(403).json({ error: 'Unauthorized' });
+        
+        try {
+            await assertModuleAccess(question.quiz.moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         // Cascading delete handles options if configured in Prisma, otherwise handle manually
@@ -491,7 +509,7 @@ const submitQuiz = async (req, res) => {
         const { id } = req.params; // moduleId
         const { answers, courseId } = req.body; // array of { questionId, optionId }
         const userId = req.user.id;
-        const moduleId = parseInt(id);
+        const moduleId = parseInt(req.params.id);
         const parsedCourseId = courseId ? parseInt(courseId) : null;
 
         const module = await prisma.trainingModule.findUnique({ 
@@ -571,7 +589,7 @@ const getQuizzesSubmissions = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
         const submissions = await prisma.quizSubmission.findMany({
-            where: { moduleId: parseInt(id) },
+            where: { moduleId: parseInt(req.params.id) },
             include: { user: { select: { id: true, username: true } } },
             orderBy: { createdAt: 'desc' }
         });

@@ -59,6 +59,52 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
     return formatted;
 };
 
+// --- Authorization Helper ---
+
+async function assertModuleAccess(moduleId, user, tx = prisma) {
+    const roles = new Set([
+        ...(user?.roles || []),
+        user?.primaryRole,
+        user?.legacyRole,
+        user?.role
+    ].filter(Boolean));
+    
+    const module = await tx.trainingModule.findUnique({
+        where: { id: moduleId },
+        include: {
+            courseModules: {
+                include: {
+                    course: {
+                        include: { editors: true }
+                    }
+                }
+            }
+        }
+    });
+    
+    if (!module) {
+        const err = new Error('Module not found');
+        err.statusCode = 404;
+        throw err;
+    }
+    
+    if (String(module.ownerMasterId) === String(user.id)) return module;
+    if (roles.has('ADMIN') || roles.has('SUPER_ADMIN')) return module;
+    
+    const isCourseEditor = module.courseModules && module.courseModules.some(cm => 
+        cm.course && (
+            String(cm.course.ownerMasterId) === String(user.id) ||
+            (cm.course.editors && cm.course.editors.some(e => String(e.userId) === String(user.id)))
+        )
+    );
+    
+    if (isCourseEditor) return module;
+    
+    const err = new Error('Unauthorized');
+    err.statusCode = 403;
+    throw err;
+}
+
 // --- Module CRUD ---
 
 const createModule = async (req, res) => {
@@ -192,10 +238,10 @@ const updateModule = async (req, res) => {
             return res.status(400).json({ error: 'Request body is required.' });
         }
 
-        const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(id) } });
-        if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Only the owner can edit this module.' });
+        try {
+            await assertModuleAccess(parseInt(id), req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const updated = await prisma.trainingModule.update({
@@ -213,10 +259,12 @@ const patchStatus = async (req, res, status) => {
     try {
         const { id } = req.params;
         const moduleId = parseInt(id);
-        const module = await prisma.trainingModule.findUnique({ where: { id: moduleId } });
-        if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Not authorized' });
+        
+        let module;
+        try {
+            module = await assertModuleAccess(moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         const updated = await prisma.$transaction(async (tx) => {
@@ -282,10 +330,11 @@ const deleteModule = async (req, res) => {
     try {
         const { id } = req.params;
         const moduleId = parseInt(id);
-        const module = await prisma.trainingModule.findUnique({ where: { id: moduleId } });
-        if (!module) return res.status(404).json({ error: 'Module not found' });
-        if (module.ownerMasterId !== req.user.id && req.user.role !== 'ADMIN') {
-            return res.status(403).json({ error: 'Not authorized' });
+        
+        try {
+            await assertModuleAccess(moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
         await deepDeleteModule(moduleId);
@@ -338,6 +387,7 @@ const getMyAssignableModules = async (req, res) => {
 };
 
 module.exports = {
+    assertModuleAccess,
     createModule,
     getMyModules,
     getAllPublishedModules,
