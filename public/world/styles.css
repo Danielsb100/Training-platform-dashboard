@@ -2164,6 +2164,11 @@ body.course-world-mode .world-cards-container {
     top: 6.4rem;
     right: 24rem;
     z-index: 1080;
+    transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
+    right: 2rem;
 }
 
 @media (max-width: 1280px) {
@@ -2177,6 +2182,7 @@ body.course-world-mode .world-cards-container {
     flex: 1;
     width: 100%;
     min-width: 0;
+    max-height: calc(100vh - 120px);
     padding: 1rem 1.1rem;
     border-radius: 20px;
     background: var(--panel-bg);
@@ -2184,8 +2190,29 @@ body.course-world-mode .world-cards-container {
     backdrop-filter: blur(16px);
     box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
     pointer-events: auto;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    scrollbar-width: none;
+}
+
+.world-operations-card::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+.world-operations-card::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 10px;
+}
+
+.world-operations-card:hover {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+.world-operations-card:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.5);
 }
 
 .card-inner {
