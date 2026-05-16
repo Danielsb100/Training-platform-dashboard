@@ -185,9 +185,7 @@
             <button id="btn-toggle-ai-tips" class="sidebar-btn" title="Toggle AI Tips">💡</button>
             <button id="btn-toggle-players" class="sidebar-btn" title="Toggle Player List">👥</button>
             <button id="btn-toggle-chat" class="sidebar-btn" title="Toggle Chat">💬</button>
-            
         </div>
-        <button id="btn-toggle-theme" class="sidebar-btn" title="Toggle Theme" style="margin-top: auto;">☀️</button>
     </div>
 
     <!-- Left UI Column Wrapper -->
@@ -275,40 +273,46 @@
         </div>
     </div>
 
-    <div id="world-operations-card" class="ui-layer world-operations-card hidden">
-        <div class="world-operations-header">
-            <div>
-                <span class="world-operations-eyebrow">Operational Agenda</span>
-                <h3>Pending actions</h3>
+    <div id="world-cards-container" class="world-cards-container ui-layer pointer-events-none">
+        <div id="world-operations-card" class="world-operations-card hidden pointer-events-auto">
+            <div class="card-inner">
+                <div class="world-operations-header">
+                    <div>
+                        <span class="world-operations-eyebrow">Operational Agenda</span>
+                        <h3>Pending actions</h3>
+                    </div>
+                    <a id="world-operations-link" href="#" target="_blank">Open dashboard</a>
+                </div>
+                <div class="world-operations-counts">
+                    <span id="world-operations-unread" class="world-operations-pill">0 unread</span>
+                    <span id="world-operations-urgent" class="world-operations-pill warning">0 urgent</span>
+                </div>
+                <ul id="world-operations-list" class="world-operations-list">
+                    <li class="world-operations-empty">No pending items right now.</li>
+                </ul>
             </div>
-            <a id="world-operations-link" href="#" target="_blank">Open dashboard</a>
         </div>
-        <div class="world-operations-counts">
-            <span id="world-operations-unread" class="world-operations-pill">0 unread</span>
-            <span id="world-operations-urgent" class="world-operations-pill warning">0 urgent</span>
-        </div>
-        <ul id="world-operations-list" class="world-operations-list">
-            <li class="world-operations-empty">No pending items right now.</li>
-        </ul>
-    </div>
 
-    <div id="world-ai-tips-card" class="ui-layer world-operations-card hidden">
-        <div class="world-operations-header">
-            <div>
-                <span class="world-operations-eyebrow">AI Tips</span>
-                <h3>Study guidance</h3>
+        <div id="world-ai-tips-card" class="world-operations-card hidden pointer-events-auto">
+            <div class="card-inner">
+                <div class="world-operations-header">
+                    <div>
+                        <span class="world-operations-eyebrow">AI Tips</span>
+                        <h3>Study guidance</h3>
+                    </div>
+                    <button id="world-ai-tips-close" class="close-btn" type="button" title="Close AI tips">&times;</button>
+                </div>
+                <div class="world-operations-counts">
+                    <span id="world-ai-tips-total" class="world-operations-pill">0 tips</span>
+                    <span id="world-ai-tips-attention" class="world-operations-pill warning">0 attention</span>
+                </div>
+                <ul id="world-ai-tips-list" class="world-operations-list">
+                    <li class="world-operations-empty">Open this card to load AI study tips.</li>
+                </ul>
+                <div class="world-ai-tips-footer">
+                    <button id="world-ai-tips-refresh" type="button">Refresh tips</button>
+                </div>
             </div>
-            <button id="world-ai-tips-close" class="close-btn" type="button" title="Close AI tips">&times;</button>
-        </div>
-        <div class="world-operations-counts">
-            <span id="world-ai-tips-total" class="world-operations-pill">0 tips</span>
-            <span id="world-ai-tips-attention" class="world-operations-pill warning">0 attention</span>
-        </div>
-        <ul id="world-ai-tips-list" class="world-operations-list">
-            <li class="world-operations-empty">Open this card to load AI study tips.</li>
-        </ul>
-        <div class="world-ai-tips-footer">
-            <button id="world-ai-tips-refresh" type="button">Refresh tips</button>
         </div>
     </div>
 

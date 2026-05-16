@@ -250,7 +250,6 @@ const btnToggleAiAssistant = document.getElementById('btn-toggle-ai-assistant');
 const btnToggleAiTips = document.getElementById('btn-toggle-ai-tips');
 const btnTogglePlayers = document.getElementById('btn-toggle-players');
 const btnToggleChat = document.getElementById('btn-toggle-chat');
-const btnToggleTheme = document.getElementById('btn-toggle-theme');
 
 const videoContainer = document.getElementById('video-container');
 const remoteVideo = document.getElementById('remote-video');
@@ -5922,21 +5921,6 @@ if (btnToggleChat) {
     };
 }
 
-// Theme Toggle Logic
-if (btnToggleTheme) {
-    btnToggleTheme.onclick = () => {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        if (isLight) {
-            document.documentElement.removeAttribute('data-theme');
-            btnToggleTheme.innerText = '☀️';
-            btnToggleTheme.classList.remove('active');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'light');
-            btnToggleTheme.innerText = '🌙';
-            btnToggleTheme.classList.add('active');
-        }
-    };
-}
 
 // --- Player Interaction Menu & Asset Modal ---
 
