@@ -756,7 +756,7 @@ body.course-world-mode #chat-input-container {
     left: 0;
     bottom: 0;
     width: 68px;
-    background: var(--panel-bg);
+    background: linear-gradient(to bottom, #4a718b 0%, #a5915a 100%);
     border-radius: 0;
     border-right: 1px solid var(--panel-border);
     z-index: 2000;

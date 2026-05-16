@@ -85,17 +85,17 @@
             const showCompleteButton = module.unlocked && !module.completed;
             const completeButtonLabel = module.canMarkComplete ? 'Mark done' : 'Pass quiz first';
             const completeButtonStyle = module.canMarkComplete
-                ? `${actionButtonStyle} background:rgba(16,185,129,0.16); color:#d1fae5; border:1px solid rgba(52,211,153,0.25);`
-                : `${actionButtonStyle} background:rgba(37,99,235,0.12); color:#dbeafe; border:1px solid rgba(96,165,250,0.22); opacity:0.72; cursor:not-allowed;`;
+                ? `${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(207,156,51,0.2); color:#fde047; border:1px solid rgba(207,156,51,0.4);' : 'background:rgba(207,156,51,0.15); color:#b48600; border:1px solid rgba(207,156,51,0.4);'}`
+                : `${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(37,99,235,0.12); color:#dbeafe; border:1px solid rgba(96,165,250,0.22);' : 'background:rgba(59,130,246,0.1); color:#2563eb; border:1px solid rgba(59,130,246,0.3);'} opacity:0.72; cursor:not-allowed;`;
 
             return `
-                <article data-course-trail-module="${module.moduleId}" style="padding:1rem; border-radius:18px; background:${isCurrentRoom ? 'linear-gradient(135deg, rgba(37,99,235,0.34), rgba(14,165,233,0.22))' : 'rgba(30,41,59,0.78)'}; border:2px solid ${isCurrentRoom ? 'rgba(125,211,252,0.95)' : 'rgba(255,255,255,0.06)'}; display:flex; flex-direction:column; gap:0.7rem; box-shadow:${isCurrentRoom ? '0 0 0 2px rgba(56,189,248,0.18), 0 18px 38px rgba(2,132,199,0.18)' : 'none'}; transform:${isCurrentRoom ? 'translateX(-4px) scale(1.01)' : 'none'}; transition:all 160ms ease;">
+                <article data-course-trail-module="${module.moduleId}" style="padding:1rem; border-radius:18px; background:${isCurrentRoom ? 'linear-gradient(135deg, rgba(37,99,235,0.34), rgba(14,165,233,0.22))' : 'rgba(241,245,249,0.95)'}; border:2px solid ${isCurrentRoom ? 'rgba(125,211,252,0.95)' : 'rgba(203,213,225,0.5)'}; display:flex; flex-direction:column; gap:0.7rem; box-shadow:${isCurrentRoom ? '0 0 0 2px rgba(56,189,248,0.18), 0 18px 38px rgba(2,132,199,0.18)' : '0 4px 12px rgba(0,0,0,0.05)'}; transform:${isCurrentRoom ? 'translateX(-4px) scale(1.01)' : 'none'}; transition:all 160ms ease;">
                     <div style="display:flex; justify-content:space-between; gap:0.75rem; align-items:flex-start;">
                         <div style="display:flex; gap:0.75rem; align-items:flex-start;">
-                            <span style="display:inline-flex; width:30px; height:30px; border-radius:999px; align-items:center; justify-content:center; background:${isCurrentRoom ? 'rgba(186,230,253,0.22)' : (module.completed ? 'rgba(16,185,129,0.18)' : 'rgba(148,163,184,0.16)')}; color:${isCurrentRoom ? '#e0f2fe' : (module.completed ? '#34d399' : '#cbd5e1')}; font-weight:800; flex:0 0 30px;">${stepIcon}</span>
+                            <span style="display:inline-flex; width:30px; height:30px; border-radius:999px; align-items:center; justify-content:center; background:${isCurrentRoom ? 'rgba(186,230,253,0.22)' : (module.completed ? 'rgba(16,185,129,0.18)' : 'rgba(148,163,184,0.2)')}; color:${isCurrentRoom ? '#e0f2fe' : (module.completed ? '#059669' : '#64748b')}; font-weight:800; flex:0 0 30px;">${stepIcon}</span>
                             <div>
-                                <strong style="display:block; margin-bottom:0.25rem; color:${isCurrentRoom ? '#f8fafc' : 'white'};">Room ${index + 1}. ${escapeHtml(module.title)}</strong>
-                                <span style="font-size:0.8rem; color:${isCurrentRoom ? '#dbeafe' : '#94a3b8'};">${escapeHtml(module.roomLabel || 'Module room')}</span>
+                                <strong style="display:block; margin-bottom:0.25rem; color:${isCurrentRoom ? '#f8fafc' : '#1e293b'};">Room ${index + 1}. ${escapeHtml(module.title)}</strong>
+                                <span style="font-size:0.8rem; color:${isCurrentRoom ? '#dbeafe' : '#64748b'};">${escapeHtml(module.roomLabel || 'Module room')}</span>
                             </div>
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
@@ -103,17 +103,17 @@
                             <span style="font-size:0.74rem; color:white; background:${statusColor}; border-radius:999px; padding:0.25rem 0.6rem;">${statusLabel}</span>
                         </div>
                     </div>
-                    <div style="font-size:0.8rem; color:${isCurrentRoom ? '#e2e8f0' : '#cbd5e1'}; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                    <div style="font-size:0.8rem; color:${isCurrentRoom ? '#e2e8f0' : '#475569'}; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
                         <span>${module.isRequired ? 'Required' : 'Optional'}</span>
                         <span>•</span>
                         <span>${escapeHtml(module.moduleStatus || 'DRAFT')}</span>
                         ${quizRuleText ? `<span>•</span><span>${escapeHtml(quizRuleText)}</span>` : ''}
                         ${isCurrentRoom ? '<span>•</span><strong style="color:#e0f2fe;">Current room</strong>' : ''}
                     </div>
-                    ${quizProgressText ? `<div style="font-size:0.78rem; color:${module.quizPassed ? '#86efac' : '#93c5fd'};">${escapeHtml(quizProgressText)}</div>` : ''}
+                    ${quizProgressText ? `<div style="font-size:0.78rem; color:${module.quizPassed ? (isCurrentRoom ? '#86efac' : '#059669') : (isCurrentRoom ? '#93c5fd' : '#2563eb')};">${escapeHtml(quizProgressText)}</div>` : ''}
                     <div style="display:flex; gap:0.55rem; flex-wrap:wrap;">
                         ${module.unlocked && !isCurrentRoom ? `<button type="button" data-course-trail-action="teleport" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:linear-gradient(135deg, #2563eb, #38bdf8); color:white; box-shadow:0 10px 24px rgba(37,99,235,0.28);">Go to room</button>` : ''}
-                        ${module.unlocked ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);">Open module</button>` : ''}
+                        ${module.unlocked ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);' : 'background:white; color:#334155; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.02);'}">Open module</button>` : ''}
                         ${showCompleteButton ? `<button type="button" data-course-trail-action="complete" data-module-id="${module.moduleId}" style="${completeButtonStyle}" ${module.canMarkComplete ? '' : 'data-completion-blocked="true"'}>${completeButtonLabel}</button>` : ''}
                     </div>
                 </article>
