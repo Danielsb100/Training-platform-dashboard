@@ -1439,21 +1439,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
             <path d="M 350 0 C 350 80, 520 80, 520 160 C 520 240, 300 240, 300 320 C 300 400, 500 400, 500 480 C 500 560, 320 560, 320 640 C 320 700, 420 720, 420 750" fill="none" stroke="url(#grad)" stroke-width="28" stroke-linecap="round"/>
         </svg>
 
-        <!-- Downloads Sidebar -->
-        <div class="dl-sidebar">
-            <h4>Downloads</h4>
-            <ul>
-                <li>• Interactive scenarios</li>
-                <li>• Case studies</li>
-                <li>• Trace analysis</li>
-                <li>• Operational scenarios</li>
-                <li>• Digital forensics</li>
-                <li>• OSINT modules</li>
-                <li>• Training modules</li>
-                <li>• External networks</li>
-                <li>• Other...</li>
-            </ul>
-        </div>
+
 
         <!-- Step 1 - Left of curve top -->
         <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
@@ -1511,7 +1497,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
             <div class="av-f"><div><h4>Legal Disclaimer</h4><p>Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
             <div class="av-f"><div><h4>Feedback Loop</h4><p>User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
         </div>
-        <div class="mic">🎤</div>
+
     </div>
 </section>
 
@@ -1553,8 +1539,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
         <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
         <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
         <div class="foot-col" style="flex:2;">
-            <h4>Partners</h4>
-            <div class="partners-row"><div>SCO</div><div>KIMIA</div><div>AGENFOR</div><div>Global Initiative</div><div>REOC</div></div>
+
             <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101188456</p>
             <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
         </div>
@@ -1690,9 +1675,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
             <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
         </div>
-        <div class="hero-logo">
-            <img src="intercepted_logo_transparent.png" alt="Project INTERCEPTED">
-        </div>
+
     </div>
 </section>
 
@@ -1757,7 +1740,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 </style>
 
 <section id="intercepted-pdf-training-section" class="intercepted-pdf-training-section" data-page="intercepted">
-    <div class="ipt-intro">
+    <div class="ipt-intro module-section" id="ipt-intro-section">
+        <div class="bg-overlay"></div>
+        <button class="bg-edit-btn" onclick="triggerImageUpload('ipt-intro-section', 'bg')">
+            <i class="fas fa-image"></i> Change BG
+        </button>
         <div class="ipt-intro-inner">
             <div class="ipt-intro-text">
                 <h2 class="editable-text">The project Intercepted contributes to develop the European Virtual Judicial and Security Academy</h2>
@@ -1770,7 +1757,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             </div>
         </div>
     </div>
-    <div class="ipt-areas">
+    <div class="ipt-areas module-section" id="ipt-areas-section">
+        <div class="bg-overlay"></div>
+        <button class="bg-edit-btn" onclick="triggerImageUpload('ipt-areas-section', 'bg')">
+            <i class="fas fa-image"></i> Change BG
+        </button>
         <div class="ipt-areas-inner">
             <div class="ipt-areas-title">
                 <h2 class="editable-text">The Intercepted training course covers the following areas</h2>
@@ -1787,7 +1778,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             </div>
         </div>
     </div>
-    <div class="ipt-combating">
+    <div class="ipt-combating module-section" id="ipt-combating-section">
+        <div class="bg-overlay"></div>
+        <button class="bg-edit-btn" onclick="triggerImageUpload('ipt-combating-section', 'bg')">
+            <i class="fas fa-image"></i> Change BG
+        </button>
         <div class="ipt-combating-inner">
             <div class="ipt-combating-title">
                 <h2 class="editable-text">Combating trafficking on human beings</h2>
@@ -1814,7 +1809,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             </div>
         </div>
     </div>
-    <div class="ipt-exercise">
+    <div class="ipt-exercise module-section" id="ipt-exercise-section">
+        <div class="bg-overlay"></div>
+        <button class="bg-edit-btn" onclick="triggerImageUpload('ipt-exercise-section', 'bg')">
+            <i class="fas fa-image"></i> Change BG
+        </button>
         <div class="ipt-exercise-inner">
             <div class="ipt-exercise-left">
                 <h2 class="editable-text">Guided Exercise of a transnational investigation on THB</h2>
@@ -1827,7 +1826,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             </div>
         </div>
     </div>
-    <div class="ipt-risk">
+    <div class="ipt-risk module-section" id="ipt-risk-section">
+        <div class="bg-overlay"></div>
+        <button class="bg-edit-btn" onclick="triggerImageUpload('ipt-risk-section', 'bg')">
+            <i class="fas fa-image"></i> Change BG
+        </button>
         <div class="ipt-risk-inner">
             <div class="ipt-risk-title">
                 <h2 class="editable-text">Risk Indicators to prevent THB</h2>
@@ -1891,21 +1894,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             <path d="M 350 0 C 350 80, 520 80, 520 160 C 520 240, 300 240, 300 320 C 300 400, 500 400, 500 480 C 500 560, 320 560, 320 640 C 320 700, 420 720, 420 750" fill="none" stroke="url(#grad)" stroke-width="28" stroke-linecap="round"/>
         </svg>
 
-        <!-- Downloads Sidebar -->
-        <div class="dl-sidebar">
-            <h4>Downloads</h4>
-            <ul>
-                <li>• OSINT scenarios</li>
-                <li>• Case studies</li>
-                <li>• THB analysis</li>
-                <li>• Operational scenarios</li>
-                <li>• Digital forensics</li>
-                <li>• Telecom surveillance</li>
-                <li>• Training modules</li>
-                <li>• AI tools</li>
-                <li>• Other...</li>
-            </ul>
-        </div>
+
 
         <!-- Step 1 -->
         <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
