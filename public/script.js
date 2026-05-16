@@ -255,6 +255,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const styleBtns = document.querySelectorAll('.style-btn');
     const alignBtns = document.querySelectorAll('.align-btn');
 
+    const imageWidthRange = document.getElementById('image-width-range');
+    const imageWidthInput = document.getElementById('image-width-input');
+    const imageHeightRange = document.getElementById('image-height-range');
+    const imageHeightInput = document.getElementById('image-height-input');
     const imageScaleRange = document.getElementById('image-scale-range');
     const imgAlignBtns = document.querySelectorAll('.img-align-btn');
 
@@ -287,7 +291,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let isEditMode = true;
     let activeElement = null;
-    let activeElementType = null; // 'text', 'image', 'bg'
+    let activeElementType = null; // 'text', 'image', 'bg', 'video'
+
+    // Video options
+    const videoOptions = document.getElementById('video-options');
+    const videoUrlInput = document.getElementById('video-url-input');
+    const applyVideoUrlBtn = document.getElementById('apply-video-url-btn');
+    const removeVideoUrlBtn = document.getElementById('remove-video-url-btn');
+    const videoScaleRange = document.getElementById('video-scale-range');
+    const videoScaleInput = document.getElementById('video-scale-input');
+    const videoBorderRadiusInput = document.getElementById('video-border-radius-input');
 
     // --- TEMPLATE MODAL LOGIC ---
     const templateModal = document.getElementById('template-modal');
@@ -482,6 +495,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const clone = container.cloneNode(true);
         clone.querySelectorAll('.bg-edit-btn').forEach(btn => btn.remove());
         clone.querySelectorAll('.drag-handle').forEach(handle => handle.remove());
+
         clone.querySelectorAll('.editable-text').forEach(el => {
             el.removeAttribute('contenteditable');
             el.classList.remove('editable-text');
@@ -740,6 +754,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Atualizar os observadores caso templates iniciais tragam animacoes novas
         if(typeof observeAnimations === 'function') observeAnimations();
 
+        // --- YouTube Container selectable (Edit Mode) ---
+        document.querySelectorAll('.ipt-yt-container').forEach(container => {
+            if(container.dataset.eventsBound) return;
+            container.dataset.eventsBound = 'true';
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!isEditMode) return;
+                setActiveElement(container, 'video');
+            });
+        });
+
         // --- 3. Fundo EditÃ¡vel (BotÃµes) ---
         document.querySelectorAll('.bg-edit-btn').forEach(btn => {
             if(btn.dataset.eventsBound) return;
@@ -824,6 +849,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Esconde todos
         textOptions.classList.add('hidden');
         imageOptions.classList.add('hidden');
+        if (videoOptions) videoOptions.classList.add('hidden');
         bgOptions.classList.add('hidden');
         boxOptions.classList.add('hidden');
         positionOptions.classList.add('hidden');
@@ -853,6 +879,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             else if (activeElementType === 'image') {
                 imageOptions.classList.remove('hidden');
+            }
+            else if (activeElementType === 'video') {
+                if (videoOptions) videoOptions.classList.remove('hidden');
             }
             else if (activeElementType === 'bg') {
                 bgOptions.classList.remove('hidden');
@@ -1043,9 +1072,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             bgOpacityRange.value = textAlpha * 100;
 
         } else if (activeElementType === 'image') {
-            const scale = activeElement.dataset.scale || 100;
-            imageScaleRange.value = scale;
+            const width = activeElement.dataset.width || 100;
+            const height = activeElement.dataset.height || 0;
+            const scale = activeElement.dataset.uniformScale || 1;
+            
+            if(imageWidthRange) imageWidthRange.value = width;
+            if(imageWidthInput) imageWidthInput.value = width;
+            
+            if(imageHeightRange) imageHeightRange.value = height;
+            if(imageHeightInput) imageHeightInput.value = height;
+            
+            if(imageScaleRange) imageScaleRange.value = scale;
             if(imageScaleInput) imageScaleInput.value = scale;
+        } else if (activeElementType === 'video') {
+            if (videoUrlInput) videoUrlInput.value = activeElement.dataset.ytUrl || '';
+            const vScale = activeElement.dataset.videoScale || 100;
+            if (videoScaleRange) videoScaleRange.value = vScale;
+            if (videoScaleInput) videoScaleInput.value = vScale;
+            if (videoBorderRadiusInput) videoBorderRadiusInput.value = parseInt(activeElement.style.borderRadius) || 10;
         }
 
         // Sync Box Shadow Global
@@ -1233,16 +1277,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- Controladores de Imagem ---
-    const updateImgScale = (val) => {
-        imageScaleRange.value = val;
-        if(imageScaleInput) imageScaleInput.value = val;
+    const updateImgWidth = (val) => {
+        if(imageWidthRange) imageWidthRange.value = val;
+        if(imageWidthInput) imageWidthInput.value = val;
         if(activeElement){
-            activeElement.dataset.scale = val;
+            activeElement.dataset.width = val;
             applyStyle('width', `${val}%`);
         }
     };
-    imageScaleRange.addEventListener('input', e => updateImgScale(e.target.value));
-    if(imageScaleInput) imageScaleInput.addEventListener('input', e => updateImgScale(e.target.value));
+    
+    const updateImgHeight = (val) => {
+        if(imageHeightRange) imageHeightRange.value = val;
+        if(imageHeightInput) imageHeightInput.value = val;
+        if(activeElement){
+            activeElement.dataset.height = val;
+            if (val == 0) {
+                applyStyle('height', 'auto');
+            } else {
+                applyStyle('height', `${val}px`);
+            }
+        }
+    };
+
+    const updateImgUniformScale = (val) => {
+        if(imageScaleRange) imageScaleRange.value = val;
+        if(imageScaleInput) imageScaleInput.value = val;
+        if(activeElement){
+            activeElement.dataset.uniformScale = val;
+            applyStyle('transform', `scale(${val})`);
+        }
+    };
+
+    if(imageWidthRange) imageWidthRange.addEventListener('input', e => updateImgWidth(e.target.value));
+    if(imageWidthInput) imageWidthInput.addEventListener('input', e => updateImgWidth(e.target.value));
+    if(imageHeightRange) imageHeightRange.addEventListener('input', e => updateImgHeight(e.target.value));
+    if(imageHeightInput) imageHeightInput.addEventListener('input', e => updateImgHeight(e.target.value));
+    if(imageScaleRange) imageScaleRange.addEventListener('input', e => updateImgUniformScale(e.target.value));
+    if(imageScaleInput) imageScaleInput.addEventListener('input', e => updateImgUniformScale(e.target.value));
 
     imgAlignBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1492,24 +1563,91 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Add a global function to inject a subscribe button
+    // --- Helper: extract YouTube video ID from any URL format ---
+    function extractYouTubeId(url) {
+        if (!url) return '';
+        try {
+            const u = new URL(url.trim());
+            if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+            if (u.searchParams.get('v')) return u.searchParams.get('v');
+        } catch(e) {}
+        return url.trim(); // fallback: treat as raw ID
+    }
+
+    function loadYouTubeIframe(container, videoId, autoplay) {
+        const placeholder = container.querySelector('.ipt-yt-placeholder');
+        const iframeWrap = container.querySelector('.ipt-yt-iframe-wrap');
+        if (placeholder) placeholder.style.display = 'none';
+        if (iframeWrap) {
+            iframeWrap.style.display = 'block';
+            iframeWrap.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + videoId + '?autoplay=' + (autoplay?1:0) + '&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border-radius:inherit;"></iframe>';
+        }
+    }
+
+    function resetYouTubeContainer(container) {
+        const placeholder = container.querySelector('.ipt-yt-placeholder');
+        const iframeWrap = container.querySelector('.ipt-yt-iframe-wrap');
+        if (placeholder) placeholder.style.display = '';
+        if (iframeWrap) { iframeWrap.style.display = 'none'; iframeWrap.innerHTML = ''; }
+        container.dataset.ytUrl = '';
+    }
+
+    // --- Video Panel Controls ---
+    if (applyVideoUrlBtn) {
+        applyVideoUrlBtn.addEventListener('click', () => {
+            if (!activeElement || activeElementType !== 'video') return;
+            const url = videoUrlInput.value.trim();
+            activeElement.dataset.ytUrl = url;
+            if (url) {
+                const vid = extractYouTubeId(url);
+                if (vid) loadYouTubeIframe(activeElement, vid, false);
+            }
+        });
+    }
+    if (removeVideoUrlBtn) {
+        removeVideoUrlBtn.addEventListener('click', () => {
+            if (!activeElement || activeElementType !== 'video') return;
+            resetYouTubeContainer(activeElement);
+            if (videoUrlInput) videoUrlInput.value = '';
+        });
+    }
+    function onVideoScaleChange(val) {
+        if (!activeElement || activeElementType !== 'video') return;
+        const v = Math.max(20, Math.min(200, parseInt(val) || 100));
+        activeElement.dataset.videoScale = v;
+        activeElement.style.width = v + '%';
+        if (videoScaleRange) videoScaleRange.value = v;
+        if (videoScaleInput) videoScaleInput.value = v;
+    }
+    if (videoScaleRange) videoScaleRange.addEventListener('input', e => onVideoScaleChange(e.target.value));
+    if (videoScaleInput) videoScaleInput.addEventListener('change', e => onVideoScaleChange(e.target.value));
+    if (videoBorderRadiusInput) {
+        videoBorderRadiusInput.addEventListener('input', e => {
+            if (!activeElement || activeElementType !== 'video') return;
+            activeElement.style.borderRadius = (parseInt(e.target.value) || 0) + 'px';
+        });
+    }
+
+    // --- Button injection: uses CSS centering (left:50% + translateX) ---
+    // This ensures position is always consistent regardless of panel state,
+    // because CSS percentages resolve against the content box, not the viewport.
     window.injectSubscribeButton = function() {
         if (!isEditMode) return;
         const container = document.getElementById('template-container');
         if (!container) return;
 
         const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const containerRect = container.getBoundingClientRect();
+        const topInContainer = scrollY - containerRect.top - window.scrollY + (window.innerHeight / 2);
+
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
-        btnWrap.innerText = 'Subscribe';
+        btnWrap.style.cssText = `position:absolute; top:${topInContainer}px; left:50%; transform:translateX(-50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.innerText = 'SUBSCRIBE';
         btnWrap.dataset.isSubscribeBtn = "true";
-        
 
         container.appendChild(btnWrap);
-        
-        if(typeof initDynamicEvents === 'function') {
-            initDynamicEvents();
-        }
+        if(typeof initDynamicEvents === 'function') initDynamicEvents();
         btnWrap.click();
     };
 
@@ -1519,18 +1657,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!container) return;
 
         const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const containerRect = container.getBoundingClientRect();
+        const topInContainer = scrollY - containerRect.top - window.scrollY + (window.innerHeight / 2);
+
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${scrollY + window.innerHeight / 2}px; left:50%; margin-left: -100px; margin-top: -25px; z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${topInContainer}px; left:50%; transform:translateX(-50%); z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Open course';
         btnWrap.dataset.isViewModulesBtn = "true";
-        
 
         container.appendChild(btnWrap);
-        
-        if(typeof initDynamicEvents === 'function') {
-            initDynamicEvents();
-        }
+        if(typeof initDynamicEvents === 'function') initDynamicEvents();
         btnWrap.click();
     };
 

@@ -116,12 +116,25 @@
             document.addEventListener('click', async (e) => {
                 const viewBtn = e.target.closest('[data-is-view-modules-btn="true"]');
                 if (viewBtn) {
+                    // Check login before allowing access
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
                     window.location.href = 'course_content.html?id=' + pageId;
                     return;
                 }
                 
                 const subBtn = e.target.closest('.btn-subscribe, [data-is-subscribe-btn="true"]');
                 if (subBtn) {
+                    // Check login before allowing subscribe
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
                     if (subBtn.style.pointerEvents === 'none') return;
                     
                     const originalText = subBtn.innerText;
@@ -132,7 +145,7 @@
                         const res = await fetch(`/api/courses/${pageId}/subscribe`, {
                             method: 'POST',
                             headers: {
-                                'Authorization': 'Bearer ' + localStorage.getItem('token')
+                                'Authorization': 'Bearer ' + token
                             }
                         });
                         if(!res.ok) {
@@ -145,6 +158,37 @@
                         subBtn.innerText = originalText;
                         subBtn.style.opacity = '1';
                         subBtn.style.pointerEvents = 'auto';
+                    }
+                }
+
+                // --- YouTube Video Play in View Mode ---
+                const ytPlay = e.target.closest('.ipt-yt-play, .ipt-yt-placeholder');
+                if (ytPlay) {
+                    const container = ytPlay.closest('.ipt-yt-container');
+                    if (!container) return;
+                    const ytUrl = container.dataset.ytUrl || '';
+                    if (!ytUrl) return;
+
+                    let videoId = '';
+                    try {
+                        const urlObj = new URL(ytUrl);
+                        if (urlObj.hostname.includes('youtu.be')) {
+                            videoId = urlObj.pathname.slice(1);
+                        } else if (urlObj.searchParams.get('v')) {
+                            videoId = urlObj.searchParams.get('v');
+                        }
+                    } catch(err) {
+                        videoId = ytUrl;
+                    }
+
+                    if (videoId) {
+                        const placeholder = container.querySelector('.ipt-yt-placeholder');
+                        const iframeWrap = container.querySelector('.ipt-yt-iframe-wrap');
+                        if (placeholder) placeholder.style.display = 'none';
+                        if (iframeWrap) {
+                            iframeWrap.style.display = 'block';
+                            iframeWrap.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border-radius:10px;"></iframe>';
+                        }
                     }
                 }
             });

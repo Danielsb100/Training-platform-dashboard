@@ -1589,7 +1589,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 .header .partner-text{font-weight:700;font-size:0.65rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;}
 
 /* HERO — darker teal/slate tone */
-.hero{background:linear-gradient(135deg,#0c2d3f 0%,#1a4a5a 40%,#245d6e 100%);position:relative;padding:60px 50px 140px 50px;overflow:hidden;}
+.hero{background:linear-gradient(135deg,#0c2d3f 0%,#1a4a5a 40%,#245d6e 100%);position:relative;padding:60px 50px 60px 50px;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background:url('intercepted-hero-hand.png') center/cover;opacity:0.4;mix-blend-mode:luminosity;}
 .hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
 .hero-content{flex:1;}
@@ -1601,7 +1601,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 .hero-btn{display:inline-flex;align-items:center;gap:12px;background:#0f172a;color:#fff;padding:10px 28px;border-radius:50px;border:2px solid #2dd4bf;font-weight:800;font-size:0.85rem;text-transform:uppercase;text-decoration:none;box-shadow:0 0 20px rgba(45,212,191,0.4);letter-spacing:0.5px;}
 
 /* FEATURES */
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 30px;margin-top:-90px;position:relative;z-index:20;}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:30px 30px;position:relative;z-index:20;}
 .f-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;display:flex;gap:12px;box-shadow:0 8px 25px rgba(0,0,0,0.08);border-top:3px solid #0d9488;}
 .f-icon{width:44px;height:44px;background:#ccfbf1;border:2px solid #5eead4;display:flex;align-items:center;justify-content:center;font-size:1.3rem;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
 .f-card h3{font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
@@ -1695,6 +1695,154 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
         </div>
     </div>
 </section>
+
+<!-- ========== NEW: PDF TRAINING SECTION (Patty Moore) ========== -->
+<style>
+.intercepted-pdf-training-section { font-family:'Inter',sans-serif; line-height:1.6; color:#1e293b; }
+.intercepted-pdf-training-section *{ box-sizing:border-box; }
+.intercepted-pdf-training-section .ipt-intro { background:#fff; padding:70px 30px 60px; }
+.intercepted-pdf-training-section .ipt-intro-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center; }
+.intercepted-pdf-training-section .ipt-intro-text h2 { font-size:clamp(1.6rem,3.5vw,2.4rem); font-weight:900; color:#0f172a; line-height:1.15; margin:0 0 20px; }
+.intercepted-pdf-training-section .ipt-intro-text p { font-size:0.95rem; color:#475569; line-height:1.7; margin:0; }
+.intercepted-pdf-training-section .ipt-intro-media { display:flex; justify-content:center; align-items:center; }
+.intercepted-pdf-training-section .ipt-video-slot { width:100%; max-width:480px; aspect-ratio:16/10; border-radius:12px; overflow:hidden; background:#f1f5f9; position:relative; }
+.intercepted-pdf-training-section .ipt-video-slot video,
+.intercepted-pdf-training-section .ipt-video-slot img { width:100%; height:100%; object-fit:contain; display:block; }
+.intercepted-pdf-training-section .ipt-areas { background:#2d2d2d; padding:70px 30px; }
+.intercepted-pdf-training-section .ipt-areas-inner { max-width:1100px; margin:0 auto; }
+.intercepted-pdf-training-section .ipt-areas-title { text-align:center; margin-bottom:50px; }
+.intercepted-pdf-training-section .ipt-areas-title h2 { font-size:clamp(1.4rem,3vw,2rem); font-weight:800; color:#fff; margin:0; }
+.intercepted-pdf-training-section .ipt-areas-grid { display:grid; grid-template-columns:1fr 1px 1fr; gap:40px; align-items:start; }
+.intercepted-pdf-training-section .ipt-areas-divider { background:rgba(255,255,255,0.15); width:1px; align-self:stretch; }
+.intercepted-pdf-training-section .ipt-areas-left img { width:100%; border-radius:10px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+.intercepted-pdf-training-section .ipt-areas-left p,
+.intercepted-pdf-training-section .ipt-areas-right p { font-size:0.92rem; color:#cbd5e1; line-height:1.7; }
+.intercepted-pdf-training-section .ipt-combating { background:#f1f5f9; padding:70px 30px; }
+.intercepted-pdf-training-section .ipt-combating-inner { max-width:1100px; margin:0 auto; }
+.intercepted-pdf-training-section .ipt-combating-title { text-align:center; margin-bottom:50px; }
+.intercepted-pdf-training-section .ipt-combating-title h2 { font-size:clamp(1.4rem,3vw,2rem); font-weight:800; color:#0f172a; margin:0; }
+.intercepted-pdf-training-section .ipt-combating-grid { display:grid; grid-template-columns:1fr 1fr; gap:50px; }
+.intercepted-pdf-training-section .ipt-combating-left p,
+.intercepted-pdf-training-section .ipt-combating-right p { font-size:0.92rem; color:#475569; line-height:1.7; margin-bottom:24px; }
+.intercepted-pdf-training-section .ipt-yt-placeholder { width:100%; aspect-ratio:16/9; background:#0f172a; border-radius:10px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+.intercepted-pdf-training-section .ipt-yt-placeholder img { width:100%; height:100%; object-fit:cover; display:block; opacity:0.85; }
+.intercepted-pdf-training-section .ipt-yt-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:64px; height:64px; background:rgba(255,0,0,0.85); border-radius:50%; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:transform 0.2s; }
+.intercepted-pdf-training-section .ipt-yt-play:hover { transform:translate(-50%,-50%) scale(1.1); }
+.intercepted-pdf-training-section .ipt-yt-play::after { content:''; display:block; width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-left:20px solid #fff; margin-left:4px; }
+.intercepted-pdf-training-section .ipt-yt-caption { text-align:center; margin-top:10px; font-size:0.82rem; color:#94a3b8; font-style:italic; }
+.intercepted-pdf-training-section .ipt-btn-dark { display:inline-flex; align-items:center; gap:10px; padding:14px 32px; background:#1e293b; color:#fff; border-radius:8px; font-weight:700; font-size:0.9rem; text-decoration:none; border:none; cursor:pointer; transition:background 0.2s, transform 0.15s; box-shadow:0 4px 14px rgba(0,0,0,0.12); }
+.intercepted-pdf-training-section .ipt-btn-dark:hover { background:#334155; transform:translateY(-1px); }
+.intercepted-pdf-training-section .ipt-btn-dark svg { width:18px; height:18px; fill:currentColor; flex-shrink:0; }
+.intercepted-pdf-training-section .ipt-exercise { background:#2d2d2d; padding:70px 30px; }
+.intercepted-pdf-training-section .ipt-exercise-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1px 1fr; gap:40px; align-items:start; }
+.intercepted-pdf-training-section .ipt-exercise-divider { background:rgba(255,255,255,0.15); width:1px; align-self:stretch; }
+.intercepted-pdf-training-section .ipt-exercise-left h2 { font-size:clamp(1.4rem,3vw,2rem); font-weight:800; color:#fff; margin:0 0 24px; line-height:1.2; }
+.intercepted-pdf-training-section .ipt-exercise-left p { font-size:0.92rem; color:#cbd5e1; line-height:1.7; margin-bottom:24px; }
+.intercepted-pdf-training-section .ipt-exercise-subscribe-area { margin-top:16px; min-height:48px; }
+.intercepted-pdf-training-section .ipt-exercise-right img { width:100%; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+.intercepted-pdf-training-section .ipt-risk { background:#f1f5f9; padding:70px 30px 80px; }
+.intercepted-pdf-training-section .ipt-risk-inner { max-width:1100px; margin:0 auto; }
+.intercepted-pdf-training-section .ipt-risk-title { text-align:center; margin-bottom:50px; }
+.intercepted-pdf-training-section .ipt-risk-title h2 { font-size:clamp(1.4rem,3vw,2rem); font-weight:800; color:#0f172a; margin:0; }
+.intercepted-pdf-training-section .ipt-risk-footer { display:flex; justify-content:flex-end; margin-top:30px; }
+@media(max-width:768px){
+    .intercepted-pdf-training-section .ipt-intro-inner { grid-template-columns:1fr; gap:30px; }
+    .intercepted-pdf-training-section .ipt-areas-grid { grid-template-columns:1fr; }
+    .intercepted-pdf-training-section .ipt-areas-divider { display:none; }
+    .intercepted-pdf-training-section .ipt-combating-grid { grid-template-columns:1fr; }
+    .intercepted-pdf-training-section .ipt-exercise-inner { grid-template-columns:1fr; }
+    .intercepted-pdf-training-section .ipt-exercise-divider { display:none; }
+    .intercepted-pdf-training-section .ipt-risk-footer { justify-content:center; }
+}
+</style>
+
+<section id="intercepted-pdf-training-section" class="intercepted-pdf-training-section" data-page="intercepted">
+    <div class="ipt-intro">
+        <div class="ipt-intro-inner">
+            <div class="ipt-intro-text">
+                <h2 class="editable-text">The project Intercepted contributes to develop the European Virtual Judicial and Security Academy</h2>
+                <p class="editable-text">a training place where the boundaries of geography and language disappear, where judges, prosecutors, lawyers, and legal professionals from across Europe—and beyond—can gather in a shared virtual space to learn, exchange, and grow together on how to prevent and combat trafficking on human beings and the related crimes.</p>
+            </div>
+            <div class="ipt-intro-media">
+                <div class="editable-image-wrapper" style="width:100%;max-width:480px;">
+                    <img class="body-img" src="assets/intercepted-training/big-osint-poster.jpg" alt="BIG OSINT — Countering Trafficking in Human Beings through Big Data and OSINT Analysis" loading="lazy" style="width:100%;height:auto;border-radius:12px;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ipt-areas">
+        <div class="ipt-areas-inner">
+            <div class="ipt-areas-title">
+                <h2 class="editable-text">The Intercepted training course covers the following areas</h2>
+            </div>
+            <div class="ipt-areas-grid">
+                <div class="ipt-areas-left">
+                    <div class="editable-image-wrapper"><img src="assets/intercepted-training/academy-preview.png" alt="Virtual Academy — Immersive training environment" loading="lazy" width="753" height="753"></div>
+                    <p class="editable-text">The Academy is a dynamic, immersive virtual environment like no other, where legal and security practitioners and vetted NGOs can navigate a richly detailed space designed not only for learning, but for meaningful interaction and, in the secure area, for operative analysis</p>
+                </div>
+                <div class="ipt-areas-divider" aria-hidden="true"></div>
+                <div class="ipt-areas-right">
+                    <p class="editable-text">The technical training materials and solutions articulated in 5 modules can be used directly by learners in an asynchronous format, or by trainers in a synchronous format—either in a blended mode (i.e., a mix of classroom and online lessons) or as support tools for in-person training. Please contact our office responsible for combating Human Trafficking if you wish to organize customized courses.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ipt-combating">
+        <div class="ipt-combating-inner">
+            <div class="ipt-combating-title">
+                <h2 class="editable-text">Combating trafficking on human beings</h2>
+            </div>
+            <div class="ipt-combating-grid">
+                <div class="ipt-combating-left">
+                    <p class="editable-text">Our correspondent Fausto Biloslavo followed groups of migrants along the Balkan route. This video helps to understand some aspects of the illegal migration mechanism. We kindly ask you to watch it to gain a more accurate understanding of the reality of this phenomenon</p>
+                    <div class="ipt-yt-container" data-yt-url="" style="width:100%;">
+                        <div class="ipt-yt-placeholder" role="button" aria-label="Play YouTube video: The game of the Balkan Route" tabindex="0">
+                            <img src="assets/intercepted-training/balkan-route-thumbnail.png" alt="The game of the Balkan Route video thumbnail" loading="lazy" width="356" height="200">
+                            <button class="ipt-yt-play" type="button" aria-label="Play YouTube video"></button>
+                        </div>
+                        <div class="ipt-yt-iframe-wrap" style="display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;"></div>
+                    </div>
+                    <div class="ipt-yt-caption"><span class="editable-text">The game of the Balkan Route</span></div>
+                </div>
+                <div class="ipt-combating-right">
+                    <p class="editable-text">The Intercepted project has analyzed numerous cases of human trafficking on an international scale. We invite you to read this document to gain a comprehensive understanding of the complexity of this phenomenon in its various facets</p>
+                    <a class="ipt-btn-dark editable-text" href="#" rel="noopener noreferrer">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+                        Case Study Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ipt-exercise">
+        <div class="ipt-exercise-inner">
+            <div class="ipt-exercise-left">
+                <h2 class="editable-text">Guided Exercise of a transnational investigation on THB</h2>
+                <p class="editable-text">This exercise is a training tool designed to explore various aspects of a transnational human trafficking investigation, based on a real but anonymized case. The core of the case focuses on the collection of digital evidence. The exercise can be carried out in groups or individually, but should always be guided by an experienced trainer who can highlight the elements of police cooperation and judicial cooperation involved in the acquisition of digital evidence, as well as the appropriate choice of forensic tools both for searches and for the investigation as a whole.</p>
+                <div class="ipt-exercise-subscribe-area"></div>
+            </div>
+            <div class="ipt-exercise-divider" aria-hidden="true"></div>
+            <div class="ipt-exercise-right">
+                <div class="editable-image-wrapper"><img src="assets/intercepted-training/guided-exercise-room.png" alt="Guided exercise virtual environment" loading="lazy" width="1142" height="522"></div>
+            </div>
+        </div>
+    </div>
+    <div class="ipt-risk">
+        <div class="ipt-risk-inner">
+            <div class="ipt-risk-title">
+                <h2 class="editable-text">Risk Indicators to prevent THB</h2>
+            </div>
+            <p class="editable-text" style="max-width:800px; margin:0 auto 30px; text-align:center; color:#475569; font-size:0.95rem; line-height:1.7;">During the Unchained project, also funded by the European Union under the ISF, Agenfor and the consortium members — in particular the Public Prosecutor’s Office of Padua — developed a table of risk indicators intended for those carrying out inspections in small and medium-sized enterprises and markets, as well as for those involved in labour protection, non-governmental organizations, and trade unions protecting workers’ interests.<br><br>This table is of great interest for strengthening cooperation and preventing the risks of human trafficking within our societies.</p>
+            <div class="ipt-risk-footer">
+                <a class="ipt-btn-dark editable-text" href="#" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+                    Unchained Project
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ========== END: PDF TRAINING SECTION ========== -->
 
 <div class="features" id="features">
     <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCG modus operandi in THB</li><li>OSINT & Telecom Surveillance</li><li>Digital Forensics</li></ul></div></div>
@@ -1815,7 +1963,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             <div class="av-f"><div><h4>Legal Disclaimer</h4><p>Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
             <div class="av-f"><div><h4>Feedback Loop</h4><p>User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
         </div>
-        <div class="mic">🎤</div>
     </div>
 </section>
 
@@ -1857,8 +2004,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
         <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
         <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
         <div class="foot-col" style="flex:2;">
-            <h4>Partners</h4>
-            <div class="partners-row"><div>KIMIA</div><div>AGENFOR</div><div>Procura della Repubblica</div><div>Tribunale di Trento</div><div>Euro-Arab Foundation</div></div>
             <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101101938</p>
             <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
         </div>

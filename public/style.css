@@ -476,11 +476,10 @@ body.view-mode .module-content {
     background: #0284c7;
 }
 
-/* Reserve space for panel but stay centered */
-body.edit-mode.panel-open #template-container {
-    margin: 0 auto;
+/* Reserve space for panel but stay centered without breaking container coordinates */
+body.edit-mode.panel-open {
     padding-right: 320px;
-    box-sizing: content-box;
+    box-sizing: border-box;
 }
 
 /* Active Highlight Element */
