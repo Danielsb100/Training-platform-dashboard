@@ -22,7 +22,7 @@ function extractHtml(content) {
 const phygitalHtml = extractHtml(phygitalContent);
 const interceptedHtml = extractHtml(interceptedContent);
 
-const regex = /\{\s*id:\s*['"]phygital-oc['"][\s\S]*\}\s*\];\s*$/;
+const regex = /\{\s*id:\s*['"]phygital-oc-new['"][\s\S]*\}\s*\];\s*$/;
 
 const newTemplates = `{
         id: "phygital-oc-new",

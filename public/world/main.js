@@ -536,11 +536,13 @@ async function performJoin(token, user) {
 
         // Proper Dashboard route
         sidebarPic.onclick = () => {
-            let dashboardUrl = AUTH_API.replace('/api', '') + '/dashboard.html';
-            if (!dashboardUrl || dashboardUrl.startsWith('/dashboard.html')) {
-                dashboardUrl = '/dashboard.html';
+            if (window.confirm('Go back to profile?')) {
+                let profileUrl = AUTH_API.replace('/api', '') + '/profile.html';
+                if (!profileUrl || profileUrl.startsWith('/profile.html')) {
+                    profileUrl = '/profile.html';
+                }
+                window.location.href = profileUrl;
             }
-            window.open(dashboardUrl, '_blank');
         };
     }
 
@@ -1993,13 +1995,15 @@ if (chatSendBtn) {
 }
 
 window.addEventListener('keydown', (e) => {
-    if (document.activeElement === emailInput || document.activeElement === passwordInput) return;
-    if (document.activeElement === chatInput) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            sendChatMessage();
-        } else if (e.key === 'Escape') {
-            chatInput.blur();
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+        if (document.activeElement === chatInput) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChatMessage();
+            } else if (e.key === 'Escape') {
+                chatInput.blur();
+            }
         }
         return;
     }
@@ -2021,7 +2025,8 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('keyup', (e) => {
-    if (document.activeElement === emailInput || document.activeElement === passwordInput || document.activeElement === chatInput) return;
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
     const key = e.key.toLowerCase();
     if (keys.hasOwnProperty(key)) keys[key] = false;
     if (e.code === 'Space') keys[' '] = false;

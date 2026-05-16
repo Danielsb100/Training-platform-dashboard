@@ -1274,7 +1274,7 @@ window.templatePresets = [
         html: `<style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
-.page{max-width:1100px;margin:0 auto;background:#fff;box-shadow:0 0 60px rgba(0,0,0,0.08);}
+.page{width:100%;margin:0 auto;background:#fff;}
 
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 30px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;}
@@ -1578,7 +1578,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
         html: `<style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
-.page{max-width:1100px;margin:0 auto;background:#fff;box-shadow:0 0 60px rgba(0,0,0,0.08);}
+.page{width:100%;margin:0 auto;background:#fff;}
 
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 30px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;}

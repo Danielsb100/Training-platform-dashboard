@@ -185,7 +185,7 @@
             <button id="btn-toggle-ai-tips" class="sidebar-btn" title="Toggle AI Tips">💡</button>
             <button id="btn-toggle-players" class="sidebar-btn" title="Toggle Player List">👥</button>
             <button id="btn-toggle-chat" class="sidebar-btn" title="Toggle Chat">💬</button>
-            <button id="btn-settings" class="sidebar-btn" title="Settings">⚙️</button>
+            
         </div>
         <button id="btn-toggle-theme" class="sidebar-btn" title="Toggle Theme" style="margin-top: auto;">☀️</button>
     </div>
@@ -229,7 +229,7 @@
         <!-- Chat Wrapper -->
         <div id="chat-wrapper">
             <!-- Estrutura do Chat Global - Histórico -->
-            <div id="chat-history-container" class="hidden">
+            <div id="chat-history-container">
                 <div class="chat-panel-header">
                     <div>
                         <span class="chat-panel-eyebrow">Room chat</span>
@@ -243,7 +243,7 @@
             </div>
 
             <!-- Estrutura do Chat Global - Entrada de Texto -->
-            <div id="chat-input-container" class="hidden">
+            <div id="chat-input-container">
                 <input type="text" id="chat-input" placeholder="Type your message and press Enter" autocomplete="off">
                 <button type="button" id="chat-send-btn">Send</button>
             </div>
@@ -331,17 +331,7 @@
         </div>
     </div>
 
-    <div id="course-room-context" class="ui-layer hidden"
-        style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:1200; width:min(760px, calc(100vw - 24px)); padding:0.85rem 1.25rem; border-radius:16px; background:var(--panel-bg); border:1px solid var(--panel-border); box-shadow:0 20px 60px rgba(0,0,0,0.15); backdrop-filter:blur(18px); text-align:center;">
-        <div id="course-room-context-course"
-            style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent-color); margin-bottom:0.25rem;">
-            Course world</div>
-        <div id="course-room-context-room" style="font-size:1rem; font-weight:700; color:var(--text-primary);">Entering
-            course world...</div>
-        <button id="btn-show-course-landing" class="hidden"
-            style="margin-top: 0.6rem; background: var(--accent-color); color: white; border: none; padding: 0.35rem 1.2rem; border-radius: 999px; cursor: pointer; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: all 150ms ease;">Ver
-            Landing Page</button>
-    </div>
+    
 
     <aside id="course-trail-panel" class="ui-layer hidden"
         style="position:fixed; right:16px; top:96px; bottom:16px; width:min(360px, calc(100vw - 24px)); overflow:auto; padding:1rem; border-radius:20px; background:var(--panel-bg); border:1px solid var(--panel-border); box-shadow:0 20px 60px rgba(0,0,0,0.15); backdrop-filter:blur(18px); overscroll-behavior:contain; z-index:1150;">

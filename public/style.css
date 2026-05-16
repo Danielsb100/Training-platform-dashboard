@@ -931,4 +931,7 @@ body.edit-mode .anim-slide-up {
         grid-column: auto;
     }
 }
-body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -125px !important; }
+
+b o d y . v i e w - m o d e   d i v [ d a t a - i s - s u b s c r i b e - b t n = ' t r u e ' ] ,   b o d y . v i e w - m o d e   d i v [ d a t a - i s - v i e w - m o d u l e s - b t n = ' t r u e ' ]   {   m a r g i n - t o p :   - 1 2 5 p x   ! i m p o r t a n t ;   }  
+ 
+body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -165px !important; }
