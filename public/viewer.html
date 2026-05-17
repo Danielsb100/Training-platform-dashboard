@@ -61,6 +61,13 @@
         </div>
     </div>
 
+    <!-- Access Training CTA -->
+    <div id="access-training-cta" style="display: none; background: #0f172a; padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+        <button id="btn-access-training" style="background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+            Access Training
+        </button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -69,6 +76,22 @@
             if (!pageId) {
                 document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (No ID provided).</h2></div>';
                 return;
+            }
+
+            // Setup Access Training Button
+            const accessTrainingCta = document.getElementById('access-training-cta');
+            const btnAccessTraining = document.getElementById('btn-access-training');
+            if (accessTrainingCta && btnAccessTraining) {
+                accessTrainingCta.style.display = 'block';
+                btnAccessTraining.addEventListener('click', () => {
+                    const token = localStorage.getItem('token');
+                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
+                    if (token) {
+                        window.location.href = targetUrl;
+                    } else {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
+                    }
+                });
             }
 
             function loadFromLocalStorage() {

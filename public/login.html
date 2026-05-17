@@ -190,6 +190,25 @@
     </div>
 
     <script>
+        function isValidRedirect(url) {
+            if (!url) return false;
+            if (!url.startsWith('/')) return false;
+            if (url.startsWith('//') || url.startsWith('/\\')) return false;
+            if (url.toLowerCase().includes('http://') || url.toLowerCase().includes('https://')) return false;
+            
+            // Extract base path before query params
+            const basePath = url.split('?')[0].split('#')[0];
+            
+            const allowedBases = [
+                '/course_content.html',
+                '/viewer.html',
+                '/marketplace.html',
+                '/profile.html'
+            ];
+            
+            return allowedBases.includes(basePath);
+        }
+
         function toggleMode(mode) {
             document.getElementById('error-msg').style.display = 'none';
             if (mode === 'register') {
@@ -222,7 +241,15 @@
                 
                 if (response.ok && result.ok) {
                     if (result.token) localStorage.setItem('token', result.token);
-                    window.location.href = '/marketplace.html';
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectUrl = urlParams.get('redirect');
+                    
+                    if (redirectUrl && isValidRedirect(redirectUrl)) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        window.location.href = '/marketplace.html';
+                    }
                 } else {
                     const errMsg = document.getElementById('error-msg');
                     errMsg.innerText = result.error || 'Login failed.';
