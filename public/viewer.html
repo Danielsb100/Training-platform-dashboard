@@ -61,6 +61,12 @@
         </div>
     </div>
 
+    <div id="access-training-cta" style="display: none; background: #0f172a; padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+        <button id="btn-access-training" style="background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+            Access the Exercise
+        </button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -69,6 +75,22 @@
             if (!pageId) {
                 document.getElementById('page-content').innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;"><h2>Page not found (No ID provided).</h2></div>';
                 return;
+            }
+
+            // Setup Access Training Button
+            const accessTrainingCta = document.getElementById('access-training-cta');
+            const btnAccessTraining = document.getElementById('btn-access-training');
+            if (accessTrainingCta && btnAccessTraining) {
+                accessTrainingCta.style.display = 'block';
+                btnAccessTraining.addEventListener('click', () => {
+                    const token = localStorage.getItem('token');
+                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
+                    if (token) {
+                        window.location.href = targetUrl;
+                    } else {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
+                    }
+                });
             }
 
             function loadFromLocalStorage() {
@@ -84,6 +106,7 @@
                     if (contentHtml) {
                         document.getElementById('page-content').innerHTML = contentHtml;
                         initializeAnimations();
+                        injectInlineAccessTraining();
                     } else {
                         window.location.href = 'course_content.html?id=' + pageId;
                     }
@@ -111,6 +134,62 @@
                     animObserver.observe(el);
                 });
                 // Buttons will be handled by document event delegation to ensure they always fire.
+            }
+
+            // Inject an inline Access Training button near existing CTAs inside the rendered content
+            function injectInlineAccessTraining() {
+                // Prevent duplicate injection
+                if (document.querySelector('[data-access-training-inline="true"]')) return;
+
+                const content = document.getElementById('page-content');
+                if (!content) return;
+
+                // Remove the SUBSCRIBE button from the Guided Exercise section if present
+                const guidedSection = content.querySelector('#ipt-exercise-section');
+                if (guidedSection) {
+                    const subBtn = guidedSection.querySelector('.btn-subscribe, [data-is-subscribe-btn="true"]');
+                    if (subBtn) subBtn.remove();
+                }
+
+                // Find the best anchor: subscribe area, view-modules btn, subscribe btn, or any prominent CTA
+                let anchor = content.querySelector('.ipt-exercise-subscribe-area');
+                if (!anchor) {
+                    const fallbacks = content.querySelectorAll('[data-is-view-modules-btn="true"], [data-is-subscribe-btn="true"], .btn-subscribe');
+                    for (let f of fallbacks) {
+                        if (!f.closest('footer') && !f.closest('.footer')) {
+                            anchor = f;
+                            break;
+                        }
+                    }
+                }
+
+                if (!anchor) return; // No suitable CTA found; bottom fallback remains
+
+                const inlineBtn = document.createElement('button');
+                inlineBtn.setAttribute('data-access-training-inline', 'true');
+                inlineBtn.textContent = 'Access Training';
+                inlineBtn.style.cssText = 'background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-left: 12px; vertical-align: middle;';
+                inlineBtn.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 5px 15px rgba(207,152,46,0.4)'; });
+                inlineBtn.addEventListener('mouseleave', function() { this.style.transform = 'none'; this.style.boxShadow = 'none'; });
+                inlineBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const token = localStorage.getItem('token');
+                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
+                    if (token) {
+                        window.location.href = targetUrl;
+                    } else {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
+                    }
+                });
+
+                // Insert after or inside the anchor element
+                if (anchor.classList.contains('ipt-exercise-subscribe-area')) {
+                    inlineBtn.style.marginLeft = '0';
+                    anchor.appendChild(inlineBtn);
+                } else if (anchor.parentNode) {
+                    anchor.parentNode.insertBefore(inlineBtn, anchor.nextSibling);
+                }
             }
             
             document.addEventListener('click', async (e) => {
@@ -214,6 +293,7 @@
                     if (contentHtml) {
                         document.getElementById('page-content').innerHTML = contentHtml;
                         initializeAnimations();
+                        injectInlineAccessTraining();
                     } else {
                         loadFromLocalStorage();
                     }

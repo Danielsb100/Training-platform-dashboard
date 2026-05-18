@@ -78,7 +78,7 @@
 
             const token = localStorage.getItem('token');
             if (!token) {
-                container.innerHTML = '<div class="empty-state">Please log in to view this course.</div>';
+                window.location.href = '/login.html?redirect=' + encodeURIComponent('/course_content.html?id=' + courseId);
                 return;
             }
 
