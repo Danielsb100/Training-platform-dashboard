@@ -219,10 +219,10 @@
             }
 
             const backLinkHtml = isPublic 
-                ? '<a href="marketplace.html" style="color:#0f172a; background:rgba(255,255,255,0.9); padding:8px 15px; border-radius:30px; text-decoration:none; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; gap:8px;"><i class="fas fa-home"></i> Voltar para Home</a>'
-                : '<a href="profile.html?tab=creations" style="color:#0f172a; background:rgba(255,255,255,0.9); padding:8px 15px; border-radius:30px; text-decoration:none; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; gap:8px;"><i class="fas fa-arrow-left"></i> Voltar para minhas criações</a>';
+                ? '<a href="marketplace.html" style="color:#0f172a; background:rgba(255,255,255,0.9); padding:8px 15px; border-radius:30px; text-decoration:none; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; gap:8px;"><i class="fas fa-home"></i> Back to Home</a>'
+                : '<a href="profile.html?tab=creations" style="color:#0f172a; background:rgba(255,255,255,0.9); padding:8px 15px; border-radius:30px; text-decoration:none; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; gap:8px;"><i class="fas fa-arrow-left"></i> Back to my creations</a>';
                 
-            const editBtnHtml = isPublic ? '' : `<button onclick="window.location.href='builder.html?channelId=${channel.id}'" style="background:#0f172a; color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#0f172a'"><i class="fas fa-edit"></i> Editar Configurações</button>`;
+            const editBtnHtml = isPublic ? '' : `<button onclick="window.location.href='builder.html?channelId=${channel.id}'" style="background:#0f172a; color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#0f172a'"><i class="fas fa-edit"></i> Edit Settings</button>`;
             
             const dangerZoneHtml = isPublic ? '' : `
                 <div style="margin-top:100px; padding-top:40px; border-top:1px solid #e2e8f0; text-align:center;">

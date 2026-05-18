@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isEditMode) {
                 body.className = 'edit-mode';
                 openSidePanel(); 
-                toggleViewBtn.innerHTML = '<i class="fas fa-eye"></i> Visualizar';
+                toggleViewBtn.innerHTML = '<i class="fas fa-eye"></i> Preview';
                 toggleViewBtn.classList.remove('publish-mode');
                 enableTextEditing(true);
                 
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create floating back button
                 const floatBtn = document.createElement('button');
                 floatBtn.id = 'floating-back-btn';
-                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição';
+                floatBtn.innerHTML = '<i class="fas fa-edit"></i> Back to Editing';
                 floatBtn.style.cssText = 'position:fixed; top:20px; right:20px; background:#0ea5e9; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; z-index:10000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
                 floatBtn.addEventListener('click', () => {
                     toggleViewBtn.click();
@@ -455,9 +455,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (publishBtn) {
         // Change publish button text if we are editing a course
         if (courseIdParam) {
-            publishBtn.innerHTML = '<i class="fas fa-save"></i> Salvar no Curso';
+            publishBtn.innerHTML = '<i class="fas fa-save"></i> Save to Course';
         } else if (channelIdParam) {
-            publishBtn.innerHTML = '<i class="fas fa-save"></i> Salvar no Canal';
+            publishBtn.innerHTML = '<i class="fas fa-save"></i> Save to Channel';
         }
 
         publishBtn.addEventListener('click', () => {
@@ -470,12 +470,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(courseIdParam) {
                 const headerObj = document.querySelector('#publish-modal h2');
                 const pObj = document.querySelector('#publish-modal p');
-                if(headerObj) headerObj.innerText = 'Salvar Landing Page';
+                if(headerObj) headerObj.innerText = 'Save Landing Page';
                 if(pObj) pObj.innerText = 'Escolha uma capa para representar esta Landing Page.';
             } else if (channelIdParam) {
                 const headerObj = document.querySelector('#publish-modal h2');
                 const pObj = document.querySelector('#publish-modal p');
-                if(headerObj) headerObj.innerText = 'Salvar Design do Canal';
+                if(headerObj) headerObj.innerText = 'Save Channel Design';
                 if(pObj) pObj.innerText = 'Escolha uma capa (Thumbnail) para representar este canal.';
             }
             
@@ -1555,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!btn) {
             btn = document.createElement('button');
             btn.id = 'floating-back-btn';
-            btn.innerHTML = '<i class="fas fa-edit"></i> Voltar para Edição (Painel)';
+            btn.innerHTML = '<i class="fas fa-edit"></i> Back to Editing (Panel)';
             btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#0ea5e9;color:white;border:none;padding:15px 25px;border-radius:30px;font-weight:bold;cursor:pointer;box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
             btn.onclick = () => { toggleBtn.click(); btn.remove(); };
             document.body.appendChild(btn);

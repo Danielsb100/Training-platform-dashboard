@@ -139,7 +139,7 @@
                                 <span id="ops-inbox-meta" style="font-size:12px; color:#64748b;">0 itens</span>
                             </div>
                             <div id="notifications-inbox" style="display:flex; flex-direction:column; gap:10px;">
-                                <p style="font-size:13px; color:#64748b;">Nenhuma mensagem.</p>
+                                <p style="font-size:13px; color:#64748b;">No messages.</p>
                             </div>
                         </div>
 
@@ -262,12 +262,12 @@
                         <!-- Seção 2: Especializações (Tags) -->
                         <div style="margin-bottom: 30px; padding-bottom:30px; border-bottom:1px solid #e2e8f0;">
                             <label style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;">
-                                <span><i class="fas fa-tags" style="color:#cf982e; margin-right:8px;"></i> Specializations & Skills</span>
-                                <button type="button" onclick="openTagSelector()" style="background:#f1f5f9; color:#497aa7; border:1px solid #cbd5e1; border-radius:20px; padding:5px 15px; font-weight:bold; cursor:pointer; font-size:0.9rem; transition:0.2s;"><i class="fas fa-plus"></i> Add</button>
+                                <span><i class="fas fa-tags" style="color:#cf982e; margin-right:8px;"></i> Especializações & Habilidades</span>
+                                <button type="button" onclick="openTagSelector()" style="background:#f1f5f9; color:#497aa7; border:1px solid #cbd5e1; border-radius:20px; padding:5px 15px; font-weight:bold; cursor:pointer; font-size:0.9rem; transition:0.2s;"><i class="fas fa-plus"></i> Adicionar</button>
                             </label>
                             
                             <div id="selected-tags-container" style="display:flex; flex-wrap:wrap; gap:10px; min-height:40px; padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
-                                <span style="color:#94a3b8; font-size:0.9rem; margin:auto;" id="empty-tags-msg">No skills added yet. Click + Add.</span>
+                                <span style="color:#94a3b8; font-size:0.9rem; margin:auto;" id="empty-tags-msg">Nenhuma habilidade adicionada. Clique em + Adicionar.</span>
                             </div>
                         </div>
 
@@ -333,7 +333,7 @@
 
 
 
-                        <!-- Botão Salvar -->
+                        <!-- Save Button -->
                         <div style="text-align:right; margin-top:20px;">
                             <button type="button" onclick="saveAdvancedPortfolio()" class="btn-primary" style="padding:12px 30px; font-size:1.1rem; background:#497aa7;"><i class="fas fa-save"></i> Save Profile and Portfolio</button>
                         </div>
@@ -764,13 +764,13 @@
                 <div style="display:flex; gap:10px; align-items:center;">
                     <label for="ext-link-cover-file" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#475569; font-weight:bold;"><i class="fas fa-upload"></i> Escolher Imagem</label>
                     <input type="file" id="ext-link-cover-file" accept="image/*" style="display:none;" onchange="previewExternalLinkCover(event)">
-                    <span id="ext-link-cover-name" style="font-size:0.85rem; color:#64748b;">Nenhuma imagem selecionada</span>
+                    <span id="ext-link-cover-name" style="font-size:0.85rem; color:#64748b;">No image selected</span>
                 </div>
                 <div id="ext-link-cover-preview" style="margin-top:10px; width:100%; height:120px; border-radius:8px; background-size:cover; background-position:center; display:none;"></div>
                 <input type="hidden" id="ext-link-cover">
             </div>
             
-            <button onclick="saveExternalLink()" style="width:100%; background:#1e293b; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer;">Salvar Link</button>
+            <button onclick="saveExternalLink()" style="width:100%; background:#1e293b; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer;">Save Link</button>
             <button id="ext-link-delete-btn" onclick="deleteExternalLink()" style="width:100%; margin-top:10px; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer; display:none;"><i class="fas fa-trash"></i> Excluir Link</button>
             <button onclick="closeExternalLinkModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b; font-weight:bold; padding:12px;">Cancelar</button>
         </div>

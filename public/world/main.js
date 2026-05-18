@@ -1727,7 +1727,7 @@ function updatePlayerList() {
         // Final fallback: if state name is Guest or Unknown, check gametag
         if ((!player.name || player.name.includes('Guest')) && gametags[id]) {
             const tagText = gametags[id].element.innerText.replace('📞', '').replace('(no voice)', '').trim();
-            if (tagText && !tagText.includes('Guest') && tagText !== 'Carregando...') {
+            if (tagText && !tagText.includes('Guest') && tagText !== 'Loading...') {
                 name = tagText;
                 player.name = name; // Update state silently
             }
@@ -4067,7 +4067,7 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
     stopModuleAssistantRecording();
 
     // Reset UI
-    moduleTitle.innerText = 'Carregando...';
+    moduleTitle.innerText = 'Loading...';
     moduleDescription.innerText = '';
     if (moduleGeneralShortcuts) moduleGeneralShortcuts.innerHTML = '';
     if (moduleGeneralAssets) moduleGeneralAssets.innerHTML = '';
@@ -4624,7 +4624,7 @@ function renderModuleGeneral(module) {
 function renderModuleVideos(videos) {
     const grid = document.getElementById('module-videos-grid');
     if (!grid) return;
-    grid.innerHTML = videos.length ? '' : '<p style="padding: 20px; color: #94a3b8;">Nenhum vídeo disponível.</p>';
+    grid.innerHTML = videos.length ? '' : '<p style="padding: 20px; color: #94a3b8;">No videos available.</p>';
 
     grid.style.display = 'flex';
     grid.style.flexDirection = 'column';
@@ -4916,9 +4916,9 @@ function renderModuleDocs(docs) {
         }
     });
 
-    if (pdfList.innerHTML === '') pdfList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">Nenhum arquivo PDF.</div>';
-    if (wordList.innerHTML === '') wordList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">Nenhum arquivo Word.</div>';
-    if (imgGrid.innerHTML === '') imgGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 10px;">Nenhuma imagem.</div>';
+    if (pdfList.innerHTML === '') pdfList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">No PDF files.</div>';
+    if (wordList.innerHTML === '') wordList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">No Word files.</div>';
+    if (imgGrid.innerHTML === '') imgGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 10px;">No images.</div>';
 
     if (typeof window.switchModuleDocTab === 'function') {
         window.switchModuleDocTab('pdf');
@@ -4927,7 +4927,7 @@ function renderModuleDocs(docs) {
 
 function renderModuleQuiz(quizzes) {
     const container = document.querySelector('#module-tab-quiz .quiz-container');
-    container.innerHTML = (quizzes && quizzes.length) ? '' : '<p style="padding: 20px; color: #94a3b8;">Nenhum quiz disponível.</p>';
+    container.innerHTML = (quizzes && quizzes.length) ? '' : '<p style="padding: 20px; color: #94a3b8;">No quizzes available.</p>';
 
     (quizzes || []).forEach((quiz) => {
         const quizBox = document.createElement('div');
@@ -5305,7 +5305,7 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
     currentModulePayload = null;
     currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
 
-    moduleTitle.innerText = 'Carregando...';
+    moduleTitle.innerText = 'Loading...';
     moduleDescription.innerText = '';
     if (moduleGeneralShortcuts) moduleGeneralShortcuts.innerHTML = '';
     if (moduleGeneralAssets) moduleGeneralAssets.innerHTML = '';
@@ -5373,7 +5373,7 @@ function renderModuleQuizLegacy(quizzes) {
     currentModuleRuntimeState = getActiveCourseRuntimeModule();
     const hasQuizzes = Boolean(quizzes && quizzes.length);
     if (!hasQuizzes) {
-        container.innerHTML = '<p style="padding: 20px; color: #94a3b8;">Nenhum quiz disponÃ­vel.</p>';
+        container.innerHTML = '<p style="padding: 20px; color: #94a3b8;">No quizzes available.</p>';
         submitBtn.classList.add('hidden');
         submitBtn.onclick = null;
         return;
@@ -5966,7 +5966,7 @@ async function showAssetModal(username) {
     // UI Setup
     updateTabUI();
     assetListBody.innerHTML = '<tr><td colspan="2">Loading assets...</td></tr>';
-    assetGridContainer.innerHTML = 'Carregando...';
+    assetGridContainer.innerHTML = 'Loading...';
     assetModalOverlay.classList.remove('hidden');
     if (btnUploadAsset) {
         btnUploadAsset.classList.add('hidden'); // Hide upload button for other users
@@ -5982,7 +5982,7 @@ async function showAssetModal(username) {
 
         if (currentLoadedAssets.length === 0) {
             assetListBody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding:20px;">No shared files.</td></tr>';
-            assetGridContainer.innerHTML = '<div style="text-align: center; width: 100%; padding: 3rem; color: var(--text-secondary);">Nenhum arquivo nesta categoria.</div>';
+            assetGridContainer.innerHTML = '<div style="text-align: center; width: 100%; padding: 3rem; color: var(--text-secondary);">No files in this category.</div>';
         } else {
             renderCurrentTab();
         }
@@ -6058,8 +6058,8 @@ async function showSelfAssetModal() {
 }
 
 async function loadSelfAssets() {
-    assetListBody.innerHTML = '<tr><td colspan="3">Carregando seus arquivos...</td></tr>';
-    assetGridContainer.innerHTML = 'Carregando...';
+    assetListBody.innerHTML = '<tr><td colspan="3">Loading your files...</td></tr>';
+    assetGridContainer.innerHTML = 'Loading...';
 
     try {
         const response = await fetch(`${AUTH_API}/api/documents`, {
@@ -6101,7 +6101,7 @@ function renderCurrentTab() {
 function renderTable(assets) {
     assetListBody.innerHTML = '';
     if (assets.length === 0) {
-        assetListBody.innerHTML = `<tr><td colspan="${isSelfModal ? 3 : 2}" style="text-align: center; padding: 2rem;">Nenhum arquivo nesta categoria.</td></tr>`;
+        assetListBody.innerHTML = `<tr><td colspan="${isSelfModal ? 3 : 2}" style="text-align: center; padding: 2rem;">No files in this category.</td></tr>`;
         return;
     }
 
@@ -6135,7 +6135,7 @@ function renderTable(assets) {
 
 async function renderGrid(assets) {
     if (assets.length === 0) {
-        assetGridContainer.innerHTML = `<div style="text-align: center; width: 100%; padding: 3rem; color: var(--text-secondary);">Nenhum arquivo nesta categoria.</div>`;
+        assetGridContainer.innerHTML = `<div style="text-align: center; width: 100%; padding: 3rem; color: var(--text-secondary);">No files in this category.</div>`;
         return;
     }
 

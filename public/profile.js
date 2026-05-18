@@ -721,7 +721,7 @@ function renderOperationItems(containerId, items, renderer, emptyMessage) {
 
 function renderNotificationItem(item) {
     const statusTag = item.status === 'UNREAD' ? '<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">Unread</span>' : '<span style="background:#e2e8f0; color:#64748b; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">Read</span>';
-    const actionLink = item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : '';
+    const actionLink = item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Open</a>` : '';
     const readAction = item.status === 'UNREAD'
         ? `<button type="button" onclick="markNotificationRead(${Number(item.id)})" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Mark read</button>`
         : '';
@@ -769,7 +769,7 @@ function renderTaskQueueItem(item) {
                     <span style="font-size:11px; color:#94a3b8;">${escapeHtml(formatDateLabel(item.dueAt || item.scheduledFor))}</span>
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
-                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : ''}
+                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Open</a>` : ''}
                     ${statusAction}
                     <button type="button" onclick="updateTaskQueueItemStatus(${Number(item.id)}, 'DISMISSED')" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Dismiss</button>
                 </div>
@@ -793,7 +793,7 @@ function renderReminderItem(item) {
                     <span style="font-size:11px; color:#94a3b8;">${escapeHtml(formatDateLabel(item.dueAt))}</span>
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
-                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Abrir</a>` : ''}
+                    ${item.actionUrl ? `<a href="${escapeHtml(item.actionUrl)}" style="color:#0ea5e9; text-decoration:none; font-size:11px; font-weight:bold;">Open</a>` : ''}
                     <button type="button" onclick="updateReminderStatus(${Number(item.id)}, 'COMPLETED')" style="background:#166534; border:none; color:white; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Complete</button>
                     <button type="button" onclick="updateReminderStatus(${Number(item.id)}, 'DISMISSED')" style="background:transparent; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:bold;">Dismiss</button>
                 </div>
@@ -917,7 +917,7 @@ window.loadSubscriptions = async function() {
     const container = document.getElementById('subscriptions-container');
     if (!container) return;
 
-    container.innerHTML = '<p>Carregando inscrições...</p>';
+    container.innerHTML = '<p>Loading enrollments...</p>';
 
     try {
         const res = await fetch('/api/courses/enrolled', {
@@ -939,8 +939,8 @@ window.loadSubscriptions = async function() {
         if (!filteredCourses || filteredCourses.length === 0) {
             container.innerHTML = `
                 <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                <h3 style="margin: 0 0 10px 0; color: #1e293b;">Nenhuma Inscrição Encontrada</h3>
-                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">Você não possui inscrições com esse filtro. Visite o marketplace para explorar novos conteúdos!</p>
+                <h3 style="margin: 0 0 10px 0; color: #1e293b;">No Enrollments Found</h3>
+                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">You have no enrollments with this filter. Visit the marketplace to explore new content!</p>
             `;
             return;
         }
@@ -973,7 +973,7 @@ window.loadSubscriptions = async function() {
                         
                         <div style="margin-top: 15px;">
                             <div class="progress-text" style="display:flex; justify-content:space-between; font-size:0.8rem; color:#475569; margin-bottom:5px;">
-                                <span>Progresso</span>
+                                <span>Progress</span>
                                 <span>${progress}%</span>
                             </div>
                             <div class="progress-track" style="background:#e2e8f0; border-radius:10px; height:6px; overflow:hidden;">
@@ -981,7 +981,7 @@ window.loadSubscriptions = async function() {
                             </div>
                         </div>
                         <button class="btn-unsubscribe" onclick="event.stopPropagation(); window.unsubscribeCourse(${course.id})" style="margin-top:15px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:6px 12px; font-size:0.85rem; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
-                            <i class="fas fa-times-circle" style="margin-right:5px;"></i> Desinscrever
+                            <i class="fas fa-times-circle" style="margin-right:5px;"></i> Unsubscribe
                         </button>
                     </div>
                 </div>
@@ -1006,7 +1006,7 @@ window.filterSubscriptions = function(type) {
 };
 
 window.unsubscribeCourse = async function(courseId) {
-    if (!confirm('Tem certeza de que deseja desinscrever-se deste curso? VocÃƒÂª perderÃƒÂ¡ seu progresso.')) return;
+    if (!confirm('Are you sure you want to unsubscribe from this course? You will lose your progress.')) return;
     
     try {
         const res = await fetch(`/api/courses/${courseId}/unsubscribe`, {
@@ -1015,7 +1015,7 @@ window.unsubscribeCourse = async function(courseId) {
         });
         
         if (res.ok) {
-            alert('Desinscrito com sucesso.');
+            alert('Successfully unsubscribed.');
             window.loadSubscriptions();
         } else {
             const data = await res.json();

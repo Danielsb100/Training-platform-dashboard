@@ -170,7 +170,7 @@
 
                 const editSettingsButtonHTML = isOwnerOrEditor ? `
                     <div style="position: absolute; right: 20px; top: 20px; z-index: 100;">
-                        <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Editar Configurações</button>
+                        <button onclick="window.location.href='content_builder.html?courseId=${course.id}'" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='white'; this.style.color='#1e293b'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'"><i class="fas fa-edit"></i> Edit Settings</button>
                     </div>
                 ` : '';
 
@@ -222,7 +222,7 @@
                     container.innerHTML = `
                         <div id="custom-design-container">
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
+                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Back</button>
                             </div>
                             ${editSettingsButtonHTML}
                             ${finalHtml}
@@ -232,7 +232,7 @@
                     container.innerHTML = `
                         <div id="custom-design-container" style="font-family: 'Inter', sans-serif; background-color: #f8fafc; min-height: 100vh;">
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
-                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Voltar</button>
+                                <button onclick="window.location.href='profile.html?tab=creations'" style="background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.2); padding:8px 15px; border-radius:30px; cursor:pointer; font-weight:bold; transition:0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white'" onmouseout="this.style.background='rgba(0,0,0,0.5)'; this.style.color='white'"><i class="fas fa-arrow-left"></i> Back</button>
                             </div>
                             ${editSettingsButtonHTML}
                             

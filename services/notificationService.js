@@ -199,8 +199,8 @@ async function notifyModulePublished({ module, actorUserId }, tx = prisma) {
       sourceEntityId: module.id,
       metadata: { moduleId: module.id, moduleTitle: module.title },
       reminder: {
-        title: `Revisar módulo publicado: ${module.title}`,
-        description: 'Abra o dashboard e avalie o novo conteúdo publicado para a sua trilha.',
+        title: `Review published module: ${module.title}`,
+        description: 'Open the dashboard and evaluate the new content published for your track.',
         dueAt,
         actionUrl: '/dashboard.html'
       },

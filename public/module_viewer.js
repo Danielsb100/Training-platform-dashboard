@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         isWorldMode = false;
         viewerContainer.classList.remove('world-mode');
         worldIframe.src = ''; // Free up memory and WebGL context
-        btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> Voltar';
-        btnBack.title = 'Voltar para o Curso';
+        btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> Back';
+        btnBack.title = 'Back to Course';
         
         // Reset tabs to overview if coming from world mode
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         viewerContainer.classList.add('world-mode');
         
         // Change back button behavior
-        btnBack.innerHTML = '<i class="fas fa-times"></i> Sair do Mundo 3D';
-        btnBack.title = 'Retornar ao conteúdo da aula';
+        btnBack.innerHTML = '<i class="fas fa-times"></i> Exit 3D World';
+        btnBack.title = 'Return to course content';
     }
     
     let moduleData = null;
@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         moduleData = await response.json();
         
-        document.getElementById('module-name').textContent = moduleData.title || 'Módulo Sem Nome';
-        document.getElementById('course-title').textContent = 'Conteúdo da Aula';
+        document.getElementById('module-name').textContent = moduleData.title || 'Unnamed Module';
+        document.getElementById('course-title').textContent = 'Course Content';
         
         videos = (moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
         documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order);
@@ -206,10 +206,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="card-body">
                     <div class="card-title">${escapeHtml(v.title)}</div>
-                    <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
+                    <div class="card-meta"><i class="fas fa-video"></i> Video Lesson</div>
                 </div>
             </div>`;
-        }).join('') : '<p style="color:#94a3b8;">Nenhum vídeo disponível neste módulo.</p>';
+        }).join('') : '<p style="color:#94a3b8;">No videos available in this module.</p>';
         
         // --- Documents ---
         renderDocuments('all');
@@ -221,11 +221,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="list-icon" style="color:#cf9c33; background:rgba(207, 156, 51, 0.2);"><i class="fas fa-question-circle"></i></div>
                 <div class="list-content">
                     <div class="list-title">${q.title}</div>
-                    <p class="list-desc">${q.questions ? q.questions.length : 0} Questões • Avaliação Prática</p>
+                    <p class="list-desc">${q.questions ? q.questions.length : 0} Questions • Practical Assessment</p>
                 </div>
-                <div class="list-action"><i class="fas fa-pencil-alt"></i> Iniciar</div>
+                <div class="list-action"><i class="fas fa-pencil-alt"></i> Start</div>
             </div>
-        `).join('') : '<p style="color:#94a3b8;">Nenhum quiz disponível neste módulo.</p>';
+        `).join('') : '<p style="color:#94a3b8;">No quizzes available in this module.</p>';
         
         // --- Overview Grid (Combines everything for the home page of the module) ---
         const overviewGrid = document.getElementById('overview-grid');
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas fa-video"></i> Aula em Vídeo</div>
+                        <div class="card-meta"><i class="fas fa-video"></i> Video Lesson</div>
                     </div>
                 </div>`;
             } else if (item.contentType === 'quiz') {
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${item.title}</div>
-                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> Avaliação Prática</div>
+                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> Practical Assessment</div>
                     </div>
                 </div>`;
             } else if (item.contentType === 'document') {
@@ -275,14 +275,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas ${icon}"></i> Documento</div>
+                        <div class="card-meta"><i class="fas ${icon}"></i> Document</div>
                     </div>
                 </div>`;
             }
         }).join('');
         
         if (allItems.length === 0) {
-            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">Este módulo ainda não possui conteúdos interativos.</p>';
+            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">This module does not have interactive content yet.</p>';
         }
     }
     
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const filteredDocs = documents.filter(d => filter === 'all' || getDocType(d.title) === filter);
 
         if (filteredDocs.length === 0) {
-            container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">Nenhum documento encontrado para este filtro.</p>';
+            container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">No documents found for this filter.</p>';
             return;
         }
 
@@ -346,10 +346,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 let icon = 'fa-file-alt';
                 let color = '#94a3b8';
-                let desc = 'Documento genérico';
+                let desc = 'Generic Document';
                 
-                if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = 'Arquivo PDF interativo'; }
-                if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = 'Documento de Texto'; }
+                if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = 'Interactive PDF File'; }
+                if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = 'Text Document'; }
 
                 listItems.push(`
                     <div class="list-item">
@@ -359,10 +359,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p class="list-desc">${desc}</p>
                         </div>
                         <div class="list-action">
-                            <button class="btn-action-icon" title="Visualizar" onclick="openPlayer('document', ${originalIndex})">
+                            <button class="btn-action-icon" title="View" onclick="openPlayer('document', ${originalIndex})">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-action-icon download" title="Baixar" onclick="downloadDocument(${d.documentId})">
+                            <button class="btn-action-icon download" title="Download" onclick="downloadDocument(${d.documentId})">
                                 <i class="fas fa-download"></i>
                             </button>
                         </div>
@@ -531,7 +531,7 @@ btnBackHub.addEventListener('click', () => {
             } else if (docType === 'image') {
                 playerContent.innerHTML = `
                     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;" id="img-container">
-                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Carregando Imagem...</div>
+                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Image...</div>
                     </div>
                 `;
                 
@@ -570,7 +570,7 @@ btnBackHub.addEventListener('click', () => {
                 // Word DOCX Rendering
                 playerContent.innerHTML = `
                     <div class="doc-viewer-wrapper" id="docx-container" style="background:#fff; padding: 40px; color: #000; overflow-x: auto; max-width: 900px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 8px;">
-                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Carregando Documento...</div>
+                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Document...</div>
                     </div>
                 `;
                 
