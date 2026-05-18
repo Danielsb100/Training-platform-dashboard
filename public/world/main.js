@@ -4028,8 +4028,17 @@ async function playGeneralAiLastAnswer() {
 
 btnToggleAiAssistant?.addEventListener('click', () => {
     const isHidden = generalAiWrapper?.classList.contains('hidden');
-    if (isHidden) openGeneralAiAssistant();
-    else closeGeneralAiAssistant();
+    if (isHidden) {
+        openGeneralAiAssistant();
+        const chatHistoryContainer = document.getElementById('chat-history-container');
+        if (chatHistoryContainer && !chatHistoryContainer.classList.contains('hidden')) {
+            chatHistoryContainer.classList.add('hidden');
+            document.getElementById('chat-input-container')?.classList.add('hidden');
+            btnToggleChat?.classList.remove('active');
+        }
+    } else {
+        closeGeneralAiAssistant();
+    }
 });
 
 generalAiClose?.addEventListener('click', closeGeneralAiAssistant);
@@ -5918,6 +5927,10 @@ if (btnToggleChat) {
         const isHidden = chatHistoryContainer.classList.toggle('hidden');
         document.getElementById('chat-input-container').classList.toggle('hidden', isHidden);
         btnToggleChat.classList.toggle('active', !isHidden);
+        
+        if (!isHidden && generalAiWrapper && !generalAiWrapper.classList.contains('hidden')) {
+            closeGeneralAiAssistant();
+        }
     };
 }
 

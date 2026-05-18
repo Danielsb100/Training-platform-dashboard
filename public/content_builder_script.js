@@ -83,8 +83,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Migration: append the courses section and footer to the existing content
                         container.innerHTML = channel.modular_content + defaultCoursesAndFooter;
                     }
-                    container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                    container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
+                    container.querySelectorAll('[data-events-bound-container]').forEach(el => el.removeAttribute('data-events-bound-container'));
                 } else {
                     container.innerHTML = `
                         <section class="module-section" id="channel-header-section" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 60px 80px; color: white; position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 350px;">
@@ -129,8 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         container.innerHTML = course.contentHtml;
                     }
-                    container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                    container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                    container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
+                    container.querySelectorAll('[data-events-bound-container]').forEach(el => el.removeAttribute('data-events-bound-container'));
                 }
                 const tModal = document.getElementById('template-modal');
                 if (tModal) tModal.style.display = 'none';
@@ -169,8 +171,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Important: the saved HTML might have data-events-bound="true" attributes.
                 // Since these are fresh DOM nodes, they don't actually have the event listeners attached.
                 // We must remove these attributes so initDynamicEvents() can bind them properly.
-                container.querySelectorAll('[data-events-bound]').forEach(el => delete el.dataset.eventsBound);
-                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => delete el.dataset.eventsBoundBgMain);
+                container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
+                container.querySelectorAll('[data-events-bound-container]').forEach(el => el.removeAttribute('data-events-bound-container'));
             }
             
             // Hide the template modal since we are loading an existing layout
@@ -247,6 +250,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeElement = null;
     let activeElementType = null; // 'text', 'image', 'bg', 'video'
 
+    const textWidthRange = document.getElementById('text-width-range');
+    const textWidthInput = document.getElementById('text-width-input');
+    const textHeightRange = document.getElementById('text-height-range');
+    const textHeightInput = document.getElementById('text-height-input');
+    const anchorSelect = document.getElementById('anchor-select');
+    
+    const addElementOptions = document.getElementById('add-element-options');
+    const addElementTypeSelect = document.getElementById('add-element-type-select');
+    const addElementBtn = document.getElementById('add-element-btn');
+    const deleteElementBtn = document.getElementById('delete-element-btn');
+
     // Video options
     const videoOptions = document.getElementById('video-options');
     const videoUrlInput = document.getElementById('video-url-input');
@@ -293,6 +307,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     };
+
+    const resetPageBtn = document.getElementById('reset-page-btn');
+    if (resetPageBtn) {
+        resetPageBtn.addEventListener('click', async () => {
+            if (confirm('Tem certeza que deseja resetar a página para o design padrão? Todas as suas edições serão perdidas.')) {
+                try {
+                    const res = await fetch('/content_builder.html');
+                    if (!res.ok) throw new Error('Falha ao carregar o padrão');
+                    const text = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+                    const defaultHtml = doc.getElementById('template-container').innerHTML;
+                    
+                    const container = document.getElementById('template-container');
+                    if (container && defaultHtml) {
+                        container.innerHTML = defaultHtml;
+                        initDynamicEvents();
+                        alert('Design resetado com sucesso!');
+                    }
+                } catch(e) {
+                    console.error('Erro ao resetar página:', e);
+                    alert('Houve um erro ao resetar a página.');
+                }
+            }
+        });
+    }
 
     // Text Link & Shadow & Fx inputs
     const textLinkInput = document.getElementById('text-link-input');
@@ -460,6 +500,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('template-container');
         const cloneModular = container.cloneNode(true);
         cloneModular.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+        cloneModular.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
+        cloneModular.querySelectorAll('[data-events-bound-container]').forEach(el => el.removeAttribute('data-events-bound-container'));
         const modularContent = cloneModular.innerHTML;
         
         const clone = container.cloneNode(true);
@@ -667,6 +709,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initDynamicEvents() {
+        // --- 0. Limpeza de bolinhas antigas (Legacy Cleanup) ---
+        const container = document.getElementById('template-container');
+        if (container) {
+            // Remove ANY fa-circle icons (whether inside li or not)
+            container.querySelectorAll('i.fa-circle, i.fas.fa-circle').forEach(el => el.remove());
+            // Remove any small div dots used as bullets
+            container.querySelectorAll('div').forEach(el => {
+                if (el.style.borderRadius === '50%' && (el.style.width === '6px' || el.style.height === '6px')) {
+                    el.remove();
+                }
+            });
+            // Force disable native HTML bullets on any unordered lists that might have been created
+            container.querySelectorAll('ul').forEach(ul => {
+                ul.style.listStyle = 'none';
+                ul.classList.remove('bullet-list', 'square-list');
+            });
+        }
+
         // --- 1. Textos Editáveis ---
         document.querySelectorAll('.editable-text').forEach(el => {
             el.setAttribute('contenteditable', isEditMode);
@@ -719,12 +779,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         // --- 4. Clicar no corpo principal da Div para editar as bordas/fundo ---
-        document.querySelectorAll('.module-section').forEach(section => {
+        document.querySelectorAll('#template-container div, #template-container section, #template-container footer, #template-container header, #template-container article').forEach(section => {
+            // Ignorar elementos que são estritamente de controle estrutural ou não devem ser clicáveis diretamente como bg
+            if (section.id === 'template-container' || 
+                section.classList.contains('module-content') || 
+                section.classList.contains('editable-image-wrapper') || 
+                section.classList.contains('bg-overlay') ||
+                section.classList.contains('bg-edit-btn')) return;
+                
             if(section.dataset.eventsBoundBgMain) return;
             section.dataset.eventsBoundBgMain = 'true';
             section.addEventListener('click', (e) => {
-                e.stopPropagation(); // Impede o #template-container de rodar deselectElement()
+                e.stopPropagation(); // Impede de selecionar containers pais
                 setActiveElement(section, 'bg');
+            });
+        });
+        
+        // --- 5. Editable Containers ---
+        document.querySelectorAll('.editable-container').forEach(container => {
+            if(container.dataset.eventsBoundContainer) return;
+            container.dataset.eventsBoundContainer = 'true';
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setActiveElement(container, 'bg');
             });
         });
     }
@@ -796,6 +873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         bgOptions.classList.add('hidden');
         boxOptions.classList.add('hidden');
         positionOptions.classList.add('hidden');
+        if (addElementOptions) addElementOptions.classList.add('hidden');
         if (noSelectionMsg) noSelectionMsg.classList.remove('hidden');
 
         // Revela mediante seleção
@@ -828,6 +906,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             else if (activeElementType === 'bg') {
                 bgOptions.classList.remove('hidden');
+                if (addElementOptions) addElementOptions.classList.remove('hidden');
                 document.getElementById('blur-row').classList.remove('hidden');
 
                 const optImage = document.getElementById('bg-type-select').querySelector('option[value="image"]');
@@ -1025,6 +1104,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeElement.classList.forEach(c => { if(c.startsWith('anim-')) animFound = c; });
         animSelect.value = animFound;
         stickyCheckbox.checked = computed.position === 'sticky';
+
+        // Sync Text Max Width & Height
+        if (activeElementType === 'text') {
+            let maxWidth = computed.maxWidth;
+            if (maxWidth && maxWidth !== 'none' && maxWidth.includes('px')) {
+                let parsed = parseInt(maxWidth);
+                if(textWidthRange) textWidthRange.value = parsed || 1200;
+                if(textWidthInput) textWidthInput.value = parsed || 1200;
+            } else {
+                if(textWidthRange) textWidthRange.value = 1200;
+                if(textWidthInput) textWidthInput.value = 1200;
+            }
+
+            let minHeight = computed.minHeight;
+            if (minHeight && minHeight !== 'none' && minHeight !== '0px') {
+                let parsedH = parseInt(minHeight);
+                if(textHeightRange) textHeightRange.value = parsedH || 0;
+                if(textHeightInput) textHeightInput.value = parsedH || 0;
+            } else {
+                if(textHeightRange) textHeightRange.value = 0;
+                if(textHeightInput) textHeightInput.value = 0;
+            }
+        }
+        
+        // Sync Anchor
+        if (anchorSelect) {
+            anchorSelect.value = (computed.alignSelf !== 'auto' && computed.alignSelf) ? computed.alignSelf : '';
+        }
     }
 
     // ==========================================
@@ -1139,6 +1246,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     tsY.addEventListener('input', updateTextShadow);
     tsBlur.addEventListener('input', updateTextShadow);
     tsColor.addEventListener('input', updateTextShadow);
+
+    if (textWidthRange) {
+        textWidthRange.addEventListener('input', e => {
+            if (textWidthInput) textWidthInput.value = e.target.value;
+            if (activeElement && activeElementType === 'text') {
+                applyStyle('maxWidth', `${e.target.value}px`);
+                applyStyle('width', '100%');
+                applyStyle('minWidth', `${e.target.value}px`);
+            }
+        });
+    }
+    if (textWidthInput) {
+        textWidthInput.addEventListener('input', e => {
+            if (textWidthRange) textWidthRange.value = e.target.value;
+            if (activeElement && activeElementType === 'text') {
+                applyStyle('maxWidth', `${e.target.value}px`);
+                applyStyle('width', '100%');
+                applyStyle('minWidth', `${e.target.value}px`);
+            }
+        });
+    }
+
+    if (textHeightRange) {
+        textHeightRange.addEventListener('input', e => {
+            if (textHeightInput) textHeightInput.value = e.target.value;
+            if (activeElement && activeElementType === 'text') {
+                applyStyle('minHeight', e.target.value == 0 ? 'auto' : `${e.target.value}px`);
+            }
+        });
+    }
+    if (textHeightInput) {
+        textHeightInput.addEventListener('input', e => {
+            if (textHeightRange) textHeightRange.value = e.target.value;
+            if (activeElement && activeElementType === 'text') {
+                applyStyle('minHeight', e.target.value == 0 ? 'auto' : `${e.target.value}px`);
+            }
+        });
+    }
+
+    if (anchorSelect) {
+        anchorSelect.addEventListener('change', e => {
+            if (activeElement) {
+                applyStyle('alignSelf', e.target.value);
+                applyStyle('justifySelf', e.target.value);
+            }
+        });
+    }
+
+    if (deleteElementBtn) {
+        deleteElementBtn.addEventListener('click', () => {
+            if (activeElement) {
+                if(confirm("Tem certeza que deseja deletar este elemento permanentemente?")) {
+                    activeElement.remove();
+                    deselectElement();
+                }
+            }
+        });
+    }
+
+    if (addElementBtn) {
+        addElementBtn.addEventListener('click', () => {
+            if (activeElement && activeElementType === 'bg') {
+                const type = addElementTypeSelect.value;
+                let newHtml = '';
+                if (type === 'text') {
+                    newHtml = `<p class="editable-text" style="color:#475569; font-size:1rem; line-height:1.6; font-family:'Inter', sans-serif;">New text paragraph. Click to edit.</p>`;
+                } else if (type === 'title') {
+                    newHtml = `<h3 class="editable-text" style="color:#1e293b; font-size:1.5rem; font-weight:bold; margin-bottom:10px; font-family:'Inter', sans-serif;">New Title</h3>`;
+                } else if (type === 'image') {
+                    newHtml = `<div class="editable-image-wrapper"><img class="body-img" src="https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=600&q=80" style="width:100%; height:auto; border-radius:8px;"></div>`;
+                } else if (type === 'button') {
+                    newHtml = `<a href="#" class="editable-text" style="display:inline-block; padding:12px 24px; background:#0ea5e9; color:white; font-weight:bold; border-radius:8px; text-decoration:none;">Click Here</a>`;
+                }
+                
+                activeElement.insertAdjacentHTML('beforeend', newHtml);
+                initDynamicEvents(); // Bind click listeners to the new element
+            }
+        });
+    }
 
     const updateBoxShadow = () => { 
         const inset = bsInset.checked ? 'inset ' : '';

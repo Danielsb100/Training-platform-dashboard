@@ -695,10 +695,10 @@ body.course-world-mode #chat-input-container {
     min-height: min(640px, calc(100vh - 3rem));
     max-height: calc(100vh - 3rem);
     padding: 14px;
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(18px);
 }
 
@@ -714,9 +714,9 @@ body.course-world-mode #chat-input-container {
     width: 34px;
     height: 34px;
     border-radius: 999px;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #e2e8f0;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #334155;
 }
 
 .general-ai-intro {
@@ -2562,15 +2562,15 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 }
 
 .module-assistant-intro {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(129, 140, 248, 0.08));
-    border: 1px solid rgba(129, 140, 248, 0.2);
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
     border-radius: 16px;
     padding: 16px;
 }
 
 .module-assistant-eyebrow {
     display: inline-block;
-    color: #93c5fd;
+    color: #2563eb;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -2579,21 +2579,21 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 }
 
 .module-assistant-intro h3 {
-    color: #f8fafc;
+    color: #0f172a;
     font-size: 1rem;
     margin: 0 0 6px;
 }
 
 .module-assistant-intro p {
-    color: #cbd5e1;
+    color: #475569;
     font-size: 0.85rem;
     line-height: 1.5;
     margin: 0;
 }
 
 .module-assistant-history {
-    background: rgba(15, 23, 42, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
     border-radius: 16px;
     display: flex;
     flex: 1;
@@ -2607,7 +2607,7 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 
 .module-assistant-empty {
     align-items: center;
-    color: #94a3b8;
+    color: #64748b;
     display: flex;
     flex: 1;
     font-size: 0.88rem;
@@ -2632,7 +2632,7 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 }
 
 .module-assistant-message p {
-    color: #e2e8f0;
+    color: #1e293b;
     font-size: 0.88rem;
     line-height: 1.5;
     margin: 0;
@@ -2641,22 +2641,22 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 
 .module-assistant-message.user {
     align-self: flex-end;
-    background: rgba(37, 99, 235, 0.25);
-    border: 1px solid rgba(96, 165, 250, 0.25);
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
 }
 
 .module-assistant-message.user span {
-    color: #93c5fd;
+    color: #1d4ed8;
 }
 
 .module-assistant-message.assistant {
     align-self: flex-start;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
 }
 
 .module-assistant-message.assistant span {
-    color: #c4b5fd;
+    color: #6d28d9;
 }
 
 .module-assistant-skipped {
@@ -2687,10 +2687,10 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
 }
 
 .module-assistant-input {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 12px;
-    color: #f8fafc;
+    color: #0f172a;
     flex: 1;
     font-family: inherit;
     font-size: 0.9rem;

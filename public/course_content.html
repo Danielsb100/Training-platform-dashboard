@@ -131,7 +131,7 @@
                         </div>
                     `;
                 } else {
-                    modulesHTML = `<div class="modules-grid">`;
+                    modulesHTML = `<div class="modules-grid" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; width: 100%;">`;
                     modules.forEach(m => {
                         const lockedMessage = 'Waiting to be published';
                         const cardClass = m.isLockedForStudent ? 'module-card module-card-locked' : 'module-card';
@@ -199,24 +199,30 @@
                         }
                         
                         finalHtml = tempDiv.innerHTML;
-                    } else if (modSec) {
-                        modSec.style.flex = "1";
-                        modSec.innerHTML = `
-                            <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
-                                <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                                    <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
-                                </h2>
-                                ${modulesHTML}
-                            </div>
-                        `;
-                        finalHtml = tempDiv.innerHTML;
                     } else {
-                        finalHtml += `
-                            <main class="main-content" style="max-width: 1200px; margin: 40px auto; padding: 0 40px;">
-                                <h2 class="section-title"><i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules</h2>
-                                ${modulesHTML}
-                            </main>
-                        `;
+                        const modsPlac = tempDiv.querySelector('#modules-placeholder');
+                        if (modsPlac) {
+                            modsPlac.innerHTML = modulesHTML;
+                            finalHtml = tempDiv.innerHTML;
+                        } else if (modSec) {
+                            modSec.style.flex = "1";
+                            modSec.innerHTML = `
+                                <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
+                                    <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                                        <i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules 
+                                    </h2>
+                                    ${modulesHTML}
+                                </div>
+                            `;
+                            finalHtml = tempDiv.innerHTML;
+                        } else {
+                            finalHtml += `
+                                <main class="main-content" style="max-width: 1200px; margin: 40px auto; padding: 0 40px;">
+                                    <h2 class="section-title"><i class="fas fa-th-large" style="color: #cf9c33;"></i> Course Modules</h2>
+                                    ${modulesHTML}
+                                </main>
+                            `;
+                        }
                     }
                     
                     container.innerHTML = `
@@ -263,21 +269,37 @@
                                         ${modulesHTML}
                                     </div>
                                     
-                                    <!-- Methodology Sidebar -->
+                                    <!-- Sidebar: 6-Step Journey -->
                                     <div style="flex: 1; min-width: 300px;">
-                                        <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
-                                            <h3 style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">NOSSA METODOLOGIA</h3>
-                                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is an advanced training platform that supports blended courses to enhance participants knowledge retention.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> AVA is trained as legal.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Assessment of trainees' expectations and needs.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design training plans and curricula.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Design online training.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Layout on-the-job training.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Record video-based training.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Support to Q&A through avatars.</li>
-                                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> Build case studies, scenarios and simulation.</li>
-                                            </ul>
+                                        <div style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 25px; background: rgba(255, 255, 255, 0.6);">
+                                            <h3 style="color: #0ea5e9; margin-top: 0; font-size: 1.3rem; font-weight: 800; margin-bottom: 20px;">A 6-Step Learning Journey</h3>
+                                            <div style="display: flex; flex-direction: column; gap: 15px; color: #334155; font-size: 0.9rem; font-weight: 500;">
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 1:</strong> Entry Test – A quick assessment to evaluate your initial knowledge before starting.</span>
+                                                </div>
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 2:</strong> Video Lessons – Expert-led sessions (30 minutes each) diving deep into technical sub-topics.</span>
+                                                </div>
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 3:</strong> Training material – Downloadable resources covering the main aspects and essential data.</span>
+                                                </div>
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 4:</strong> Interactive Simulation – Apply your skills to real-life case studies and operational scenarios.</span>
+                                                </div>
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 5:</strong> AI Avatar Support – Our closed-circuit Avatar for instant clarifications on legislation and manuals.</span>
+                                                </div>
+                                                
+                                                <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: white;">
+                                                    <span><strong>Step 6:</strong> Final Evaluation – Test your acquired skills to successfully complete the training module.</span>
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

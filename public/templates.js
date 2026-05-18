@@ -53,15 +53,15 @@ window.templatePresets = [
                         <div style="border: 2px solid #cf9c33; border-radius: 12px; padding: 25px; background: white;">
                             <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">OUR METHODOLOGY</h3>
                             <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 1: Introduction to the core concepts.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 2: Describe your approach.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 3: Key objectives.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 4: Strategic planning.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 5: Implementation steps.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 6: Practical applications.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 7: Resources and tools.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 8: Evaluation and feedback.</span></li>
-                                <li style="display:flex; gap:10px;"><i class="fas fa-circle" style="font-size:0.5rem; margin-top:6px; color:#cf9c33;"></i> <span class="editable-text">Methodology point 9: Final presentation and metrics.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 1: Introduction to the core concepts.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 2: Describe your approach.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 3: Key objectives.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 4: Strategic planning.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 5: Implementation steps.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 6: Practical applications.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 7: Resources and tools.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 8: Evaluation and feedback.</span></li>
+                                <li style="display:flex; gap:10px;"><span class="editable-text">Methodology point 9: Final presentation and metrics.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -2000,7 +2000,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
         <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
         <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
         <div class="foot-col" style="flex:2;">
-            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101101938</p>
+            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101188456</p>
             <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
         </div>
     </div>

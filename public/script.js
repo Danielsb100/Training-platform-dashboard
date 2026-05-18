@@ -118,39 +118,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <h3 class="editable-text" style="color: #cf9c33; margin-top: 0; font-size: 1.2rem; text-transform: uppercase;">Nossa Metodologia</h3>
                                     <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px;">
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">AVA is an advanced training platform that supports blended courses to enhance participants' knowledge retention.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">AVA is trained as legal.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Assessment of trainees' expectations and needs.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Design training plans and curricula.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Design online training.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Layout on-the-job training.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Record video-based training.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Support to Q&A through avatars.</span>
                                         </li>
                                         <li style="display: flex; gap: 10px; align-items: flex-start;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #cf9c33; margin-top: 8px; flex-shrink:0;"></div>
                                             <span class="editable-text" style="font-size: 0.95rem; color: #1e293b; font-weight: 600; line-height: 1.4;">Build case studies, scenarios and simulation.</span>
                                         </li>
                                     </ul>
