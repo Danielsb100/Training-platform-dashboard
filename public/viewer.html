@@ -107,6 +107,7 @@
                     if (contentHtml) {
                         document.getElementById('page-content').innerHTML = contentHtml;
                         initializeAnimations();
+                        injectInlineAccessTraining();
                     } else {
                         window.location.href = 'course_content.html?id=' + pageId;
                     }
@@ -134,6 +135,45 @@
                     animObserver.observe(el);
                 });
                 // Buttons will be handled by document event delegation to ensure they always fire.
+            }
+
+            // Inject an inline Access Training button near existing CTAs inside the rendered content
+            function injectInlineAccessTraining() {
+                // Prevent duplicate injection
+                if (document.querySelector('[data-access-training-inline="true"]')) return;
+
+                const content = document.getElementById('page-content');
+                if (!content) return;
+
+                // Find the best anchor: view-modules btn, subscribe btn, or any prominent CTA
+                const anchor = content.querySelector('[data-is-view-modules-btn="true"]')
+                    || content.querySelector('[data-is-subscribe-btn="true"]')
+                    || content.querySelector('.btn-subscribe');
+
+                if (!anchor) return; // No suitable CTA found; bottom fallback remains
+
+                const inlineBtn = document.createElement('button');
+                inlineBtn.setAttribute('data-access-training-inline', 'true');
+                inlineBtn.textContent = 'Access Training';
+                inlineBtn.style.cssText = 'background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-left: 12px; vertical-align: middle;';
+                inlineBtn.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 5px 15px rgba(207,152,46,0.4)'; });
+                inlineBtn.addEventListener('mouseleave', function() { this.style.transform = 'none'; this.style.boxShadow = 'none'; });
+                inlineBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const token = localStorage.getItem('token');
+                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
+                    if (token) {
+                        window.location.href = targetUrl;
+                    } else {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
+                    }
+                });
+
+                // Insert after the anchor element
+                if (anchor.parentNode) {
+                    anchor.parentNode.insertBefore(inlineBtn, anchor.nextSibling);
+                }
             }
             
             document.addEventListener('click', async (e) => {
@@ -237,6 +277,7 @@
                     if (contentHtml) {
                         document.getElementById('page-content').innerHTML = contentHtml;
                         initializeAnimations();
+                        injectInlineAccessTraining();
                     } else {
                         loadFromLocalStorage();
                     }
