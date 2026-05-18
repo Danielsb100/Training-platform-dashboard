@@ -61,10 +61,9 @@
         </div>
     </div>
 
-    <!-- Access Training CTA -->
     <div id="access-training-cta" style="display: none; background: #0f172a; padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
         <button id="btn-access-training" style="background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
-            Access Training
+            Access the Exercise
         </button>
     </div>
 
@@ -145,10 +144,24 @@
                 const content = document.getElementById('page-content');
                 if (!content) return;
 
-                // Find the best anchor: view-modules btn, subscribe btn, or any prominent CTA
-                const anchor = content.querySelector('[data-is-view-modules-btn="true"]')
-                    || content.querySelector('[data-is-subscribe-btn="true"]')
-                    || content.querySelector('.btn-subscribe');
+                // Remove the SUBSCRIBE button from the Guided Exercise section if present
+                const guidedSection = content.querySelector('#ipt-exercise-section');
+                if (guidedSection) {
+                    const subBtn = guidedSection.querySelector('.btn-subscribe, [data-is-subscribe-btn="true"]');
+                    if (subBtn) subBtn.remove();
+                }
+
+                // Find the best anchor: subscribe area, view-modules btn, subscribe btn, or any prominent CTA
+                let anchor = content.querySelector('.ipt-exercise-subscribe-area');
+                if (!anchor) {
+                    const fallbacks = content.querySelectorAll('[data-is-view-modules-btn="true"], [data-is-subscribe-btn="true"], .btn-subscribe');
+                    for (let f of fallbacks) {
+                        if (!f.closest('footer') && !f.closest('.footer')) {
+                            anchor = f;
+                            break;
+                        }
+                    }
+                }
 
                 if (!anchor) return; // No suitable CTA found; bottom fallback remains
 
@@ -170,8 +183,11 @@
                     }
                 });
 
-                // Insert after the anchor element
-                if (anchor.parentNode) {
+                // Insert after or inside the anchor element
+                if (anchor.classList.contains('ipt-exercise-subscribe-area')) {
+                    inlineBtn.style.marginLeft = '0';
+                    anchor.appendChild(inlineBtn);
+                } else if (anchor.parentNode) {
                     anchor.parentNode.insertBefore(inlineBtn, anchor.nextSibling);
                 }
             }
