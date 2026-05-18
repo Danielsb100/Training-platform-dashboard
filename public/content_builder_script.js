@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bgOptions = document.getElementById('bg-options');
     const boxOptions = document.getElementById('box-options');
     const positionOptions = document.getElementById('position-options');
+    const containerOptions = document.getElementById('container-options');
 
     // Controls
     const fontSelect = document.getElementById('font-family-select');
@@ -404,6 +405,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('mouseup', () => {
         isDragging = false;
         dragHandle.style.cursor = 'grab';
+
+        // --- Smart Anchoring System ---
+        if (activeElement && (activeElement.dataset.isSubscribeBtn || activeElement.dataset.isViewModulesBtn || activeElement.style.position === 'absolute')) {
+            const parent = activeElement.offsetParent;
+            if (parent && parent.id !== 'template-wrapper') {
+                const rect = activeElement.getBoundingClientRect();
+                const parentRect = parent.getBoundingClientRect();
+                
+                // Calculate center point of the element relative to parent
+                const centerX = rect.left + (rect.width / 2) - parentRect.left;
+                const centerY = rect.top + (rect.height / 2) - parentRect.top;
+                
+                const pctX = centerX / parentRect.width;
+                const pctY = centerY / parentRect.height;
+                
+                // Horizontal Smart Anchor
+                if (pctX > 0.5) {
+                    activeElement.style.left = 'auto';
+                    activeElement.style.right = `${parentRect.right - rect.right}px`;
+                } else {
+                    activeElement.style.right = 'auto';
+                    activeElement.style.left = `${rect.left - parentRect.left}px`;
+                }
+                
+                // Vertical Smart Anchor
+                if (pctY > 0.5) {
+                    activeElement.style.top = 'auto';
+                    activeElement.style.bottom = `${parentRect.bottom - rect.bottom}px`;
+                } else {
+                    activeElement.style.bottom = 'auto';
+                    activeElement.style.top = `${rect.top - parentRect.top}px`;
+                }
+                
+                // Reset transform so the element is purely anchored by CSS
+                activeElement.style.transform = 'translate(0px, 0px)';
+                activeElement.dataset.posX = 0;
+                activeElement.dataset.posY = 0;
+                
+                // Update properties panel to reflect 0 translation
+                if (posXInput) posXInput.value = 0;
+                if (posYInput) posYInput.value = 0;
+                if (posXRange) posXRange.value = 0;
+                if (posYRange) posYRange.value = 0;
+            }
+        }
     });
 
     function updateDragHandlePos() {
@@ -877,7 +923,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         bgOptions.classList.add('hidden');
         boxOptions.classList.add('hidden');
         positionOptions.classList.add('hidden');
-        if (addElementOptions) addElementOptions.classList.add('hidden');
+        if (containerOptions) containerOptions.classList.add('hidden');
         if (noSelectionMsg) noSelectionMsg.classList.remove('hidden');
 
         // Revela mediante seleção
@@ -910,7 +956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             else if (activeElementType === 'bg') {
                 bgOptions.classList.remove('hidden');
-                if (addElementOptions) addElementOptions.classList.remove('hidden');
+                if (containerOptions) containerOptions.classList.remove('hidden');
                 document.getElementById('blur-row').classList.remove('hidden');
 
                 const optImage = document.getElementById('bg-type-select').querySelector('option[value="image"]');
@@ -1306,6 +1352,50 @@ document.addEventListener('DOMContentLoaded', async () => {
                     deselectElement();
                 }
             }
+        });
+    }
+
+    // --- Container Options: Add Elements ---
+    const addTextBtn = document.getElementById('add-text-child-btn');
+    const addImgBtn = document.getElementById('add-img-child-btn');
+
+    if (addTextBtn) {
+        addTextBtn.addEventListener('click', () => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            const p = document.createElement('p');
+            p.className = 'editable-text';
+            p.innerText = 'New Text Element';
+            activeElement.appendChild(p);
+            
+            // Re-bind click event to text
+            p.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setActiveElement(p, 'text');
+            });
+            
+            // Optionally enable editing immediately
+            if(typeof enableTextEditing === 'function') enableTextEditing(true);
+        });
+    }
+
+    if (addImgBtn) {
+        addImgBtn.addEventListener('click', () => {
+            if (!activeElement || activeElementType !== 'bg') return;
+            const wrap = document.createElement('div');
+            wrap.className = 'editable-image-wrapper';
+            
+            const img = document.createElement('img');
+            img.src = 'https://placehold.co/400x300/e2e8f0/475569?text=New+Image';
+            img.style.width = '100%';
+            wrap.appendChild(img);
+            
+            activeElement.appendChild(wrap);
+            
+            // Re-bind click event
+            wrap.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setActiveElement(wrap, 'image');
+            });
         });
     }
 
@@ -1762,23 +1852,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- Button injection: uses CSS centering (left:50% + translateX) ---
     window.injectSubscribeButton = function() {
         if (!isEditMode) return;
         const container = document.getElementById('template-container');
         if (!container) return;
 
         const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const containerRect = container.getBoundingClientRect();
-        const topInContainer = scrollY - containerRect.top - window.scrollY + (window.innerHeight / 2);
+        const midY = scrollY + (window.innerHeight / 2);
+        
+        // Find nearest section
+        const sections = Array.from(document.querySelectorAll('section, .module-section'));
+        let targetSection = sections[0];
+        let targetContent = targetSection ? (targetSection.querySelector('.module-content') || targetSection) : container;
+        
+        sections.forEach(sec => {
+            const rect = sec.getBoundingClientRect();
+            const secTop = rect.top + window.scrollY;
+            const secBottom = secTop + rect.height;
+            if (midY >= secTop && midY <= secBottom) {
+                targetSection = sec;
+                const content = sec.querySelector('.module-content');
+                targetContent = content ? content : sec;
+            }
+        });
+
+        if (targetContent !== container && window.getComputedStyle(targetContent).position === 'static') {
+            targetContent.style.position = 'relative';
+        }
+
+        const targetRect = targetContent.getBoundingClientRect();
+        const topInContent = midY - (targetRect.top + window.scrollY);
+        const leftInContent = (window.innerWidth / 2) - targetRect.left;
+        
+        // Initial Placement
+        const distFromLeft = leftInContent - 75;
+        const distFromTop = topInContent;
 
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${topInContainer}px; left:50%; transform:translateX(-50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${distFromTop}px; left:${distFromLeft}px; transform:translate(0px, 0px); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'SUBSCRIBE';
         btnWrap.dataset.isSubscribeBtn = "true";
+        btnWrap.dataset.posX = 0;
+        btnWrap.dataset.posY = 0;
 
-        container.appendChild(btnWrap);
+        targetContent.appendChild(btnWrap);
         if(typeof initDynamicEvents === 'function') initDynamicEvents();
         btnWrap.click();
     };

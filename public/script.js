@@ -384,6 +384,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('mouseup', () => {
         isDragging = false;
         dragHandle.style.cursor = 'grab';
+
+        // --- Smart Anchoring System ---
+        if (activeElement && (activeElement.dataset.isSubscribeBtn || activeElement.dataset.isViewModulesBtn || activeElement.style.position === 'absolute')) {
+            const parent = activeElement.offsetParent;
+            if (parent && parent.id !== 'template-wrapper') {
+                const rect = activeElement.getBoundingClientRect();
+                const parentRect = parent.getBoundingClientRect();
+                
+                // Calculate center point of the element relative to parent
+                const centerX = rect.left + (rect.width / 2) - parentRect.left;
+                const centerY = rect.top + (rect.height / 2) - parentRect.top;
+                
+                const pctX = centerX / parentRect.width;
+                const pctY = centerY / parentRect.height;
+                
+                // Horizontal Smart Anchor
+                if (pctX > 0.5) {
+                    activeElement.style.left = 'auto';
+                    activeElement.style.right = `${parentRect.right - rect.right}px`;
+                } else {
+                    activeElement.style.right = 'auto';
+                    activeElement.style.left = `${rect.left - parentRect.left}px`;
+                }
+                
+                // Vertical Smart Anchor
+                if (pctY > 0.5) {
+                    activeElement.style.top = 'auto';
+                    activeElement.style.bottom = `${parentRect.bottom - rect.bottom}px`;
+                } else {
+                    activeElement.style.bottom = 'auto';
+                    activeElement.style.top = `${rect.top - parentRect.top}px`;
+                }
+                
+                // Reset transform so the element is purely anchored by CSS
+                activeElement.style.transform = 'translate(0px, 0px)';
+                activeElement.dataset.posX = 0;
+                activeElement.dataset.posY = 0;
+                
+                // Update properties panel to reflect 0 translation
+                if (posXInput) posXInput.value = 0;
+                if (posYInput) posYInput.value = 0;
+                if (posXRange) posXRange.value = 0;
+                if (posYRange) posYRange.value = 0;
+            }
+        }
     });
 
     function updateDragHandlePos() {
@@ -1631,16 +1676,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!container) return;
 
         const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const containerRect = container.getBoundingClientRect();
-        const topInContainer = scrollY - containerRect.top - window.scrollY + (window.innerHeight / 2);
+        const midY = scrollY + (window.innerHeight / 2);
+        
+        // Find nearest section
+        const sections = Array.from(document.querySelectorAll('section, .module-section'));
+        let targetSection = sections[0];
+        let targetContent = targetSection ? (targetSection.querySelector('.module-content') || targetSection) : container;
+        
+        sections.forEach(sec => {
+            const rect = sec.getBoundingClientRect();
+            const secTop = rect.top + window.scrollY;
+            const secBottom = secTop + rect.height;
+            if (midY >= secTop && midY <= secBottom) {
+                targetSection = sec;
+                const content = sec.querySelector('.module-content');
+                targetContent = content ? content : sec;
+            }
+        });
+
+        if (targetContent !== container && window.getComputedStyle(targetContent).position === 'static') {
+            targetContent.style.position = 'relative';
+        }
+
+        const targetRect = targetContent.getBoundingClientRect();
+        const topInContent = midY - (targetRect.top + window.scrollY);
+        const leftInContent = (window.innerWidth / 2) - targetRect.left;
+        
+        // Initial Placement
+        const distFromLeft = leftInContent - 75;
+        const distFromTop = topInContent;
 
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${topInContainer}px; left:50%; transform:translateX(-50%); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${distFromTop}px; left:${distFromLeft}px; transform:translate(0px, 0px); z-index:1000; display:inline-block; padding:15px 30px; background:#10b981; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'SUBSCRIBE';
         btnWrap.dataset.isSubscribeBtn = "true";
+        btnWrap.dataset.posX = 0;
+        btnWrap.dataset.posY = 0;
 
-        container.appendChild(btnWrap);
+        targetContent.appendChild(btnWrap);
         if(typeof initDynamicEvents === 'function') initDynamicEvents();
         btnWrap.click();
     };
@@ -1651,16 +1725,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!container) return;
 
         const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const containerRect = container.getBoundingClientRect();
-        const topInContainer = scrollY - containerRect.top - window.scrollY + (window.innerHeight / 2);
+        const midY = scrollY + (window.innerHeight / 2);
+        
+        // Find nearest section
+        const sections = Array.from(document.querySelectorAll('section, .module-section'));
+        let targetSection = sections[0];
+        let targetContent = targetSection ? (targetSection.querySelector('.module-content') || targetSection) : container;
+        
+        sections.forEach(sec => {
+            const rect = sec.getBoundingClientRect();
+            const secTop = rect.top + window.scrollY;
+            const secBottom = secTop + rect.height;
+            if (midY >= secTop && midY <= secBottom) {
+                targetSection = sec;
+                const content = sec.querySelector('.module-content');
+                targetContent = content ? content : sec;
+            }
+        });
+
+        if (targetContent !== container && window.getComputedStyle(targetContent).position === 'static') {
+            targetContent.style.position = 'relative';
+        }
+
+        const targetRect = targetContent.getBoundingClientRect();
+        const topInContent = midY - (targetRect.top + window.scrollY);
+        const leftInContent = (window.innerWidth / 2) - targetRect.left;
+        
+        // Offset below the first button
+        const distFromLeft = leftInContent - 75;
+        const distFromTop = topInContent + 60; 
 
         const btnWrap = document.createElement('div');
         btnWrap.className = 'editable-text';
-        btnWrap.style.cssText = `position:absolute; top:${topInContainer}px; left:50%; transform:translateX(-50%); z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
+        btnWrap.style.cssText = `position:absolute; top:${distFromTop}px; left:${distFromLeft}px; transform:translate(0px, 0px); z-index:1000; display:inline-block; padding:15px 30px; background:#4f46e5; color:white; font-weight:bold; border-radius:30px; cursor:pointer; text-align:center; font-size:1.1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-decoration:none;`;
         btnWrap.innerText = 'Open course';
         btnWrap.dataset.isViewModulesBtn = "true";
+        btnWrap.dataset.posX = 0;
+        btnWrap.dataset.posY = 0;
 
-        container.appendChild(btnWrap);
+        targetContent.appendChild(btnWrap);
         if(typeof initDynamicEvents === 'function') initDynamicEvents();
         btnWrap.click();
     };
