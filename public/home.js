@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <img src="${thumbUrl}" alt="Thumbnail" class="course-thumb" style="width: 100%; object-fit: cover; border-bottom: 1px solid #e2e8f0; height: 180px;">
                 <div style="padding: 20px; flex: 1; display: flex; flex-direction: column;">
                     <h3 class="course-title" style="margin-top:0;">${course.title}</h3>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">By ${course.instructor || 'Instructor'}</p>
+
                     <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px; line-height: 1.4; flex: 1;">${description}</p>
                     <div class="course-meta" style="margin-top: auto; margin-bottom: 15px;">
                         <div class="rating"><i class="fas fa-star" style="color: #cf982e;"></i> ${rating}</div>

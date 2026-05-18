@@ -1384,7 +1384,6 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
             <h1>[PROJECT PHYGITAL-OC]</h1>
             <h2>DISMANTLING TRANSNATIONAL ORGANIZED CRIME</h2>
             <p>The core objective of PHYGITAL-OC is to strengthen international cooperation to help dismantle transnational criminal networks. The project utilizes advanced technologies to trace crimes in both the physical and digital worlds.</p>
-            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
         </div>
         <div class="hero-logo">
             <img src="phygital_logo_transparent.png" alt="Project Phygital-OC">
@@ -1673,7 +1672,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             <h1>[PROJECT INTERCEPTED]</h1>
             <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
             <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
-            <a href="#features" class="hero-btn">INTERESTED? LEARN MORE BELOW <span style="font-size:1.2rem;">»</span></a>
         </div>
 
     </div>

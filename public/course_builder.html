@@ -640,7 +640,10 @@
                         status: m.moduleStatus || 'DRAFT',
                         coverImage: m.coverImage,
                         titleFont: m.titleFont,
-                        textColor: m.textColor
+                        textColor: m.textColor,
+                        videos: m.videos || [],
+                        documents: m.documents || [],
+                        quizzes: m.quizzes || []
                     }));
                 } else {
                     window.courseModules = [];

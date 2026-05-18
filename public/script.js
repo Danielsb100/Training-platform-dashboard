@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             editingPageId = 'channel_lp';
             
             const navNameInput = document.getElementById('page-name-input');
-            if(navNameInput) navNameInput.value = channel.name || 'Meu Canal';
+            window.loadedLandingPageTitle = channel.name;
+            if(navNameInput) navNameInput.value = channel.name || 'My Channel';
 
             const container = document.getElementById('template-container');
             if (container) {
@@ -175,7 +176,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     editingPageId = 'course_lp';
                     
                     const navNameInput = document.getElementById('page-name-input');
-                    if(navNameInput) navNameInput.value = landingPage.title || 'Curso sem tÃ­tulo';
+                    window.loadedLandingPageTitle = landingPage.title;
+                    if(navNameInput) navNameInput.value = landingPage.title || 'Untitled Course';
 
                     const container = document.getElementById('template-container');
                     if (container) {
@@ -198,7 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             editingPageId = page.id;
             
             const navNameInput = document.getElementById('page-name-input');
-            if(navNameInput) navNameInput.value = page.title || 'Minha Landing Page';
+            window.loadedLandingPageTitle = page.title;
+            if(navNameInput) navNameInput.value = page.title || 'My Landing Page';
 
             const container = document.getElementById('template-container');
             if (container) {
@@ -456,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             hidePanelCompletely();
             
             const titleEl = document.getElementById('titulo-cabecalho');
-            publishTitleInput.value = titleEl ? titleEl.innerText : 'Minha Landing Page';
+            publishTitleInput.value = window.loadedLandingPageTitle || 'My Landing Page';
             
             if(courseIdParam) {
                 const headerObj = document.querySelector('#publish-modal h2');
@@ -532,7 +535,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 2. Save to database
             const payload = {
-                title: 'Landing Page for Course ' + courseIdParam,
+                title: publishTitleInput.value || 'My Landing Page',
                 content: { html: modularContent },
                 compiledHtml: compiledContent,
                 compiledCss: '',
@@ -564,11 +567,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            alert('Design e Capa salvos no curso com sucesso (PostgreSQL)!');
+            alert('Design and Cover saved successfully to the course (PostgreSQL)!');
             window.location.href = 'course_builder.html?id=' + courseIdParam;
         } catch (error) {
             console.error(error);
-            alert('Erro ao salvar Landing Page oficial: ' + error.message);
+            alert('Error saving official Landing Page: ' + error.message);
         }
     }
 
@@ -594,11 +597,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(!res.ok) throw new Error('Falha ao salvar no servidor');
             
             publishModal.classList.add('hidden');
-            alert('Design do Canal salvo com sucesso (PostgreSQL)!');
+            alert('Channel Design saved successfully (PostgreSQL)!');
             window.location.href = 'channel_view.html?id=' + channelIdParam;
         } catch (error) {
             console.error(error);
-            alert('Erro ao salvar canal oficial: ' + error.message);
+            alert('Error saving official channel: ' + error.message);
         }
     }
 
@@ -671,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(!publishTitleInput.value) publishTitleInput.value = navNameInput.value;
             }
 
-            const title = publishTitleInput.value || (navNameInput ? navNameInput.value : 'Minha Landing Page');
+            const title = publishTitleInput.value || (navNameInput ? navNameInput.value : 'My Landing Page');
             const thumbUrl = customThumbBase64 || publishThumbUrlInput.value || '';
             
             if (courseIdParam) {

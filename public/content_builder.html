@@ -516,23 +516,23 @@
     <!-- Publish Settings Modal -->
     <div id="publish-modal" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.9); z-index:9999; display:flex; align-items:center; justify-content:center; padding: 20px;">
         <div style="background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: left; color: #1e293b;">
-            <h2 style="margin-top: 0; margin-bottom: 25px; color: #4338ca; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">Configurações de Publicação</h2>
+            <h2 style="margin-top: 0; margin-bottom: 25px; color: #4338ca; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">Save Landing Page</h2>
             
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Título da Página</label>
-                <input type="text" id="publish-title" placeholder="Ex: Curso de Marketing Digital" style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Page Title</label>
+                <input type="text" id="publish-title" placeholder="Ex: Digital Marketing Course" style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;">
             </div>
 
             <div style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Imagem de Capa (Thumbnail)</label>
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Cover Image (Thumbnail)</label>
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                    <input type="text" id="publish-thumb-url" placeholder="URL da imagem (opcional)" style="flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none;">
-                    <span style="color: #64748b; font-size: 0.9rem; font-weight: 600;">OU</span>
+                    <input type="text" id="publish-thumb-url" placeholder="Image URL (optional)" style="flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none;">
+                    <span style="color: #64748b; font-size: 0.9rem; font-weight: 600;">OR</span>
                     <button id="publish-thumb-upload-btn" style="background: #e2e8f0; color: #1e293b; border: none; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s;"><i class="fas fa-upload"></i> Upload</button>
                     <input type="file" id="publish-thumb-file" accept="image/*" style="display: none;">
                 </div>
                 <div id="publish-thumb-preview" style="width: 100%; height: 160px; background-color: #f1f5f9; border-radius: 12px; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
-                    <span style="color: #94a3b8; font-size: 0.9rem;"><i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px; display: block; text-align: center;"></i> Pré-visualização</span>
+                    <span style="color: #94a3b8; font-size: 0.9rem;"><i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px; display: block; text-align: center;"></i> Preview</span>
                     <img id="publish-thumb-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; inset: 0;">
                 </div>
             </div>

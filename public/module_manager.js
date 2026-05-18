@@ -106,7 +106,10 @@ function attachModuleToCourse(dbModuleId) {
                 dbId: dbModuleId,
                 title: module.title,
                 content: module.description || '',
-                status: module.status
+                status: module.status,
+                videos: module.videos || [],
+                documents: module.documents || [],
+                quizzes: module.quizzes || []
             });
             renderAttachedModules();
             alert('Module added to the course track!');
@@ -247,7 +250,10 @@ async function openModuleEditor(moduleId = null) {
                         dbId: newModule.id,
                         title: newModule.title,
                         content: newModule.description || '',
-                        status: newModule.status
+                        status: newModule.status,
+                        videos: newModule.videos || [],
+                        documents: newModule.documents || [],
+                        quizzes: newModule.quizzes || []
                     });
                     renderAttachedModules();
                 } catch (err) {
@@ -261,7 +267,10 @@ async function openModuleEditor(moduleId = null) {
                     dbId: newModule.id,
                     title: newModule.title,
                     content: newModule.description || '',
-                    status: newModule.status
+                    status: newModule.status,
+                    videos: newModule.videos || [],
+                    documents: newModule.documents || [],
+                    quizzes: newModule.quizzes || []
                 });
                 renderAttachedModules();
             }
@@ -332,6 +341,17 @@ async function loadModuleData(id) {
 
         // Update the cover preview based on loaded data
         updateCoverPreview();
+
+        // Update local memory to keep card counts in sync
+        if (window.courseModules) {
+            const localMod = window.courseModules.find(m => m.dbId === id);
+            if (localMod) {
+                localMod.videos = module.videos || [];
+                localMod.documents = module.documents || [];
+                localMod.quizzes = quizzes;
+                if (typeof renderAttachedModules === 'function') renderAttachedModules();
+            }
+        }
 
     } catch (error) {
         alert('Error loading module: ' + error.message);
