@@ -217,6 +217,15 @@ async function openModuleEditor(moduleId = null) {
     document.getElementById('module-basics-form').reset();
     document.getElementById('v-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading videos...</p>';
     document.getElementById('d-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading documents...</p>';
+
+    // Preserve quiz forms before replacing q-list. The forms may have been moved
+    // into a quiz-specific forms-container, which is inside q-list.
+    const paneQuiz = document.getElementById('pane-quiz');
+    const manualQuizForm = document.getElementById('manual-quiz-form');
+    const aiQuizForm = document.getElementById('ai-quiz-form');
+    if (manualQuizForm && paneQuiz) paneQuiz.appendChild(manualQuizForm);
+    if (aiQuizForm && paneQuiz) paneQuiz.appendChild(aiQuizForm);
+
     document.getElementById('q-list').innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading quiz...</p>';
     document.getElementById('btn-delete-module').style.display = 'none';
 
@@ -1089,12 +1098,19 @@ function renderDocs(docs) {
 function showGenerateAiQuizForm() {
     hideManualQuizForm();
     const form = document.getElementById('ai-quiz-form');
+    if (!form) {
+        alert('AI quiz form is unavailable. Please refresh the page and try again.');
+        return;
+    }
     const firstQuiz = window.currentQuizDataList && window.currentQuizDataList[0];
     const container = firstQuiz ? document.getElementById(`forms-container-${firstQuiz.id}`) : document.getElementById('pane-quiz');
-    if (container && form) container.appendChild(form);
+    if (container) container.appendChild(form);
     form.style.display = 'block';
 }
-function hideAiQuizForm() { document.getElementById('ai-quiz-form').style.display = 'none'; }
+function hideAiQuizForm() {
+    const form = document.getElementById('ai-quiz-form');
+    if (form) form.style.display = 'none';
+}
 
 function showManualQuizForm(quizId) {
     window.currentModuleQuizId = quizId;
@@ -1114,7 +1130,8 @@ function showManualQuizForm(quizId) {
 }
 
 function hideManualQuizForm() {
-    document.getElementById('manual-quiz-form').style.display = 'none';
+    const form = document.getElementById('manual-quiz-form');
+    if (form) form.style.display = 'none';
 }
 
 function editQuizTitle(quizId) {
