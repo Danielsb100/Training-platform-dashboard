@@ -127,7 +127,10 @@ const main = async () => {
   }
 
   if (apply && updates.length) {
-    await prisma.$transaction(updates);
+    const batchSize = 40;
+    for (let index = 0; index < updates.length; index += batchSize) {
+      await prisma.$transaction(updates.slice(index, index + batchSize), { timeout: 30000 });
+    }
   }
 
   console.log(JSON.stringify(report, null, 2));

@@ -4944,7 +4944,8 @@ function renderModuleQuiz(quizzes) {
         quizBox.style.marginBottom = '20px';
         quizBox.style.padding = '15px';
         quizBox.style.borderRadius = '12px';
-        quizBox.style.background = 'rgba(255,255,255,0.05)';
+        quizBox.style.background = 'rgba(15,23,42,0.72)';
+        quizBox.style.color = '#e2e8f0';
 
         quizBox.innerHTML = `<h3 style="color: var(--accent-color); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">${quiz.title}</h3>`;
 
@@ -4952,15 +4953,16 @@ function renderModuleQuiz(quizzes) {
             const qDiv = document.createElement('div');
             qDiv.className = 'quiz-question';
             qDiv.style.marginBottom = '15px';
-            qDiv.innerHTML = `<p style="margin-bottom: 8px;"><strong>${qIdx + 1}. ${q.text}</strong></p>`;
+            qDiv.style.color = '#e2e8f0';
+            qDiv.innerHTML = `<p style="margin-bottom: 8px; color:#f8fafc;"><strong>${qIdx + 1}. ${q.text}</strong></p>`;
 
             q.options.forEach(opt => {
                 const optDiv = document.createElement('div');
                 optDiv.style.marginBottom = '4px';
                 optDiv.innerHTML = `
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; color:#e2e8f0; line-height:1.45;">
                         <input type="radio" name="quiz_${quiz.id}_question_${q.id}" value="${opt.id}">
-                        ${opt.text}
+                        <span>${opt.text}</span>
                     </label>
                 `;
                 qDiv.appendChild(optDiv);
@@ -5417,7 +5419,8 @@ function renderModuleQuizLegacy(quizzes) {
         quizBox.style.marginBottom = '20px';
         quizBox.style.padding = '15px';
         quizBox.style.borderRadius = '12px';
-        quizBox.style.background = 'rgba(255,255,255,0.05)';
+        quizBox.style.background = 'rgba(15,23,42,0.72)';
+        quizBox.style.color = '#e2e8f0';
         quizBox.innerHTML = `
             <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
                 <h3 style="color: var(--accent-color); margin: 0;">${quiz.title}</h3>
@@ -5429,15 +5432,16 @@ function renderModuleQuizLegacy(quizzes) {
             const qDiv = document.createElement('div');
             qDiv.className = 'quiz-question';
             qDiv.style.marginBottom = '15px';
-            qDiv.innerHTML = `<p style="margin-bottom: 8px;"><strong>${quizIndex + 1}.${qIdx + 1} ${q.text}</strong></p>`;
+            qDiv.style.color = '#e2e8f0';
+            qDiv.innerHTML = `<p style="margin-bottom: 8px; color:#f8fafc;"><strong>${quizIndex + 1}.${qIdx + 1} ${q.text}</strong></p>`;
 
             q.options.forEach((opt) => {
                 const optDiv = document.createElement('div');
                 optDiv.style.marginBottom = '4px';
                 optDiv.innerHTML = `
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; color:#e2e8f0; line-height:1.45;">
                         <input type="radio" name="quiz_${quiz.id}_question_${q.id}" value="${opt.id}">
-                        ${opt.text}
+                        <span>${opt.text}</span>
                     </label>
                 `;
                 qDiv.appendChild(optDiv);
