@@ -2,8 +2,57 @@ const env = require('../config/env');
 
 const DEFAULT_QUESTION_COUNT = 5;
 const DEFAULT_OPTIONS_PER_QUESTION = 4;
-const MAX_FILE_BYTES_PER_ITEM = 20 * 1024 * 1024;
-const MAX_TOTAL_FILE_BYTES = 60 * 1024 * 1024;
+// Quiz generation sends files directly in the Responses request. Even with a short
+// prompt, OpenAI parses supplied files into the model context, so raw upload byte
+// limits must be far below generic API upload limits to avoid context-window errors.
+const MAX_FILE_BYTES_PER_ITEM = 1024 * 1024;
+const MAX_TOTAL_FILE_BYTES = 3 * 1024 * 1024;
+const MAX_QUIZ_FILE_INPUTS = 5;
+const SUPPORTED_OPENAI_FILE_MIME_TYPES = new Set([
+  'application/pdf',
+  'application/json',
+  'text/csv',
+  'text/html',
+  'text/markdown',
+  'text/plain'
+]);
+const SUPPORTED_OPENAI_FILE_EXTENSIONS = new Set(['.csv', '.htm', '.html', '.json', '.md', '.pdf', '.txt']);
+
+const getFileExtension = (filename = '') => {
+  const match = String(filename || '').toLowerCase().match(/\.[a-z0-9]+$/);
+  return match ? match[0] : '';
+};
+
+const isSupportedOpenAiFile = (doc = {}) => {
+  const mimeType = String(doc.type || '').toLowerCase().split(';')[0].trim();
+  if (mimeType.startsWith('text/')) return true;
+  if (SUPPORTED_OPENAI_FILE_MIME_TYPES.has(mimeType)) return true;
+  return SUPPORTED_OPENAI_FILE_EXTENSIONS.has(getFileExtension(doc.name));
+};
+
+const createSeededRandom = (seed = '') => {
+  let state = 2166136261;
+  for (const char of String(seed)) {
+    state ^= char.charCodeAt(0);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state += 0x6D2B79F5;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const shuffleArray = (items = [], random = Math.random) => {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+};
 
 const clampInt = (value, fallback, min, max) => {
   const parsed = Number.parseInt(value, 10);
@@ -16,7 +65,10 @@ const getModuleAssetUrl = (url = '') => {
   return match ? Number.parseInt(match[1], 10) : null;
 };
 
-const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion) => {
+const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion, options = {}) => {
+  const random = typeof options.random === 'function'
+    ? options.random
+    : createSeededRandom(JSON.stringify(payload?.questions || []));
   const rawQuestions = Array.isArray(payload?.questions) ? payload.questions : [];
   const questions = rawQuestions.slice(0, questionCount).map((question, questionIndex) => {
     const rawOptions = Array.isArray(question.options) ? question.options : [];
@@ -37,10 +89,15 @@ const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion) => {
       option.isCorrect = optionIndex === firstCorrectIndex;
     });
 
+    let shuffledOptions = shuffleArray(options, random);
+    if (firstCorrectIndex === 0 && shuffledOptions.findIndex((option) => option.isCorrect) === 0 && shuffledOptions.length > 1) {
+      shuffledOptions = [...shuffledOptions.slice(1), shuffledOptions[0]];
+    }
+
     return {
       text: String(question?.text || question?.question || '').trim(),
       order: questionIndex,
-      options
+      options: shuffledOptions
     };
   }).filter((question) => question.text && question.options.length >= 2);
 
@@ -102,6 +159,58 @@ const extractResponseText = (responsePayload) => {
   return message?.text || '';
 };
 
+const getDocumentBuffer = (doc = {}) => {
+  if (!doc?.data) return null;
+  return Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
+};
+
+const appendSupportedDocumentInput = ({ content, doc, label, budget }) => {
+  if (!doc?.name || !doc?.type) return budget;
+
+  if (!isSupportedOpenAiFile(doc)) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: file type ${doc.type || 'unknown'} is not supported for OpenAI quiz generation.`
+    });
+    return budget;
+  }
+
+  const buffer = getDocumentBuffer(doc);
+  if (!buffer) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: file bytes are not available to the AI quiz generator.`
+    });
+    return budget;
+  }
+
+  if (budget.fileCount >= MAX_QUIZ_FILE_INPUTS) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: quiz generation already included ${MAX_QUIZ_FILE_INPUTS} files, which is the safe context limit.`
+    });
+    return budget;
+  }
+
+  if (buffer.length > MAX_FILE_BYTES_PER_ITEM || budget.totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: size ${buffer.length} bytes exceeds safe AI quiz context limits.`
+    });
+    return budget;
+  }
+
+  content.push({
+    type: 'input_file',
+    filename: doc.name,
+    file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
+  });
+  return {
+    totalBytes: budget.totalBytes + buffer.length,
+    fileCount: budget.fileCount + 1
+  };
+};
+
 const buildModuleContextContent = (module, options = {}) => {
   const instructionLines = Array.isArray(options.instructionLines) ? options.instructionLines : [];
   const content = [];
@@ -137,50 +246,37 @@ const buildModuleContextContent = (module, options = {}) => {
     ].filter((line) => line !== null).join('\n')
   });
 
-  let totalBytes = 0;
-  for (const moduleDocument of module.documents || []) {
-    const doc = moduleDocument.document;
-    if (!doc?.data || !doc?.name || !doc?.type) continue;
-
-    const buffer = Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
-    if (buffer.length > MAX_FILE_BYTES_PER_ITEM || totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
-      content.push({
-        type: 'input_text',
-        text: `Skipped file ${doc.name}: size ${buffer.length} bytes exceeds AI context upload limits.`
-      });
-      continue;
-    }
-
-    totalBytes += buffer.length;
+  if (options.includeFiles === false) {
     content.push({
-      type: 'input_file',
-      filename: doc.name,
-      file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
+      type: 'input_text',
+      text: 'File contents were intentionally not attached for this quiz attempt to stay within the model context window. Use the module metadata, video titles, document names, and any available descriptions to create the quiz.'
     });
+    return content;
   }
 
-  for (const video of module.videos || []) {
+  const documentEntries = (module.documents || []).map((moduleDocument) => ({
+    moduleDocument,
+    doc: moduleDocument.document,
+    label: 'file'
+  }));
+  const videoEntries = (module.videos || []).map((video) => {
     const documentId = getModuleAssetUrl(video.url);
     const doc = documentId
       ? (module.videoAssetDocuments || []).find((candidate) => candidate.id === documentId)
       : null;
-
-    if (!doc?.data || !doc?.name || !doc?.type) continue;
-    const buffer = Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
-    if (buffer.length > MAX_FILE_BYTES_PER_ITEM || totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
-      content.push({
-        type: 'input_text',
-        text: `Skipped video asset ${doc.name}: size ${buffer.length} bytes exceeds AI context upload limits.`
-      });
-      continue;
-    }
-
-    totalBytes += buffer.length;
-    content.push({
-      type: 'input_file',
-      filename: doc.name,
-      file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
+    return { moduleDocument: null, doc, label: 'video asset' };
+  });
+  const materialEntries = [...documentEntries, ...videoEntries]
+    .filter((entry) => entry.doc)
+    .sort((a, b) => {
+      const aSize = getDocumentBuffer(a.doc)?.length || Number.MAX_SAFE_INTEGER;
+      const bSize = getDocumentBuffer(b.doc)?.length || Number.MAX_SAFE_INTEGER;
+      return aSize - bSize;
     });
+
+  let budget = { totalBytes: 0, fileCount: 0 };
+  for (const entry of materialEntries) {
+    budget = appendSupportedDocumentInput({ content, doc: entry.doc, label: entry.label, budget });
   }
 
   return content;
@@ -190,6 +286,7 @@ const buildModuleInputContent = (module, options = {}) => {
   const questionCount = clampInt(options.questionCount, DEFAULT_QUESTION_COUNT, 1, 30);
   const optionsPerQuestion = clampInt(options.optionsPerQuestion, DEFAULT_OPTIONS_PER_QUESTION, 2, 8);
   const content = buildModuleContextContent(module, {
+    includeFiles: options.includeFiles,
     instructionLines: [
       `Create a ${questionCount}-question test/quiz for this training module.`,
       'Write the quiz title, questions, and answer options in English.',
@@ -202,14 +299,9 @@ const buildModuleInputContent = (module, options = {}) => {
   return { content, questionCount, optionsPerQuestion };
 };
 
-const generateQuizFromModule = async (module, options = {}) => {
-  if (!env.openai.apiKey) {
-    const error = new Error('OPENAI_API_KEY is not configured.');
-    error.statusCode = 503;
-    throw error;
-  }
+const isContextWindowError = (message = '') => /context window|context length|maximum context|too many tokens|input exceeds/i.test(String(message || ''));
 
-  const { content, questionCount, optionsPerQuestion } = buildModuleInputContent(module, options);
+const requestQuizResponse = async ({ content, questionCount, optionsPerQuestion }) => {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -251,6 +343,30 @@ const generateQuizFromModule = async (module, options = {}) => {
     error.statusCode = response.status;
     throw error;
   }
+  return responsePayload;
+};
+
+const generateQuizFromModule = async (module, options = {}) => {
+  if (!env.openai.apiKey) {
+    const error = new Error('OPENAI_API_KEY is not configured.');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const { content, questionCount, optionsPerQuestion } = buildModuleInputContent(module, options);
+  let responsePayload;
+  try {
+    responsePayload = await requestQuizResponse({ content, questionCount, optionsPerQuestion });
+  } catch (error) {
+    if (!isContextWindowError(error.message)) throw error;
+    console.warn('AI quiz generation exceeded context window; retrying without attached file contents.');
+    const fallback = buildModuleInputContent(module, { ...options, includeFiles: false });
+    responsePayload = await requestQuizResponse({
+      content: fallback.content,
+      questionCount: fallback.questionCount,
+      optionsPerQuestion: fallback.optionsPerQuestion
+    });
+  }
 
   const responseText = extractResponseText(responsePayload);
   if (!responseText) {
@@ -267,7 +383,10 @@ module.exports = {
   buildModuleInputContent,
   buildQuizJsonSchema,
   clampInt,
+  createSeededRandom,
   generateQuizFromModule,
   getModuleAssetUrl,
-  normalizeGeneratedQuiz
+  isSupportedOpenAiFile,
+  normalizeGeneratedQuiz,
+  shuffleArray
 };
