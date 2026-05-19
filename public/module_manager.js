@@ -1088,7 +1088,11 @@ function renderDocs(docs) {
 // --- QUIZ & IA ---
 function showGenerateAiQuizForm() {
     hideManualQuizForm();
-    document.getElementById('ai-quiz-form').style.display = 'block';
+    const form = document.getElementById('ai-quiz-form');
+    const firstQuiz = window.currentQuizDataList && window.currentQuizDataList[0];
+    const container = firstQuiz ? document.getElementById(`forms-container-${firstQuiz.id}`) : document.getElementById('pane-quiz');
+    if (container && form) container.appendChild(form);
+    form.style.display = 'block';
 }
 function hideAiQuizForm() { document.getElementById('ai-quiz-form').style.display = 'none'; }
 
@@ -1252,6 +1256,11 @@ async function submitAiQuiz() {
     const questionCount = parseInt(document.getElementById('ai-q-count').value) || 5;
     const difficulty = document.getElementById('ai-q-difficulty').value || 'medium';
 
+    if ((window.currentQuizDataList || []).length > 0) {
+        const proceed = confirm('This module already has a quiz. Generate another AI quiz? The existing quiz will be kept.');
+        if (!proceed) return;
+    }
+
     const btn = document.getElementById('btn-submit-ai-quiz');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating with AI...';
     btn.disabled = true;
@@ -1305,7 +1314,10 @@ function renderQuizzes(quizzes) {
         list.innerHTML = `
             <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px dashed #cbd5e1; text-align: center;">
                 <p style="color:#64748b; margin-bottom: 20px;">No quiz found for this module.</p>
-                <button onclick="showCreateQuizForm()" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Create New Quiz</button>
+                <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                    <button onclick="showCreateQuizForm()" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Create New Quiz</button>
+                    <button onclick="showGenerateAiQuizForm()" style="padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-magic"></i> Generate with AI</button>
+                </div>
             </div>
         `;
         return;
@@ -1327,6 +1339,7 @@ function renderQuizzes(quizzes) {
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Question</button>
+                        <button onclick="showGenerateAiQuizForm()" style="padding: 8px 12px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-magic"></i> Generate with AI</button>
                         <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Delete Entire Quiz"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>

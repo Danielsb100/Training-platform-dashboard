@@ -1,6 +1,5 @@
 const prismaDefault = require('../config/db');
 const eurobotClientDefault = require('./eurobotClient');
-const { getActiveConnections } = require('./aiKnowledgeSyncService');
 
 const extractTrainingAiAnswer = (payload) => {
   if (typeof payload === 'string') return payload;
@@ -31,22 +30,12 @@ const normalizeRequestedKnowledgeBaseIds = (knowledgeBaseId) => {
   return [];
 };
 
-const resolveKnowledgeBaseIds = async ({ prisma, knowledgeBaseId, eurobotClient }) => {
+const resolveKnowledgeBaseIds = async ({ knowledgeBaseId }) => {
   const requested = normalizeRequestedKnowledgeBaseIds(knowledgeBaseId);
   if (requested.length) return requested;
-
-  const connections = await getActiveConnections(prisma);
-  const ids = connections
-    .map((connection) => connection.remoteId || connection.collectionName || connection.remoteName)
-    .filter(Boolean)
-    .map(String);
-
-  if (!ids.length) {
-    const error = new Error('AI knowledge base is not configured. Ask a manager to create or select one or more Training knowledge bases.');
-    error.statusCode = 503;
-    throw error;
-  }
-  return ids;
+  // No explicit KB selection means: let Eurobot use its global/default RAG scope.
+  // The 3D general assistant must not be limited to Training-owned KB connections.
+  return [];
 };
 
 const normalizeSourceName = (value) => String(value || '')
@@ -109,7 +98,7 @@ const chatWithTrainingAi = async ({
     throw error;
   }
 
-  const knowledgeBaseIds = await resolveKnowledgeBaseIds({ prisma, knowledgeBaseId, eurobotClient });
+  const knowledgeBaseIds = await resolveKnowledgeBaseIds({ knowledgeBaseId });
   const payload = await eurobotClient.chat({
     message: buildTrainingAiPrompt({ message: trimmed, moduleContext, courseContext }),
     conversationId: conversationId || 'training-ai',

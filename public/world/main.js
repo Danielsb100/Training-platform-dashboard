@@ -3904,7 +3904,7 @@ async function sendGeneralAiMessage() {
     generalAiInput.value = '';
     generalAiLoading = true;
     generalAiLastAudio = null;
-    setGeneralAiStatus('AI is thinking across the selected KBs...', 'loading');
+    setGeneralAiStatus('AI is thinking across all Eurobot KBs...', 'loading');
     renderGeneralAi();
 
     try {

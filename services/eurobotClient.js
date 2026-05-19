@@ -109,15 +109,23 @@ const checkFileExists = ({ collectionName, filename }) => eurobotJsonRequest(
   { params: { filename } }
 );
 
+const normalizeKnowledgeBaseIdsForRequest = (knowledgeBaseIds = []) => {
+  if (Array.isArray(knowledgeBaseIds)) {
+    return knowledgeBaseIds.map(String).map((value) => value.trim()).filter(Boolean).join(',');
+  }
+  return String(knowledgeBaseIds || '').trim();
+};
+
 const chat = ({ message, conversationId, knowledgeBaseIds = [], returnAudio = false, useWebSearch = false }) => {
   const path = env.eurobot?.chatBackend === 'route-query' ? '/route-query/' : '/responses/chat';
+  const knowledgeBaseIdsParam = normalizeKnowledgeBaseIdsForRequest(knowledgeBaseIds);
   if (path === '/route-query/') {
     return eurobotJsonRequest(path, {
       method: 'GET',
       params: {
         query: message,
         conversation_id: conversationId || 'training',
-        knowledge_base_ids: Array.isArray(knowledgeBaseIds) ? knowledgeBaseIds.join(',') : knowledgeBaseIds
+        ...(knowledgeBaseIdsParam ? { knowledge_base_ids: knowledgeBaseIdsParam } : {})
       },
       timeoutMs: 120_000
     });
@@ -128,7 +136,7 @@ const chat = ({ message, conversationId, knowledgeBaseIds = [], returnAudio = fa
     body: {
       query: message,
       conversation_id: conversationId || 'training',
-      knowledge_base_ids: Array.isArray(knowledgeBaseIds) ? knowledgeBaseIds.join(',') : knowledgeBaseIds,
+      ...(knowledgeBaseIdsParam ? { knowledge_base_ids: knowledgeBaseIdsParam } : {}),
       return_audio: returnAudio,
       use_web_search: useWebSearch
     },
@@ -180,6 +188,7 @@ module.exports = {
   getDefaultKnowledgeBaseName,
   listInternalCollectionFiles,
   listInternalCollections,
+  normalizeKnowledgeBaseIdsForRequest,
   serviceHeaders,
   transcribe,
   tts,

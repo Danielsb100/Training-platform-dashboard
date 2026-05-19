@@ -4,6 +4,51 @@ const DEFAULT_QUESTION_COUNT = 5;
 const DEFAULT_OPTIONS_PER_QUESTION = 4;
 const MAX_FILE_BYTES_PER_ITEM = 20 * 1024 * 1024;
 const MAX_TOTAL_FILE_BYTES = 60 * 1024 * 1024;
+const SUPPORTED_OPENAI_FILE_MIME_TYPES = new Set([
+  'application/pdf',
+  'application/json',
+  'text/csv',
+  'text/html',
+  'text/markdown',
+  'text/plain'
+]);
+const SUPPORTED_OPENAI_FILE_EXTENSIONS = new Set(['.csv', '.htm', '.html', '.json', '.md', '.pdf', '.txt']);
+
+const getFileExtension = (filename = '') => {
+  const match = String(filename || '').toLowerCase().match(/\.[a-z0-9]+$/);
+  return match ? match[0] : '';
+};
+
+const isSupportedOpenAiFile = (doc = {}) => {
+  const mimeType = String(doc.type || '').toLowerCase().split(';')[0].trim();
+  if (mimeType.startsWith('text/')) return true;
+  if (SUPPORTED_OPENAI_FILE_MIME_TYPES.has(mimeType)) return true;
+  return SUPPORTED_OPENAI_FILE_EXTENSIONS.has(getFileExtension(doc.name));
+};
+
+const createSeededRandom = (seed = '') => {
+  let state = 2166136261;
+  for (const char of String(seed)) {
+    state ^= char.charCodeAt(0);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state += 0x6D2B79F5;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const shuffleArray = (items = [], random = Math.random) => {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+};
 
 const clampInt = (value, fallback, min, max) => {
   const parsed = Number.parseInt(value, 10);
@@ -16,7 +61,10 @@ const getModuleAssetUrl = (url = '') => {
   return match ? Number.parseInt(match[1], 10) : null;
 };
 
-const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion) => {
+const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion, options = {}) => {
+  const random = typeof options.random === 'function'
+    ? options.random
+    : createSeededRandom(JSON.stringify(payload?.questions || []));
   const rawQuestions = Array.isArray(payload?.questions) ? payload.questions : [];
   const questions = rawQuestions.slice(0, questionCount).map((question, questionIndex) => {
     const rawOptions = Array.isArray(question.options) ? question.options : [];
@@ -37,10 +85,15 @@ const normalizeGeneratedQuiz = (payload, questionCount, optionsPerQuestion) => {
       option.isCorrect = optionIndex === firstCorrectIndex;
     });
 
+    let shuffledOptions = shuffleArray(options, random);
+    if (firstCorrectIndex === 0 && shuffledOptions.findIndex((option) => option.isCorrect) === 0 && shuffledOptions.length > 1) {
+      shuffledOptions = [...shuffledOptions.slice(1), shuffledOptions[0]];
+    }
+
     return {
       text: String(question?.text || question?.question || '').trim(),
       order: questionIndex,
-      options
+      options: shuffledOptions
     };
   }).filter((question) => question.text && question.options.length >= 2);
 
@@ -102,6 +155,47 @@ const extractResponseText = (responsePayload) => {
   return message?.text || '';
 };
 
+const getDocumentBuffer = (doc = {}) => {
+  if (!doc?.data) return null;
+  return Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
+};
+
+const appendSupportedDocumentInput = ({ content, doc, label, totalBytes }) => {
+  if (!doc?.name || !doc?.type) return totalBytes;
+
+  if (!isSupportedOpenAiFile(doc)) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: file type ${doc.type || 'unknown'} is not supported for OpenAI quiz generation.`
+    });
+    return totalBytes;
+  }
+
+  const buffer = getDocumentBuffer(doc);
+  if (!buffer) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: file bytes are not available to the AI quiz generator.`
+    });
+    return totalBytes;
+  }
+
+  if (buffer.length > MAX_FILE_BYTES_PER_ITEM || totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
+    content.push({
+      type: 'input_text',
+      text: `Skipped ${label} ${doc.name}: size ${buffer.length} bytes exceeds AI context upload limits.`
+    });
+    return totalBytes;
+  }
+
+  content.push({
+    type: 'input_file',
+    filename: doc.name,
+    file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
+  });
+  return totalBytes + buffer.length;
+};
+
 const buildModuleContextContent = (module, options = {}) => {
   const instructionLines = Array.isArray(options.instructionLines) ? options.instructionLines : [];
   const content = [];
@@ -140,23 +234,7 @@ const buildModuleContextContent = (module, options = {}) => {
   let totalBytes = 0;
   for (const moduleDocument of module.documents || []) {
     const doc = moduleDocument.document;
-    if (!doc?.data || !doc?.name || !doc?.type) continue;
-
-    const buffer = Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
-    if (buffer.length > MAX_FILE_BYTES_PER_ITEM || totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
-      content.push({
-        type: 'input_text',
-        text: `Skipped file ${doc.name}: size ${buffer.length} bytes exceeds AI context upload limits.`
-      });
-      continue;
-    }
-
-    totalBytes += buffer.length;
-    content.push({
-      type: 'input_file',
-      filename: doc.name,
-      file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
-    });
+    totalBytes = appendSupportedDocumentInput({ content, doc, label: 'file', totalBytes });
   }
 
   for (const video of module.videos || []) {
@@ -165,22 +243,7 @@ const buildModuleContextContent = (module, options = {}) => {
       ? (module.videoAssetDocuments || []).find((candidate) => candidate.id === documentId)
       : null;
 
-    if (!doc?.data || !doc?.name || !doc?.type) continue;
-    const buffer = Buffer.isBuffer(doc.data) ? doc.data : Buffer.from(doc.data);
-    if (buffer.length > MAX_FILE_BYTES_PER_ITEM || totalBytes + buffer.length > MAX_TOTAL_FILE_BYTES) {
-      content.push({
-        type: 'input_text',
-        text: `Skipped video asset ${doc.name}: size ${buffer.length} bytes exceeds AI context upload limits.`
-      });
-      continue;
-    }
-
-    totalBytes += buffer.length;
-    content.push({
-      type: 'input_file',
-      filename: doc.name,
-      file_data: `data:${doc.type};base64,${buffer.toString('base64')}`
-    });
+    totalBytes = appendSupportedDocumentInput({ content, doc, label: 'video asset', totalBytes });
   }
 
   return content;
@@ -267,7 +330,10 @@ module.exports = {
   buildModuleInputContent,
   buildQuizJsonSchema,
   clampInt,
+  createSeededRandom,
   generateQuizFromModule,
   getModuleAssetUrl,
-  normalizeGeneratedQuiz
+  isSupportedOpenAiFile,
+  normalizeGeneratedQuiz,
+  shuffleArray
 };
