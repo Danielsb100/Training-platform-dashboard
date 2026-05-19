@@ -13,13 +13,14 @@ const extractTrainingAiAnswer = (payload) => {
 
 const buildTrainingAiPrompt = ({ message, moduleContext, courseContext }) => [
   'You are a helpful AI assistant for the Training platform.',
-  'Use the configured Training knowledge base when possible and answer directly from retrieved course/material facts.',
-  'Factual questions about course material, documents, naming conventions, rules, concepts, or procedures are allowed and should be answered from the knowledge base.',
-  'If the knowledge base does not contain the answer, say so clearly and give only concise general guidance.',
-  moduleContext?.title ? `Current module: ${moduleContext.title}` : null,
-  moduleContext?.description ? `Module description: ${moduleContext.description}` : null,
-  courseContext?.title ? `Current course: ${courseContext.title}` : null,
-  courseContext?.description ? `Course description: ${courseContext.description}` : null,
+  'Use the module/course metadata below as helpful context for the learner request, not as a retrieval boundary.',
+  'Do not restrict retrieval or the final answer to the current module, current course, or Training-owned metadata when the learner asks a general factual question.',
+  'Search and answer from any available Eurobot knowledge base when relevant. If the answer is found in any available Eurobot KB, answer it directly and cite/ground it when possible.',
+  'If no available knowledge base contains the answer, say so clearly and give only concise general guidance.',
+  moduleContext?.title ? `Current module context: ${moduleContext.title}` : null,
+  moduleContext?.description ? `Module description context: ${moduleContext.description}` : null,
+  courseContext?.title ? `Current course context: ${courseContext.title}` : null,
+  courseContext?.description ? `Course description context: ${courseContext.description}` : null,
   '',
   `Learner message: ${String(message || '').trim()}`
 ].filter(Boolean).join('\n');
