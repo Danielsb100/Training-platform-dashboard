@@ -1656,7 +1656,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 <section class="hero">
     <div class="hero-inner">
         <div class="hero-content">
-            <h1>[PROJECT INTERCEPTED]</h1>
+            <h1>PROJECT INTERCEPTED</h1>
             <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
             <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
         </div>
@@ -1949,18 +1949,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 
 <section class="intel">
     <div class="intel-grid">
-        <div class="intel-left">
-            <h3>Resource Center</h3>
-            <div class="cat-label">Categories</div>
-            <div class="d-item"><div class="d-tag">THB</div>Human Trafficking modus operandi and OSINT analysis.</div>
-            <div class="d-item"><div class="d-tag">SIG</div>OSINT-HUMINT-SIGINT cycle documentation.</div>
-            <div class="d-item active">👁️ Quick preview</div>
-            <div class="cat-label">Descriptions</div>
-            <div class="d-item"><div class="d-tag">DGF</div>Digital Forensics recovery and investigation guides.</div>
-            <div class="d-item"><div class="d-tag">LEA</div>Law Enforcement & Judicial cooperation frameworks.</div>
-            <div class="d-item"><div class="d-tag">TOT</div>Training of Trainers methodology documents.</div>
-            <div class="d-item"><div class="d-tag">AIA</div>AI-driven analysis and investigation resources.</div>
-        </div>
         <div class="intel-right">
             <h3>INTEL LIBRARY & ASSET HUB</h3>
             <ul class="bullet-list">
@@ -1992,10 +1980,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
     <div style="padding:20px 0;text-align:center;">
         <img src="intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;">
     </div>
-    <div class="footer-bottom">
-        <span>Copyright © 2026 Belte Agency</span>
-        <span>📷 🐦 📘 💼</span>
-    </div>
+    
 </footer>
 
 </div>
