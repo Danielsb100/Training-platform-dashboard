@@ -1382,38 +1382,38 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 <section class="hero">
     <div class="hero-inner">
         <div class="hero-content">
-            <h1>PHYGITAL-OC</h1>
-            <h2>COUNTERING ETHNIC MAFIA IN PHYGITAL ENVIRONMENTS</h2>
-            <p>PHYGITAL-OC is an EU-funded project designed to strengthen cooperation among law enforcement agencies and partner organisations. It focuses on organised crime groups operating across physical and digital spaces, using advanced technologies, intelligence analysis and specialised training to better detect, monitor and disrupt transnational criminal networks.</p>
+            <h1 class="editable-text">PHYGITAL-OC</h1>
+            <h2 class="editable-text">COUNTERING ETHNIC MAFIA IN PHYGITAL ENVIRONMENTS</h2>
+            <p class="editable-text">PHYGITAL-OC is an EU-funded project designed to strengthen cooperation among law enforcement agencies and partner organisations. It focuses on organised crime groups operating across physical and digital spaces, using advanced technologies, intelligence analysis and specialised training to better detect, monitor and disrupt transnational criminal networks.</p>
         </div>
         <div class="hero-logo">
-            <img src="phygital_logo_transparent.png" alt="Project Phygital-OC">
+            <div class="editable-image-wrapper"><img class="body-img" src="phygital_logo_transparent.png" alt="Project Phygital-OC" style="width:100%;height:auto;object-fit:contain;"></div>
         </div>
     </div>
 </section>
 
 <div class="features" id="features">
-    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Open-Source Intelligence (OSINT)</li><li>Electronic trace analysis</li><li>Digital forensics and local intelligence</li></ul></div></div>
-    <div class="f-card"><div><h3>Phygital Threat Focus</h3><ul><li>Physical and digital crime convergence</li><li>Encrypted communications and online platforms</li><li>Drug trafficking, THB and cyber-enabled crime</li></ul></div></div>
-    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by specialised trainers</li><li>Informed by Europol, UNODC and NATO frameworks</li><li>Aligned with current threats and best practices</li></ul></div></div>
-    <div class="f-card"><div><h3>Cross-Border Cooperation</h3><ul><li>Shared learning environment for LEAs</li><li>Common methodological framework</li><li>Stronger information exchange across jurisdictions</li></ul></div></div>
-    <div class="f-card"><div><h3>Operational Task Forces</h3><ul><li>Rapid response centres in Rome, Murcia and Athens</li><li>Specialised analysts and investigators</li><li>Joint investigations supported by advanced tools</li></ul></div></div>
-    <div class="f-card"><div><h3>Training Delivery</h3><ul><li>Seven specialised online modules</li><li>One in-person module in Rome</li><li>Accessible to law enforcement officers across Europe</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Core Curriculum</h3><ul><li class="editable-text">Open-Source Intelligence (OSINT)</li><li class="editable-text">Electronic trace analysis</li><li class="editable-text">Digital forensics and local intelligence</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Phygital Threat Focus</h3><ul><li class="editable-text">Physical and digital crime convergence</li><li class="editable-text">Encrypted communications and online platforms</li><li class="editable-text">Drug trafficking, THB and cyber-enabled crime</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Expert Knowledge</h3><ul><li class="editable-text">Developed by specialised trainers</li><li class="editable-text">Informed by Europol, UNODC and NATO frameworks</li><li class="editable-text">Aligned with current threats and best practices</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Cross-Border Cooperation</h3><ul><li class="editable-text">Shared learning environment for LEAs</li><li class="editable-text">Common methodological framework</li><li class="editable-text">Stronger information exchange across jurisdictions</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Operational Task Forces</h3><ul><li class="editable-text">Rapid response centres in Rome, Murcia and Athens</li><li class="editable-text">Specialised analysts and investigators</li><li class="editable-text">Joint investigations supported by advanced tools</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Training Delivery</h3><ul><li class="editable-text">Seven specialised online modules</li><li class="editable-text">One in-person module in Rome</li><li class="editable-text">Accessible to law enforcement officers across Europe</li></ul></div></div>
 </div>
 
 <section class="mission">
-    <h2>STRATEGIC MISSION CORE</h2>
+    <h2 class="editable-text">STRATEGIC MISSION CORE</h2>
     <div class="mission-grid">
         <div class="mission-col">
-            <div class="m-card"><h4>Understand the Phygital Threat</h4><p>Build a clearer picture of how organised crime groups operate simultaneously in physical and digital environments, using online tools to coordinate, recruit, finance and evade detection.</p></div>
-            <div class="m-card"><h4>Build a Shared Intelligence Picture</h4><p>Promote active exchange of information, insight and intelligence among law enforcement agencies, judicial authorities, civil society organisations and strategic partners.</p></div>
+            <div class="m-card"><h4 class="editable-text">Understand the Phygital Threat</h4><p class="editable-text">Build a clearer picture of how organised crime groups operate simultaneously in physical and digital environments, using online tools to coordinate, recruit, finance and evade detection.</p></div>
+            <div class="m-card"><h4 class="editable-text">Build a Shared Intelligence Picture</h4><p class="editable-text">Promote active exchange of information, insight and intelligence among law enforcement agencies, judicial authorities, civil society organisations and strategic partners.</p></div>
         </div>
         <div class="mission-center">
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard">
+            <div class="editable-image-wrapper"><img class="body-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard" style="width:100%;max-width:320px;border-radius:10px;box-shadow:0 15px 30px rgba(0,0,0,0.12);"></div>
         </div>
         <div class="mission-col">
-            <div class="m-card"><h4>Train Specialised Teams</h4><p>Strengthen the technical capacity of officers, analysts and investigators through training in OSINT, electronic traces, digital forensics and local intelligence.</p></div>
-            <div class="m-card"><h4>Move From Knowledge to Action</h4><p>Support coordinated investigations through Operational Task Forces, rapid response centres and practical tools designed to disrupt transnational criminal operations.</p></div>
+            <div class="m-card"><h4 class="editable-text">Train Specialised Teams</h4><p class="editable-text">Strengthen the technical capacity of officers, analysts and investigators through training in OSINT, electronic traces, digital forensics and local intelligence.</p></div>
+            <div class="m-card"><h4 class="editable-text">Move From Knowledge to Action</h4><p class="editable-text">Support coordinated investigations through Operational Task Forces, rapid response centres and practical tools designed to disrupt transnational criminal operations.</p></div>
         </div>
     </div>
 </section>
@@ -1421,7 +1421,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 <section class="journey">
     <div class="journey-header">
         <div class="j-ico">👤</div>
-        <h2>6-Step Training Journey</h2>
+        <h2 class="editable-text">6-Step Training Journey</h2>
     </div>
     <div class="journey-body">
         <!-- Colorful S-Curve Pipeline SVG -->
@@ -1444,58 +1444,58 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
         <!-- Step 1 - Left of curve top -->
         <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#0284c7,#0ea5e9);">1</div>
-            <h4>Initial Assessment</h4>
-            <p>A short entry test to measure the participant’s starting knowledge and identify the main learning needs before the module begins.</p>
+            <h4 class="editable-text">Initial Assessment</h4>
+            <p class="editable-text">A short entry test to measure the participant’s starting knowledge and identify the main learning needs before the module begins.</p>
         </div>
 
         <!-- Step 2 - Right of curve -->
         <div class="step" style="top:130px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#6366f1);">2</div>
-            <h4>Specialised Online Modules</h4>
-            <p>Structured lessons delivered through the online training portal, covering the main investigative skills required to address phygital organised crime.</p>
+            <h4 class="editable-text">Specialised Online Modules</h4>
+            <p class="editable-text">Structured lessons delivered through the online training portal, covering the main investigative skills required to address phygital organised crime.</p>
         </div>
 
         <!-- Step 3 - Left -->
         <div class="step" style="top:270px;left:180px;width:240px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#6366f1,#8b5cf6);">3</div>
-            <h4>Training Material</h4>
-            <p>Downloadable summaries, manuals, methodological references and institutional materials that support each learning module.</p>
+            <h4 class="editable-text">Training Material</h4>
+            <p class="editable-text">Downloadable summaries, manuals, methodological references and institutional materials that support each learning module.</p>
         </div>
 
         <!-- Step 4 - Right -->
         <div class="step" style="top:380px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#8b5cf6,#d946ef);">4</div>
-            <h4>Practical Application</h4>
-            <p>Participants apply OSINT, trace analysis and digital forensics concepts to realistic scenarios and case-based exercises.</p>
+            <h4 class="editable-text">Practical Application</h4>
+            <p class="editable-text">Participants apply OSINT, trace analysis and digital forensics concepts to realistic scenarios and case-based exercises.</p>
         </div>
 
         <!-- Step 5 - Left -->
         <div class="step" style="top:520px;left:150px;width:260px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#d946ef,#f43f5e);">5</div>
-            <h4>Knowledge Assistant Support</h4>
-            <p>An optional digital assistant can help clarify terminology, methods and training references, while keeping expert and legal oversight central.</p>
+            <h4 class="editable-text">Knowledge Assistant Support</h4>
+            <p class="editable-text">An optional digital assistant can help clarify terminology, methods and training references, while keeping expert and legal oversight central.</p>
         </div>
 
         <!-- Step 6 - Right -->
         <div class="step" style="top:620px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#f43f5e,#fb7185);">6</div>
-            <h4>Final Evaluation</h4>
-            <p>A final assessment verifies acquired knowledge, practical understanding and readiness to apply the training methodology.</p>
+            <h4 class="editable-text">Final Evaluation</h4>
+            <p class="editable-text">A final assessment verifies acquired knowledge, practical understanding and readiness to apply the training methodology.</p>
         </div>
     </div>
 </section>
 
 <section class="avatar-section">
-    <h2>Knowledge Assistant / AI Avatar</h2>
+    <h2 class="editable-text">Knowledge Assistant / AI Avatar</h2>
     <div class="avatar-grid">
         <div class="avatar-img">
-            <img src="ai_avatar_metahuman.png" alt="AI Avatar">
+            <div class="editable-image-wrapper"><img class="body-img" src="ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
         </div>
         <div class="avatar-feats">
-            <div class="av-f"><div><h4>Interactive Guide</h4><p>Helps participants navigate PHYGITAL-OC training materials, technical terminology, OSINT concepts and investigative workflows.</p></div></div>
-            <div class="av-f"><div><h4>Multilingual Interaction</h4><p>Supports text or voice interaction for an international training environment involving different countries and institutions.</p></div></div>
-            <div class="av-f"><div><h4>Human Oversight</h4><p>Provides explanatory support only. Outputs should be reviewed by qualified trainers, legal experts or law enforcement professionals.</p></div></div>
-            <div class="av-f"><div><h4>Feedback Loop</h4><p>Participant feedback can help refine the knowledge base, improve clarity and keep the learning experience aligned with real training needs.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Interactive Guide</h4><p class="editable-text">Helps participants navigate PHYGITAL-OC training materials, technical terminology, OSINT concepts and investigative workflows.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Multilingual Interaction</h4><p class="editable-text">Supports text or voice interaction for an international training environment involving different countries and institutions.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Human Oversight</h4><p class="editable-text">Provides explanatory support only. Outputs should be reviewed by qualified trainers, legal experts or law enforcement professionals.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Feedback Loop</h4><p class="editable-text">Participant feedback can help refine the knowledge base, improve clarity and keep the learning experience aligned with real training needs.</p></div></div>
         </div>
 
     </div>
@@ -1504,20 +1504,20 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 <section class="intel">
     <div class="intel-grid">
         <div class="intel-right">
-            <h3>INTEL LIBRARY & ASSET HUB</h3>
+            <h3 class="editable-text">INTEL LIBRARY & ASSET HUB</h3>
             <ul class="bullet-list">
-                <li><b>Module Summary Documents:</b> Key takeaways for each PHYGITAL-OC training module, including OSINT, trace analysis and digital forensics.</li>
-                <li><b>Technical Manuals:</b> Practical references to support investigators, analysts and trainers during the learning process.</li>
-                <li><b>Institutional Sources:</b> Materials informed by high-level frameworks and reports from organisations such as Europol, UNODC and NATO.</li>
-                <li><b>Restricted Access:</b> Training resources should be used only by authorised participants and project stakeholders.</li>
+                <li class="editable-text"><b>Module Summary Documents:</b> Key takeaways for each PHYGITAL-OC training module, including OSINT, trace analysis and digital forensics.</li>
+                <li class="editable-text"><b>Technical Manuals:</b> Practical references to support investigators, analysts and trainers during the learning process.</li>
+                <li class="editable-text"><b>Institutional Sources:</b> Materials informed by high-level frameworks and reports from organisations such as Europol, UNODC and NATO.</li>
+                <li class="editable-text"><b>Restricted Access:</b> Training resources should be used only by authorised participants and project stakeholders.</li>
             </ul>
-            <h4 style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
+            <h4 class="editable-text" style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
             <ul class="square-list">
-                <li><b>Project overview:</b> Mission, target groups, geographic scope and operational logic of PHYGITAL-OC.</li>
-                <li><b>OSINT and digital investigations:</b> Methods for identifying, monitoring and interpreting online criminal activity.</li>
-                <li><b>Electronic trace analysis:</b> Guidance on connecting digital traces with physical-world investigations.</li>
-                <li><b>Digital forensics and local intelligence:</b> References for evidence interpretation, technical analysis and local operational awareness.</li>
-                <li><b>Cross-border cooperation:</b> Methodological support for information exchange, joint investigations and Operational Task Forces.</li>
+                <li class="editable-text"><b>Project overview:</b> Mission, target groups, geographic scope and operational logic of PHYGITAL-OC.</li>
+                <li class="editable-text"><b>OSINT and digital investigations:</b> Methods for identifying, monitoring and interpreting online criminal activity.</li>
+                <li class="editable-text"><b>Electronic trace analysis:</b> Guidance on connecting digital traces with physical-world investigations.</li>
+                <li class="editable-text"><b>Digital forensics and local intelligence:</b> References for evidence interpretation, technical analysis and local operational awareness.</li>
+                <li class="editable-text"><b>Cross-border cooperation:</b> Methodological support for information exchange, joint investigations and Operational Task Forces.</li>
             </ul>
         </div>
     </div>
@@ -1525,16 +1525,16 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 
 <footer class="footer">
     <div class="footer-top">
-        <div class="foot-col" style="flex:1;"><h4>Quick Links</h4><ul><li>Home</li><li>About</li><li>News & Media</li><li>Events</li><li>Contact</li></ul></div>
-        <div class="foot-col" style="flex:1;"><h4>Policies</h4><ul><li>Legal Notice</li><li>Privacy Policy</li><li>Cookies</li><li>Newsletter</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4 class="editable-text">Quick Links</h4><ul><li class="editable-text">Home</li><li class="editable-text">About</li><li class="editable-text">News & Media</li><li class="editable-text">Events</li><li class="editable-text">Contact</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4 class="editable-text">Policies</h4><ul><li class="editable-text">Legal Notice</li><li class="editable-text">Privacy Policy</li><li class="editable-text">Cookies</li><li class="editable-text">Newsletter</li></ul></div>
         <div class="foot-col" style="flex:2;">
 
-            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Project Number / Grant Agreement 101188456</p>
-            <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
+            <p class="editable-text" style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Project Number / Grant Agreement 101188456</p>
+            <p class="editable-text" style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
         </div>
     </div>
     <div style="padding:20px 0;text-align:center;">
-        <img src="phygital-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;">
+        <div class="editable-image-wrapper"><img class="body-img" src="phygital-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
     </div>
     
 </footer>
@@ -1656,9 +1656,9 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 <section class="hero">
     <div class="hero-inner">
         <div class="hero-content">
-            <h1>PROJECT INTERCEPTED</h1>
-            <h2>INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
-            <p>INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
+            <h1 class="editable-text">PROJECT INTERCEPTED</h1>
+            <h2 class="editable-text">INTERCEPT ONLINE RECRUITMENT AND ADVERTISEMENT TO DISRUPT THE THB MODEL</h2>
+            <p class="editable-text">INTERCEPTED focuses on disrupting the digital business models of traffickers, considering how evidence and strategies identified in the cyberspace can be used in concrete investigative, prevention, and protective measures in the physical world.</p>
         </div>
 
     </div>
@@ -1840,27 +1840,27 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 </div>
 
 <div class="features" id="features">
-    <div class="f-card"><div><h3>Core Curriculum</h3><ul><li>Evolution of OCG modus operandi in THB</li><li>OSINT & Telecom Surveillance</li><li>Digital Forensics</li></ul></div></div>
-    <div class="f-card"><div><h3>Flexible Learning</h3><ul><li>Online and asynchronous modules</li><li>Adapted for Law Enforcement schedules</li></ul></div></div>
-    <div class="f-card"><div><h3>Expert Knowledge</h3><ul><li>Developed by Specialist Trainers</li><li>Based on Europol, UNODC, NATO reports</li><li>High Level Institutional Reports</li></ul></div></div>
-    <div class="f-card"><div><h3>Operational Readiness</h3><ul><li>OSINT-HUMINT-SIGINT cycle</li><li>Public-Private cooperation</li></ul></div></div>
-    <div class="f-card"><div><h3>AI Avatar Support</h3><ul><li>Closed-circuit assistant</li><li>Legislation & manual clarifications</li></ul></div></div>
-    <div class="f-card"><div><h3>Legal & Judicial Cooperation</h3><ul><li>LEA & Judicial Authorities</li><li>Private Sector & Civil Society</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Core Curriculum</h3><ul><li class="editable-text">Evolution of OCG modus operandi in THB</li><li class="editable-text">OSINT & Telecom Surveillance</li><li class="editable-text">Digital Forensics</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Flexible Learning</h3><ul><li class="editable-text">Online and asynchronous modules</li><li class="editable-text">Adapted for Law Enforcement schedules</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Expert Knowledge</h3><ul><li class="editable-text">Developed by Specialist Trainers</li><li class="editable-text">Based on Europol, UNODC, NATO reports</li><li class="editable-text">High Level Institutional Reports</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Operational Readiness</h3><ul><li class="editable-text">OSINT-HUMINT-SIGINT cycle</li><li class="editable-text">Public-Private cooperation</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">AI Avatar Support</h3><ul><li class="editable-text">Closed-circuit assistant</li><li class="editable-text">Legislation & manual clarifications</li></ul></div></div>
+    <div class="f-card"><div><h3 class="editable-text">Legal & Judicial Cooperation</h3><ul><li class="editable-text">LEA & Judicial Authorities</li><li class="editable-text">Private Sector & Civil Society</li></ul></div></div>
 </div>
 
 <section class="mission">
-    <h2>MISSION ADVANTAGE CORE</h2>
+    <h2 class="editable-text">MISSION ADVANTAGE CORE</h2>
     <div class="mission-grid">
         <div class="mission-col">
-            <div class="m-card"><h4>Practical & Intelligence-Based Approach</h4><p>Translates the analysis of online dynamics into concrete operational practices for disrupting trafficking networks.</p></div>
-            <div class="m-card"><h4>Expert Knowledge</h4><p>Developed in closed groups with specialist lectures, integrating reports from Europol, UNODC, and NATO into practical institutional models.</p></div>
+            <div class="m-card"><h4 class="editable-text">Practical & Intelligence-Based Approach</h4><p class="editable-text">Translates the analysis of online dynamics into concrete operational practices for disrupting trafficking networks.</p></div>
+            <div class="m-card"><h4 class="editable-text">Expert Knowledge</h4><p class="editable-text">Developed in closed groups with specialist lectures, integrating reports from Europol, UNODC, and NATO into practical institutional models.</p></div>
         </div>
         <div class="mission-center">
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard">
+            <div class="editable-image-wrapper"><img class="body-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Dashboard" style="width:100%;max-width:320px;border-radius:10px;box-shadow:0 15px 30px rgba(0,0,0,0.12);"></div>
         </div>
         <div class="mission-col">
-            <div class="m-card"><h4>Integrated Digital & Analytical Support</h4><p>Provides tools to interpret online signals and identify trafficking patterns in a secure environment.</p></div>
-            <div class="m-card"><h4>Measured Competence & Operational Readiness</h4><p>Ensures harmonized skill development across different jurisdictions through structured assessments.</p></div>
+            <div class="m-card"><h4 class="editable-text">Integrated Digital & Analytical Support</h4><p class="editable-text">Provides tools to interpret online signals and identify trafficking patterns in a secure environment.</p></div>
+            <div class="m-card"><h4 class="editable-text">Measured Competence & Operational Readiness</h4><p class="editable-text">Ensures harmonized skill development across different jurisdictions through structured assessments.</p></div>
         </div>
     </div>
 </section>
@@ -1868,7 +1868,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 <section class="journey">
     <div class="journey-header">
         <div class="j-ico">👤</div>
-        <h2>6-Step Learning Journey</h2>
+        <h2 class="editable-text">6-Step Learning Journey</h2>
     </div>
     <div class="journey-body">
         <!-- Colorful S-Curve Pipeline SVG -->
@@ -1891,58 +1891,58 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
         <!-- Step 1 -->
         <div class="step" style="top:30px;left:220px;width:240px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#0d9488,#14b8a6);">1</div>
-            <h4>Entry Test</h4>
-            <p>A quick assessment to measure initial knowledge before starting.</p>
+            <h4 class="editable-text">Entry Test</h4>
+            <p class="editable-text">A quick assessment to measure initial knowledge before starting.</p>
         </div>
 
         <!-- Step 2 -->
         <div class="step" style="top:130px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#6366f1);">2</div>
-            <h4>Video Lessons</h4>
-            <p>Sessions of 30 minutes with specialists on technical topics.</p>
+            <h4 class="editable-text">Video Lessons</h4>
+            <p class="editable-text">Sessions of 30 minutes with specialists on technical topics.</p>
         </div>
 
         <!-- Step 3 -->
         <div class="step" style="top:270px;left:180px;width:240px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#6366f1,#8b5cf6);">3</div>
-            <h4>Training Material</h4>
-            <p>Transferable resources with key aspects and essential data.</p>
+            <h4 class="editable-text">Training Material</h4>
+            <p class="editable-text">Transferable resources with key aspects and essential data.</p>
         </div>
 
         <!-- Step 4 -->
         <div class="step" style="top:380px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#8b5cf6,#d946ef);">4</div>
-            <h4>Interactive Simulation</h4>
-            <p>Application of skills in real case studies and operational scenarios.</p>
+            <h4 class="editable-text">Interactive Simulation</h4>
+            <p class="editable-text">Application of skills in real case studies and operational scenarios.</p>
         </div>
 
         <!-- Step 5 -->
         <div class="step" style="top:520px;left:150px;width:260px;text-align:right;">
             <div class="hex" style="top:50%;right:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#d946ef,#f43f5e);">5</div>
-            <h4>AI Avatar Support</h4>
-            <p>Closed-circuit AI assistant for instant clarifications on legislation and manuals.</p>
+            <h4 class="editable-text">AI Avatar Support</h4>
+            <p class="editable-text">Closed-circuit AI assistant for instant clarifications on legislation and manuals.</p>
         </div>
 
         <!-- Step 6 -->
         <div class="step" style="top:620px;right:30px;width:260px;">
             <div class="hex" style="top:50%;left:-30px;transform:translateY(-50%);background:linear-gradient(135deg,#f43f5e,#fb7185);">6</div>
-            <h4>Final Evaluation</h4>
-            <p>Test to validate acquired competencies and complete the module.</p>
+            <h4 class="editable-text">Final Evaluation</h4>
+            <p class="editable-text">Test to validate acquired competencies and complete the module.</p>
         </div>
     </div>
 </section>
 
 <section class="avatar-section">
-    <h2>AI Avatar</h2>
+    <h2 class="editable-text">AI Avatar</h2>
     <div class="avatar-grid">
         <div class="avatar-img">
-            <img src="ai_avatar_metahuman.png" alt="AI Avatar">
+            <div class="editable-image-wrapper"><img class="body-img" src="ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
         </div>
         <div class="avatar-feats">
-            <div class="av-f"><div><h4>Interactive Guide</h4><p>Explores national and EU jurisprudence on human trafficking and organized crime.</p></div></div>
-            <div class="av-f"><div><h4>Multilingual Interaction</h4><p>Supports voice or text and communicates flawlessly in multiple languages.</p></div></div>
-            <div class="av-f"><div><h4>Legal Disclaimer</h4><p>Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
-            <div class="av-f"><div><h4>Feedback Loop</h4><p>User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Interactive Guide</h4><p class="editable-text">Explores national and EU jurisprudence on human trafficking and organized crime.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Multilingual Interaction</h4><p class="editable-text">Supports voice or text and communicates flawlessly in multiple languages.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Legal Disclaimer</h4><p class="editable-text">Due to legal complexity, the avatar may make errors or lack recent judgments.</p></div></div>
+            <div class="av-f"><div><h4 class="editable-text">Feedback Loop</h4><p class="editable-text">User feedback is highly encouraged to improve the AI's accuracy.</p></div></div>
         </div>
     </div>
 </section>
@@ -1950,19 +1950,19 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 <section class="intel">
     <div class="intel-grid">
         <div class="intel-right">
-            <h3>INTEL LIBRARY & ASSET HUB</h3>
+            <h3 class="editable-text">INTEL LIBRARY & ASSET HUB</h3>
             <ul class="bullet-list">
-                <li><b>Module Summary Documents:</b> Summaries and key takeaways for each of the 9 training modules.</li>
-                <li><b>Technical Manuals:</b> Serve as a permanent reference for field operations.</li>
-                <li><b>Exclusive Access:</b> Usage is strictly limited to participants.</li>
-                <li><b>Copyright Restriction:</b> External distribution is prohibited by copyright laws.</li>
+                <li class="editable-text"><b>Module Summary Documents:</b> Summaries and key takeaways for each of the 9 training modules.</li>
+                <li class="editable-text"><b>Technical Manuals:</b> Serve as a permanent reference for field operations.</li>
+                <li class="editable-text"><b>Exclusive Access:</b> Usage is strictly limited to participants.</li>
+                <li class="editable-text"><b>Copyright Restriction:</b> External distribution is prohibited by copyright laws.</li>
             </ul>
-            <h4 style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
+            <h4 class="editable-text" style="font-weight:800;font-size:1rem;color:#0f172a;margin-bottom:12px;">General Resources</h4>
             <ul class="square-list">
-                <li><b>Technical manuals:</b> Professional guidelines for field operations.</li>
-                <li><b>Legislation clarifications:</b> National and EU legal frameworks for THB.</li>
-                <li><b>Institutional reports:</b> High-level reports from Europol, UNODC, and NATO.</li>
-                <li><b>Feedback questionnaire:</b> Post-completion survey to improve programs.</li>
+                <li class="editable-text"><b>Technical manuals:</b> Professional guidelines for field operations.</li>
+                <li class="editable-text"><b>Legislation clarifications:</b> National and EU legal frameworks for THB.</li>
+                <li class="editable-text"><b>Institutional reports:</b> High-level reports from Europol, UNODC, and NATO.</li>
+                <li class="editable-text"><b>Feedback questionnaire:</b> Post-completion survey to improve programs.</li>
             </ul>
         </div>
     </div>
@@ -1970,15 +1970,15 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 
 <footer class="footer">
     <div class="footer-top">
-        <div class="foot-col" style="flex:1;"><h4>About Us</h4><ul><li>Careers</li><li>Help Center</li><li>Company Service</li><li>Contact</li></ul></div>
-        <div class="foot-col" style="flex:1;"><h4>Contact Us</h4><ul><li>Security</li><li>Customer Support</li><li>Privacy Policy</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4 class="editable-text">About Us</h4><ul><li class="editable-text">Careers</li><li class="editable-text">Help Center</li><li class="editable-text">Company Service</li><li class="editable-text">Contact</li></ul></div>
+        <div class="foot-col" style="flex:1;"><h4 class="editable-text">Contact Us</h4><ul><li class="editable-text">Security</li><li class="editable-text">Customer Support</li><li class="editable-text">Privacy Policy</li></ul></div>
         <div class="foot-col" style="flex:2;">
-            <p style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101188456</p>
-            <p style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
+            <p class="editable-text" style="font-weight:700;font-size:0.78rem;color:#0f172a;margin:6px 0;">Grant Agreement 101188456</p>
+            <p class="editable-text" style="font-size:0.65rem;color:#94a3b8;line-height:1.5;">This project is co-funded by the ISF programme of the European Union. The content of this page represents the views of the authors only and is their sole responsibility. The European Commission is not responsible for any use that may be made of the information it contains.</p>
         </div>
     </div>
     <div style="padding:20px 0;text-align:center;">
-        <img src="intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;">
+        <div class="editable-image-wrapper"><img class="body-img" src="intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
     </div>
     
 </footer>
