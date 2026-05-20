@@ -63,10 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const navUsers = document.getElementById('nav-users');
 
             if (navCreations) {
-                // If only STUDENT, hide the creations button
-                const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
-                if (isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) {
-                    navCreations.style.display = 'none';
+                const canCreate = roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user?.role);
+                if (canCreate) {
+                    navCreations.style.display = 'flex';
                 }
             }
 

@@ -445,7 +445,11 @@ async function deleteModuleFromDB() {
 }
 
 // --- VIDEOS ---
-function showAddVideoForm() { document.getElementById('add-video-form').style.display = 'block'; }
+function showAddVideoForm() { 
+    const form = document.getElementById('add-video-form');
+    form.style.display = 'block'; 
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 function hideAddVideoForm() {
     document.getElementById('add-video-form').style.display = 'none';
     window.editingVideoId = null;
@@ -488,8 +492,11 @@ function openEditVideoForm(videoId) {
     const h4 = document.querySelector('#add-video-form h4');
     if(h4) h4.innerText = 'Edit Video';
 
-    document.getElementById('add-video-form').style.display = 'block';
-    document.getElementById('add-video-form').scrollIntoView({ behavior: 'smooth' });
+    const form = document.getElementById('add-video-form');
+    form.style.display = 'block';
+    setTimeout(() => {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
 async function handleVideoUpload(e) {
@@ -1106,6 +1113,9 @@ function showGenerateAiQuizForm() {
     const container = firstQuiz ? document.getElementById(`forms-container-${firstQuiz.id}`) : document.getElementById('pane-quiz');
     if (container) container.appendChild(form);
     form.style.display = 'block';
+    setTimeout(() => {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 function hideAiQuizForm() {
     const form = document.getElementById('ai-quiz-form');
@@ -1127,6 +1137,10 @@ function showManualQuizForm(quizId) {
     document.getElementById('manual-q-text').value = '';
     document.querySelectorAll('.manual-q-opt').forEach(opt => opt.value = '');
     document.querySelector('input[name="manual-q-correct"][value="0"]').checked = true;
+    
+    setTimeout(() => {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
 function hideManualQuizForm() {
@@ -1196,8 +1210,11 @@ function editQuestion(quizId, questionId) {
     });
 
     hideAiQuizForm();
-    document.getElementById('manual-quiz-form').style.display = 'block';
-    document.getElementById('manual-quiz-form').scrollIntoView({ behavior: 'smooth' });
+    const manualForm = document.getElementById('manual-quiz-form');
+    manualForm.style.display = 'block';
+    setTimeout(() => {
+        manualForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
 async function createEmptyQuiz() {

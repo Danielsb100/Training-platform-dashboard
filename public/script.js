@@ -993,8 +993,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const wasSelected = activeElement.classList.contains('selected-element');
         if (wasSelected) activeElement.classList.remove('selected-element');
-        const wasEditMode = document.body.classList.contains('edit-mode');
-        if (wasEditMode) document.body.classList.remove('edit-mode');
+        
+        // Remove locally instead of globally to prevent massive layout shifts that trigger scroll bugs
+        const hadEditableText = activeElement.classList.contains('editable-text');
+        const hadEditableImage = activeElement.classList.contains('editable-image-wrapper');
+        const hadModuleSection = activeElement.classList.contains('module-section');
+        
+        if (hadEditableText) activeElement.classList.remove('editable-text');
+        if (hadEditableImage) activeElement.classList.remove('editable-image-wrapper');
+        if (hadModuleSection) activeElement.classList.remove('module-section');
 
         // Força recálculo do estilo (evita otimização do browser que ignora o remove/add síncrono)
         void activeElement.offsetHeight; 
@@ -1159,8 +1166,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const delBtn = document.getElementById('delete-element-btn');
         if (delBtn) delBtn.style.display = (activeElementType === 'bg') ? 'none' : 'flex';
         
+        if (hadEditableText) activeElement.classList.add('editable-text');
+        if (hadEditableImage) activeElement.classList.add('editable-image-wrapper');
+        if (hadModuleSection) activeElement.classList.add('module-section');
         if (wasSelected) activeElement.classList.add('selected-element');
-        if (wasEditMode) document.body.classList.add('edit-mode');
         
         // Restaura a transição
         void activeElement.offsetHeight; // Força aplicar as classes antes de restaurar a transição

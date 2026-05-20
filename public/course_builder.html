@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div class="card" id="editors-section" style="display: none;">
+            <div class="card" id="editors-section">
                 <div class="card-header">
                     <h3>Co-Editors & Instructors</h3>
                     <p>Assign other users to help you edit this course and its landing page.</p>
@@ -92,7 +92,7 @@
                 </ul>
             </div>
 
-                <div class="card" id="students-section" style="display: none;">
+                <div class="card" id="students-section">
                     <div class="card-header">
                         <h3>Invite Students</h3>
                         <p>Manually enroll users directly into this course.</p>
@@ -154,9 +154,12 @@
         <!-- Direita: Capa e Publicação -->
         <div class="right-col">
             <div class="card">
-                <div class="card-header">
-                    <h3>Course Cover</h3>
-                    <p>Upload an image. If left blank, it will use the Landing Page cover.</p>
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3>Course Cover</h3>
+                        <p>Upload an image. If left blank, it will use the Landing Page cover.</p>
+                    </div>
+                    <span id="course-status-badge" style="background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">Draft</span>
                 </div>
                 <div class="cover-preview" id="cover-preview" style="position:relative;">
                     <i class="fas fa-image" style="font-size: 3rem; opacity: 0.5;"></i>
@@ -582,9 +585,7 @@
                             
                             // Load editors if saved course
                             loadCoEditors(window.editingCourseId);
-                            document.getElementById('editors-section').style.display = 'block';
                             loadStudents(window.editingCourseId);
-                            document.getElementById('students-section').style.display = 'block';
                         }
                     }
                 } catch (err) {
@@ -604,6 +605,19 @@
                 }
                 
                 document.getElementById('course-title-display').innerText = course.title || 'New Course';
+                
+                const statusBadge = document.getElementById('course-status-badge');
+                if (statusBadge) {
+                    if (course.status === 'PUBLISHED') {
+                        statusBadge.innerText = 'Published';
+                        statusBadge.style.background = '#10b981';
+                        statusBadge.style.color = 'white';
+                    } else {
+                        statusBadge.innerText = 'Draft';
+                        statusBadge.style.background = '#e2e8f0';
+                        statusBadge.style.color = '#475569';
+                    }
+                }
                 
                 // Lógica da Capa: Se tem coverImage ou custom_thumb usa, senão usa lp_thumb
                 if (course.coverImage || course.custom_thumb || course.thumbnailUrl) {
@@ -779,12 +793,22 @@
                 let courseRes;
                 if (window.editingCourseId && !window.editingCourseId.toString().startsWith('course_')) {
                     // Update
-                    courseRes = await apiCall(`/courses/${window.editingCourseId}`, 'PUT', {
+                    const payload = {
                         title: title,
                         description: desc,
-                        status: 'DRAFT',
                         coverImage: window.courseCustomThumb || null
-                    });
+                    };
+                    if (!silent) payload.status = 'DRAFT';
+                    courseRes = await apiCall(`/courses/${window.editingCourseId}`, 'PUT', payload);
+                    
+                    if (!silent) {
+                        const statusBadge = document.getElementById('course-status-badge');
+                        if (statusBadge) {
+                            statusBadge.innerText = 'Draft';
+                            statusBadge.style.background = '#e2e8f0';
+                            statusBadge.style.color = '#475569';
+                        }
+                    }
                 } else {
                     // Create
                     courseRes = await apiCall('/courses', 'POST', {
@@ -832,8 +856,15 @@
                 }
                 
                 checkCourseSaveStatus();
+                
+                const statusBadge = document.getElementById('course-status-badge');
+                if (statusBadge) {
+                    statusBadge.innerText = 'Published';
+                    statusBadge.style.background = '#10b981';
+                    statusBadge.style.color = 'white';
+                }
+                
                 alert('Changes saved and course published!');
-                window.location.href = 'profile.html?tab=creations';
             } catch (error) {
                 alert('Error publishing course: ' + error.message);
             }
@@ -977,9 +1008,14 @@
             }, 300);
         }
 
-        function selectUserForRole(roleType, userId, username) {
+        async function selectUserForRole(roleType, userId, username) {
             document.getElementById(`new-${roleType}-search`).value = username;
             document.getElementById(`${roleType}-search-results`).style.display = 'none';
+            
+            if (window.editingCourseId && window.editingCourseId.toString().startsWith('course_')) {
+                await saveDraft(true); // create the course silently first
+            }
+            
             if (roleType === 'editor') {
                 addCoEditor(userId);
             } else if (roleType === 'student') {

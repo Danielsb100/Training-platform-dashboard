@@ -132,12 +132,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const navStudents = document.getElementById('nav-students');
             const navUsers = document.getElementById('nav-users');
             const avatar = document.getElementById('nav-user-avatar');
-            const managerRoles = ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN', 'MASTER'];
-            const isOnlyStudent = roles.includes('STUDENT') && !roles.some(role => managerRoles.includes(role));
+            const managerRoles = ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'];
+            const canManage = roles.some(role => managerRoles.includes(role)) || ['MASTER', 'ADMIN'].includes(user.role);
 
-            if (isOnlyStudent) {
-                if (navCreations) navCreations.style.display = 'none';
-                if (navStudents) navStudents.style.display = 'none';
+            if (canManage) {
+                if (navCreations) navCreations.style.display = 'flex';
+                if (navStudents) navStudents.style.display = 'flex';
             }
             if (navUsers && (user.role === 'MASTER' || roles.includes('SUPER_ADMIN'))) {
                 navUsers.style.display = 'flex';

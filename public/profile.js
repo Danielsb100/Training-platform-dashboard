@@ -461,9 +461,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const roles = user.roles || [];
             
             if (navCreations) {
-                const isOnlyStudent = roles.includes('STUDENT') && !roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r));
-                if ((isOnlyStudent || (roles.length === 1 && roles[0] === 'STUDENT')) && publishedCourses.length === 0) {
-                    navCreations.style.display = 'none';
+                const canCreate = roles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role) || publishedCourses.length > 0;
+                if (canCreate) {
+                    navCreations.style.display = 'flex';
                 }
             }
             const canManageStudentsProfile = roles.some(r => ['TEACHER', 'TUTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role);
