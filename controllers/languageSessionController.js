@@ -1,6 +1,5 @@
 const prisma = require('../config/db');
 const { assertModuleAccess } = require('./moduleController');
-const { translateQuiz } = require('../services/openaiQuizService');
 
 // --- Language Session CRUD ---
 
@@ -146,17 +145,8 @@ async function getSourceContent(moduleId, sourceSessionId) {
     }
 }
 
-async function prepareQuizzesForTarget(sourceQuizzes, sourceLocale, targetLocale, shouldTranslate = true) {
-    if (!shouldTranslate || !targetLocale || sourceLocale === targetLocale) {
-        return sourceQuizzes;
-    }
-
-    const translated = [];
-    for (const quiz of sourceQuizzes) {
-        translated.push(await translateQuiz(quiz, targetLocale));
-    }
-    return translated;
-}
+// Note: Quizzes are duplicated/copied as-is (no auto-translation).
+// Users can translate individual quizzes manually via the "Translate Quiz" button.
 
 // --- Helper: duplicate videos and quizzes into a target session ---
 async function duplicateContentInto(tx, moduleId, targetSessionId, sourceVideos, sourceQuizzes) {
@@ -245,16 +235,14 @@ const duplicateTo = async (req, res) => {
             return res.status(404).json({ error: 'Source session not found for this module' });
         }
 
-        const translatedQuizzes = await prepareQuizzesForTarget(sourceContent.quizzes, sourceContent.locale, targetLocale.trim());
-
         const result = await prisma.$transaction(async (tx) => {
             // Create target session
             const targetSession = await tx.moduleLanguageSession.create({
                 data: { moduleId, locale: targetLocale.trim() }
             });
 
-            // Duplicate videos and translated quizzes (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, translatedQuizzes);
+            // Duplicate videos and quizzes as-is (no documents — they are shared)
+            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, sourceContent.quizzes);
 
             return targetSession;
         });
@@ -277,7 +265,7 @@ const copyFrom = async (req, res) => {
         const targetSessionId = parseInt(req.params.sessionId);
         const sourceSessionIdRaw = req.params.sourceId;
         const mode = req.body?.mode || 'merge'; // 'replace' or 'merge'
-        const shouldTranslate = req.body?.translate !== false;
+
 
         try {
             await assertModuleAccess(moduleId, req.user);
@@ -306,19 +294,17 @@ const copyFrom = async (req, res) => {
             return res.status(404).json({ error: 'Target session not found' });
         }
 
-        const translatedQuizzes = await prepareQuizzesForTarget(sourceContent.quizzes, sourceContent.locale, targetSession.locale, shouldTranslate);
-
         await prisma.$transaction(async (tx) => {
             // If replace mode, clear existing content first
             if (mode === 'replace') {
                 await clearSessionContent(tx, moduleId, targetSessionId);
             }
 
-            // Copy videos and translated quizzes (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, translatedQuizzes);
+            // Copy videos and quizzes as-is (no documents — they are shared)
+            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, sourceContent.quizzes);
         });
 
-        res.json({ message: `Content copied from source (mode: ${mode})`, translated: shouldTranslate && sourceContent.locale !== targetSession.locale });
+        res.json({ message: `Content copied from source (mode: ${mode})` });
     } catch (error) {
         console.error('Error copying language session:', error);
         res.status(500).json({ error: 'Failed to copy from source session' });

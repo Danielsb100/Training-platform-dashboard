@@ -646,10 +646,12 @@ const translateQuizEndpoint = async (req, res) => {
 
         // Create the translated quiz in the target session
         const order = await prisma.quiz.count({ where: { moduleId, languageSessionId: targetSessionId ? parseInt(targetSessionId) : null } });
+        const parsedTargetSessionId = targetSessionId ? parseInt(targetSessionId) : null;
+
         const newQuiz = await prisma.quiz.create({
             data: {
                 moduleId,
-                languageSessionId: targetSessionId ? parseInt(targetSessionId) : null,
+                languageSessionId: parsedTargetSessionId,
                 title: translated.title,
                 order,
                 questions: {
@@ -667,6 +669,13 @@ const translateQuizEndpoint = async (req, res) => {
             },
             include: { questions: { include: { options: true } } }
         });
+
+        // Delete the original quiz if it belongs to the SAME target session
+        // (prevents the old untranslated quiz from lingering alongside the new one)
+        const originalSessionId = quiz.languageSessionId || null;
+        if (originalSessionId === parsedTargetSessionId) {
+            await prisma.quiz.delete({ where: { id: quizId } });
+        }
 
         res.status(201).json(newQuiz);
     } catch (error) {
