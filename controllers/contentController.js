@@ -320,7 +320,12 @@ const updateQuiz = async (req, res) => {
 const createAiGeneratedQuiz = async (req, res) => {
     try {
         const moduleId = parseInt(req.params.id, 10);
-        const { questionCount, optionsPerQuestion, title } = req.body || {};
+        const { questionCount, optionsPerQuestion, title, languageSessionId } = req.body || {};
+        const targetLanguageSessionId = languageSessionId ? parseInt(languageSessionId, 10) : null;
+
+        if (languageSessionId && !Number.isFinite(targetLanguageSessionId)) {
+            return res.status(400).json({ error: 'languageSessionId must be a number' });
+        }
 
         try {
             await assertModuleAccess(parseInt(req.params.id), req.user);
@@ -337,6 +342,15 @@ const createAiGeneratedQuiz = async (req, res) => {
         });
 
         if (!module) return res.status(404).json({ error: 'Module not found' });
+
+        if (targetLanguageSessionId) {
+            const targetSession = await prisma.moduleLanguageSession.findUnique({
+                where: { id: targetLanguageSessionId }
+            });
+            if (!targetSession || targetSession.moduleId !== moduleId) {
+                return res.status(404).json({ error: 'Language session not found for this module' });
+            }
+        }
 
         const videoAssetIds = [...new Set((module.videos || [])
             .map((video) => getModuleAssetUrl(video.url))
@@ -355,10 +369,11 @@ const createAiGeneratedQuiz = async (req, res) => {
             return res.status(502).json({ error: 'AI did not return enough valid quiz questions.' });
         }
 
-        const order = await prisma.quiz.count({ where: { moduleId } });
+        const order = await prisma.quiz.count({ where: { moduleId, languageSessionId: targetLanguageSessionId } });
         const quiz = await prisma.quiz.create({
             data: {
                 moduleId,
+                languageSessionId: targetLanguageSessionId,
                 title: title || generated.title || 'AI Generated Quiz',
                 order,
                 questions: {

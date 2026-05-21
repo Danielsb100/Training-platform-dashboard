@@ -1840,7 +1840,9 @@ async function submitAiQuiz() {
     btn.disabled = true;
 
     try {
-        await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', { title: 'AI Quiz', questionCount, optionsPerQuestion: 4 });
+        const body = { title: 'AI Quiz', questionCount, optionsPerQuestion: 4 };
+        if (currentLanguageSessionId) body.languageSessionId = currentLanguageSessionId;
+        await apiCall(`/modules/${editingModuleId}/quizzes/ai-generate`, 'POST', body);
         alert('Quiz generated successfully!');
         hideAiQuizForm();
         loadModuleData(editingModuleId);
