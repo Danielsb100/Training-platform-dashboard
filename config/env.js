@@ -87,6 +87,7 @@ const env = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
     quizModel: process.env.OPENAI_QUIZ_MODEL || 'gpt-5.4',
+    translationModel: process.env.OPENAI_TRANSLATION_MODEL || 'gpt-5-nano',
     reasoningEffort: process.env.OPENAI_REASONING_EFFORT || 'low'
   },
   eurobot: {

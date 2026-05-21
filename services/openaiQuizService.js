@@ -441,7 +441,7 @@ const translateQuiz = async (quiz, targetLocale) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: env.openai.quizModel,
+      model: env.openai.translationModel || 'gpt-5-nano',
       reasoning: { effort: env.openai.reasoningEffort },
       input: [
         {

@@ -1,5 +1,6 @@
 const prisma = require('../config/db');
 const { assertModuleAccess } = require('./moduleController');
+const { translateQuiz } = require('../services/openaiQuizService');
 
 // --- Language Session CRUD ---
 
@@ -123,24 +124,38 @@ async function getSourceContent(moduleId, sourceSessionId) {
     if (sourceSessionId === null || sourceSessionId === undefined || isNaN(sourceSessionId)) {
         // Base content (no languageSessionId)
         const videos = await prisma.moduleVideo.findMany({
-            where: { moduleId, languageSessionId: null }
+            where: { moduleId, languageSessionId: null },
+            orderBy: { order: 'asc' }
         });
         const quizzes = await prisma.quiz.findMany({
             where: { moduleId, languageSessionId: null },
-            include: { questions: { include: { options: true } } }
+            include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } },
+            orderBy: { order: 'asc' }
         });
-        return { videos, quizzes, locale: 'base' };
+        return { videos, quizzes, locale: 'en-US' };
     } else {
         const session = await prisma.moduleLanguageSession.findUnique({
             where: { id: sourceSessionId },
             include: {
-                videos: true,
-                quizzes: { include: { questions: { include: { options: true } } } }
+                videos: { orderBy: { order: 'asc' } },
+                quizzes: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } }
             }
         });
         if (!session) return null;
         return { videos: session.videos, quizzes: session.quizzes, locale: session.locale, moduleId: session.moduleId };
     }
+}
+
+async function prepareQuizzesForTarget(sourceQuizzes, sourceLocale, targetLocale, shouldTranslate = true) {
+    if (!shouldTranslate || !targetLocale || sourceLocale === targetLocale) {
+        return sourceQuizzes;
+    }
+
+    const translated = [];
+    for (const quiz of sourceQuizzes) {
+        translated.push(await translateQuiz(quiz, targetLocale));
+    }
+    return translated;
 }
 
 // --- Helper: duplicate videos and quizzes into a target session ---
@@ -230,14 +245,16 @@ const duplicateTo = async (req, res) => {
             return res.status(404).json({ error: 'Source session not found for this module' });
         }
 
+        const translatedQuizzes = await prepareQuizzesForTarget(sourceContent.quizzes, sourceContent.locale, targetLocale.trim());
+
         const result = await prisma.$transaction(async (tx) => {
             // Create target session
             const targetSession = await tx.moduleLanguageSession.create({
                 data: { moduleId, locale: targetLocale.trim() }
             });
 
-            // Duplicate videos and quizzes (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, sourceContent.quizzes);
+            // Duplicate videos and translated quizzes (no documents — they are shared)
+            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, translatedQuizzes);
 
             return targetSession;
         });
@@ -248,7 +265,6 @@ const duplicateTo = async (req, res) => {
         if (error.code === 'P2002') {
             return res.status(409).json({ error: 'Target language session already exists' });
         }
-        require('fs').appendFileSync('d:/GitHub/Training-platform-dashboard/error.log', new Date().toISOString() + ' Duplicate Error: ' + (error.stack || error) + '\n');
         res.status(500).json({ error: 'Failed to duplicate language session' });
     }
 };
@@ -261,6 +277,7 @@ const copyFrom = async (req, res) => {
         const targetSessionId = parseInt(req.params.sessionId);
         const sourceSessionIdRaw = req.params.sourceId;
         const mode = req.body?.mode || 'merge'; // 'replace' or 'merge'
+        const shouldTranslate = req.body?.translate !== false;
 
         try {
             await assertModuleAccess(moduleId, req.user);
@@ -289,20 +306,21 @@ const copyFrom = async (req, res) => {
             return res.status(404).json({ error: 'Target session not found' });
         }
 
+        const translatedQuizzes = await prepareQuizzesForTarget(sourceContent.quizzes, sourceContent.locale, targetSession.locale, shouldTranslate);
+
         await prisma.$transaction(async (tx) => {
             // If replace mode, clear existing content first
             if (mode === 'replace') {
                 await clearSessionContent(tx, moduleId, targetSessionId);
             }
 
-            // Copy videos and quizzes (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, sourceContent.quizzes);
+            // Copy videos and translated quizzes (no documents — they are shared)
+            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, translatedQuizzes);
         });
 
-        res.json({ message: `Content copied from source (mode: ${mode})` });
+        res.json({ message: `Content copied from source (mode: ${mode})`, translated: shouldTranslate && sourceContent.locale !== targetSession.locale });
     } catch (error) {
         console.error('Error copying language session:', error);
-        require('fs').appendFileSync('d:/GitHub/Training-platform-dashboard/error.log', new Date().toISOString() + ' Copy Error: ' + (error.stack || error) + '\n');
         res.status(500).json({ error: 'Failed to copy from source session' });
     }
 };
