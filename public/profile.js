@@ -22,38 +22,43 @@ function renderAiTips(payload = {}) {
     if (warning) warning.textContent = `${(counts.WARNING || 0) + (counts.CRITICAL || 0)} attention`;
 
     if (!tips.length) {
-        list.innerHTML = '<p style="font-size:13px; color:#64748b; margin:0;">No AI tips right now. Keep studying and refresh when you want updated guidance.</p>';
+        list.innerHTML = `<p style="font-size:13px; color:#64748b; margin:0;">${window.t ? window.t('profile.noAiTips', 'No AI tips right now. Keep studying and refresh when you want updated guidance.') : 'No AI tips right now. Keep studying and refresh when you want updated guidance.'}</p>`;
         return;
     }
 
     list.innerHTML = tips.map((tip) => {
         const style = getAiTipSeverityStyle(tip.severity);
         const metadata = tip.metadata || {};
+        const focusLabel = window.t ? window.t('profile.focus', 'Focus:') : 'Focus:';
         const focusAreas = Array.isArray(metadata.focusAreas) && metadata.focusAreas.length
-            ? `<div style="margin-top:8px;"><strong style="font-size:12px; color:#475569;">Focus:</strong> <span style="font-size:12px; color:#64748b;">${metadata.focusAreas.map(escapeHtml).join(' Ã¢â‚¬Â¢ ')}</span></div>`
+            ? `<div style="margin-top:8px;"><strong style="font-size:12px; color:#475569;">${focusLabel}</strong> <span style="font-size:12px; color:#64748b;">${metadata.focusAreas.map(escapeHtml).join(' • ')}</span></div>`
             : '';
         const nextSteps = Array.isArray(metadata.nextSteps) && metadata.nextSteps.length
             ? `<ul style="margin:8px 0 0 18px; padding:0; color:#64748b; font-size:12px; line-height:1.45;">${metadata.nextSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>`
             : '';
+        const whyLabel = window.t ? window.t('profile.why', 'Why:') : 'Why:';
+        const aiTipTitle = window.t ? window.t('profile.aiTip', 'AI tip') : 'AI tip';
+        const openLabel = window.t ? window.t('common.open', 'Open') : 'Open';
+        const dismissLabel = window.t ? window.t('common.dismiss', 'Dismiss') : 'Dismiss';
         return `
             <article data-ai-tip-id="${tip.id}" style="background:${style.bg}; border:1px solid ${style.border}; border-radius:10px; padding:14px; display:flex; justify-content:space-between; gap:14px; align-items:flex-start;">
                 <div style="display:flex; gap:12px; min-width:0;">
                     <i class="fas ${style.icon}" style="color:${style.text}; margin-top:3px;"></i>
                     <div style="min-width:0;">
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <strong style="color:#1e293b; font-size:14px;">${escapeHtml(tip.title || 'AI tip')}</strong>
+                            <strong style="color:#1e293b; font-size:14px;">${escapeHtml(tip.title || aiTipTitle)}</strong>
                             <span style="background:white; color:${style.text}; border:1px solid ${style.border}; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:bold;">${escapeHtml(tip.severity || 'INFO')}</span>
                             <span style="background:white; color:#475569; border:1px solid #e2e8f0; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:bold;">${escapeHtml(tip.scope || 'COURSE')}</span>
                         </div>
                         <p style="margin:6px 0 0 0; color:#475569; font-size:13px; line-height:1.45;">${escapeHtml(tip.message || '')}</p>
-                        ${tip.reason ? `<p style="margin:6px 0 0 0; color:#94a3b8; font-size:12px; line-height:1.4;">Why: ${escapeHtml(tip.reason)}</p>` : ''}
+                        ${tip.reason ? `<p style="margin:6px 0 0 0; color:#94a3b8; font-size:12px; line-height:1.4;">${whyLabel} ${escapeHtml(tip.reason)}</p>` : ''}
                         ${focusAreas}
                         ${nextSteps}
                     </div>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
-                    ${tip.actionUrl ? `<a href="${escapeHtml(tip.actionUrl)}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;">${escapeHtml(tip.actionLabel || 'Open')}</a>` : ''}
-                    <button type="button" data-ai-tip-dismiss="${tip.id}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">Dismiss</button>
+                    ${tip.actionUrl ? `<a href="${escapeHtml(tip.actionUrl)}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;">${escapeHtml(tip.actionLabel || openLabel)}</a>` : ''}
+                    <button type="button" data-ai-tip-dismiss="${tip.id}" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">${dismissLabel}</button>
                 </div>
             </article>
         `;
@@ -98,12 +103,12 @@ async function loadAiTips({ refresh = true } = {}) {
     const list = document.getElementById('ai-tips-list');
     if (!list) return;
     try {
-        if (refresh) list.innerHTML = '<p style="font-size:13px; color:#64748b; margin:0;">Refreshing AI tips...</p>';
+        if (refresh) list.innerHTML = `<p style="font-size:13px; color:#64748b; margin:0;">${window.t ? window.t('profile.refreshingTips', 'Refreshing AI tips...') : 'Refreshing AI tips...'}</p>`;
         const payload = await fetchAiTips({ refresh });
         renderAiTips(payload);
     } catch (error) {
         console.error('AI tips error:', error);
-        list.innerHTML = '<p style="font-size:13px; color:#be123c; margin:0;">Could not load AI tips yet.</p>';
+        list.innerHTML = `<p style="font-size:13px; color:#be123c; margin:0;">${window.t ? window.t('profile.couldNotLoadTips', 'Could not load AI tips yet.') : 'Could not load AI tips yet.'}</p>`;
     }
 }
 
@@ -137,7 +142,7 @@ function renderEurobotSyncPanel(payload = {}) {
     const items = Array.isArray(payload.items) ? payload.items : [];
 
     if (!connection) {
-        statusEl.innerHTML = '<span style="color:#c2410c; font-weight:700;">No active Eurobot knowledge base yet.</span> Click <strong>Ensure KB</strong> to create/connect the default Training KB, then run sync.';
+        statusEl.innerHTML = window.t ? window.t('profile.noActiveKB', '<span style="color:#c2410c; font-weight:700;">No active Eurobot knowledge base yet.</span> Click <strong>Ensure KB</strong> to create/connect the default Training KB, then run sync.') : '<span style="color:#c2410c; font-weight:700;">No active Eurobot knowledge base yet.</span> Click <strong>Ensure KB</strong> to create/connect the default Training KB, then run sync.';
         summaryEl.innerHTML = '';
         itemsEl.innerHTML = '';
         if (ensureBtn) ensureBtn.style.display = 'inline-flex';
@@ -156,12 +161,12 @@ function renderEurobotSyncPanel(payload = {}) {
     `;
 
     const cards = [
-        ['Total', summary.total || 0, '#f8fafc', '#334155'],
-        ['Synced', summary.synced || 0, '#dcfce7', '#166534'],
-        ['Pending', summary.pending || 0, '#fff7ed', '#c2410c'],
-        ['Failed', (summary.failed || 0) + (summary.delete_failed || 0), '#fee2e2', '#b91c1c'],
-        ['Skipped', summary.skipped || 0, '#f1f5f9', '#475569'],
-        ['Deleted', summary.deleted || 0, '#f1f5f9', '#475569']
+        [window.t ? window.t('profile.total', 'Total') : 'Total', summary.total || 0, '#f8fafc', '#334155'],
+        [window.t ? window.t('profile.synced', 'Synced') : 'Synced', summary.synced || 0, '#dcfce7', '#166534'],
+        [window.t ? window.t('profile.pending', 'Pending') : 'Pending', summary.pending || 0, '#fff7ed', '#c2410c'],
+        [window.t ? window.t('profile.failed', 'Failed') : 'Failed', (summary.failed || 0) + (summary.delete_failed || 0), '#fee2e2', '#b91c1c'],
+        [window.t ? window.t('profile.skipped', 'Skipped') : 'Skipped', summary.skipped || 0, '#f1f5f9', '#475569'],
+        [window.t ? window.t('profile.deleted', 'Deleted') : 'Deleted', summary.deleted || 0, '#f1f5f9', '#475569']
     ];
     summaryEl.innerHTML = cards.map(([label, value, bg, color]) => `
         <div style="background:${bg}; border:1px solid #e2e8f0; border-radius:10px; padding:10px;">
@@ -171,7 +176,7 @@ function renderEurobotSyncPanel(payload = {}) {
     `).join('');
 
     if (!items.length) {
-        itemsEl.innerHTML = '<p style="font-size:12px; color:#64748b; margin:0;">No sync items to show yet. Click <strong>Sync now</strong> to reconcile existing course materials.</p>';
+        itemsEl.innerHTML = `<p style="font-size:12px; color:#64748b; margin:0;">${window.t ? window.t('profile.noSyncItems', 'No sync items to show yet. Click <strong>Sync now</strong> to reconcile existing course materials.') : 'No sync items to show yet. Click <strong>Sync now</strong> to reconcile existing course materials.'}</p>`;
         return;
     }
 
@@ -310,7 +315,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderCourseCard(course) {
         const statusColor = course.status === 'PUBLISHED' ? '#dcfce7' : '#f1f5f9';
-        const statusText = course.status === 'PUBLISHED' ? 'Published' : 'Draft';
+        const statusText = course.status === 'PUBLISHED' ? (window.t ? window.t('profile.published', 'Published') : 'Published') : (window.t ? window.t('profile.draft', 'Draft') : 'Draft');
         const textColor = course.status === 'PUBLISHED' ? '#166534' : '#475569';
 
         const thumbUrl = course.coverImage || course.thumbnailUrl || course.custom_thumb;
@@ -318,14 +323,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? `<div style="height:140px; background-image:url(${thumbUrl}); background-size:cover; background-position:center;"></div>`
             : `<div style="height:140px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:3rem;"><i class="fas fa-image"></i></div>`;
 
+        const editLinkLabel = window.t ? window.t('profile.editLink', 'Edit Link') : 'Edit Link';
+        const openLinkLabel = window.t ? window.t('profile.openLink', 'Open Link') : 'Open Link';
+        const editLabel = window.t ? window.t('profile.edit', 'Edit') : 'Edit';
+        const viewContentLabel = window.t ? window.t('profile.viewContent', 'View Content') : 'View Content';
+
         const buttonsHtml = course.externalUrl
             ? `
-                <button onclick="openExternalLinkModal(${course.id}, '${(course.title || '').replace(/'/g, "\\'")}', '${(course.description || '').replace(/'/g, "\\'")}', '${(course.externalUrl || '').replace(/'/g, "\\'")}', '${(course.coverImage || '').replace(/'/g, "\\'")}', '${course.status}')" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit Link</button>
-                <button onclick="window.open('${course.externalUrl}', '_blank')" style="flex:1; padding:8px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Open Link</button>
+                <button onclick="openExternalLinkModal(${course.id}, '${(course.title || '').replace(/'/g, "\\'")}', '${(course.description || '').replace(/'/g, "\\'")}', '${(course.externalUrl || '').replace(/'/g, "\\'")}', '${(course.coverImage || '').replace(/'/g, "\\'")}', '${course.status}')" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${editLinkLabel}</button>
+                <button onclick="window.open('${course.externalUrl}', '_blank')" style="flex:1; padding:8px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${openLinkLabel}</button>
             `
             : `
-                <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">Edit</button>
-                <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">View Content</button>
+                <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${editLabel}</button>
+                <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${viewContentLabel}</button>
             `;
 
         return `
@@ -336,7 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h4 style="margin:0; color:#1e293b; font-size:1.1rem;">${course.title}</h4>
                         <span style="font-size:0.7rem; padding:3px 8px; border-radius:10px; background:${statusColor}; color:${textColor}; font-weight:bold;">${statusText}</span>
                     </div>
-                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || 'No description'}</p>
+                    <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px; flex:1;">${course.description || (window.t ? window.t('profile.noDescription', 'No description') : 'No description')}</p>
                     <div style="display:flex; gap:10px;">
                         ${buttonsHtml}
                     </div>
@@ -350,9 +360,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             userPagesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
                     <i class="fas fa-graduation-cap" style="font-size:3rem; color:#e2e8f0; margin-bottom:15px; display:block;"></i>
-                    <h3 style="color: #1e293b; margin-bottom: 10px;">You don't have any Courses yet.</h3>
-                    <p style="color: #64748b; margin-bottom: 20px;">Create your first course right now and set up the modules and landing page!</p>
-                    <a href="course_builder.html" class="btn-primary" style="padding:12px 25px; border-radius:30px; background:#cf982e; color:white; text-decoration:none; font-weight:bold; display:inline-block;"><i class="fas fa-plus"></i> Create Now</a>
+                    <h3 style="color: #1e293b; margin-bottom: 10px;">${window.t ? window.t('profile.noCoursesYet', 'You don\'t have any Courses yet.') : 'You don\'t have any Courses yet.'}</h3>
+                    <p style="color: #64748b; margin-bottom: 20px;">${window.t ? window.t('profile.createFirstCourseDesc', 'Create your first course right now and set up the modules and landing page!') : 'Create your first course right now and set up the modules and landing page!'}</p>
+                    <a href="course_builder.html" class="btn-primary" style="padding:12px 25px; border-radius:30px; background:#cf982e; color:white; text-decoration:none; font-weight:bold; display:inline-block;"><i class="fas fa-plus"></i> ${window.t ? window.t('profile.createNow', 'Create Now') : 'Create Now'}</a>
                 </div>
             `;
         } else {
@@ -383,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (eurobotEnsureBtn) {
         eurobotEnsureBtn.addEventListener('click', ensureEurobotKnowledgeBase);
     }
-    await loadEurobotSyncPanel();
+    loadEurobotSyncPanel();
 
     // --- 3. Load Profile API ---
     try {
@@ -658,13 +668,16 @@ window.saveAdvancedPortfolio = async function() {
         });
 
         if (res.ok) {
-            alert('Professional Profile and Networks saved successfully!');
+            if (window.setLanguage) {
+                window.setLanguage(language);
+            }
+            alert(window.t ? window.t('common.success', 'Success') : 'Professional Profile and Networks saved successfully!');
         } else {
-            alert('Failed to save portfolio.');
+            alert(window.t ? window.t('common.error', 'Error') : 'Failed to save portfolio.');
         }
     } catch (err) {
         console.error(err);
-        alert('Error saving portfolio.');
+        alert(window.t ? window.t('common.error', 'Error') : 'Error saving portfolio.');
     }
 };
 
@@ -917,7 +930,8 @@ window.loadSubscriptions = async function() {
     const container = document.getElementById('subscriptions-container');
     if (!container) return;
 
-    container.innerHTML = '<p>Loading enrollments...</p>';
+    container.innerHTML = '<p data-i18n="profile.loadingEnrollments">Loading enrollments...</p>';
+    if (window.applyTranslations) window.applyTranslations(container);
 
     try {
         const res = await fetch('/api/courses/enrolled', {
@@ -939,9 +953,10 @@ window.loadSubscriptions = async function() {
         if (!filteredCourses || filteredCourses.length === 0) {
             container.innerHTML = `
                 <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                <h3 style="margin: 0 0 10px 0; color: #1e293b;">No Enrollments Found</h3>
-                <p style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">You have no enrollments with this filter. Visit the marketplace to explore new content!</p>
+                <h3 data-i18n="profile.noEnrollments" style="margin: 0 0 10px 0; color: #1e293b;">No Enrollments Found</h3>
+                <p data-i18n="profile.noEnrollmentsDesc" style="color: #64748b; margin: 0; max-width: 400px; margin: 0 auto;">You have no enrollments with this filter. Visit the marketplace to explore new content!</p>
             `;
+            if (window.applyTranslations) window.applyTranslations(container);
             return;
         }
 

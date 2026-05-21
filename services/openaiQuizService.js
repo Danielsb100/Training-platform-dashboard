@@ -376,6 +376,130 @@ const generateQuizFromModule = async (module, options = {}) => {
   return normalizeGeneratedQuiz(JSON.parse(responseText), questionCount, optionsPerQuestion);
 };
 
+const LOCALE_NAMES = {
+  'en-US': 'English',
+  'pt-BR': 'Brazilian Portuguese',
+  'es-ES': 'Spanish',
+  'it-IT': 'Italian',
+  'fr-FR': 'French',
+  'ro-RO': 'Romanian',
+  'de-DE': 'German',
+  'sq-AL': 'Albanian',
+  'el-GR': 'Greek',
+  'ru-RU': 'Russian'
+};
+
+const translateQuiz = async (quiz, targetLocale) => {
+  if (!env.openai.apiKey) {
+    const error = new Error('OPENAI_API_KEY is not configured.');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const targetLanguage = LOCALE_NAMES[targetLocale] || targetLocale;
+  const questionCount = (quiz.questions || []).length;
+  if (questionCount === 0) {
+    return { title: quiz.title, questions: [] };
+  }
+
+  // Build a structured representation of the quiz for translation
+  const quizData = {
+    title: quiz.title,
+    questions: (quiz.questions || []).map((q) => ({
+      text: q.text,
+      options: (q.options || []).map((o) => ({
+        text: o.text,
+        isCorrect: o.isCorrect
+      }))
+    }))
+  };
+
+  const optionsPerQuestion = quizData.questions[0]?.options?.length || 4;
+
+  const content = [
+    {
+      type: 'input_text',
+      text: [
+        `Translate the following quiz to ${targetLanguage}.`,
+        'IMPORTANT RULES:',
+        '- Translate ONLY the text content (title, question text, option text).',
+        '- Keep EXACTLY the same number of questions and options.',
+        '- Keep the EXACT SAME isCorrect value for each option — do NOT change which option is correct.',
+        '- Do not add, remove, or reorder any questions or options.',
+        '- Return the translated quiz in the exact same JSON structure.',
+        '',
+        'Quiz to translate:',
+        JSON.stringify(quizData, null, 2)
+      ].join('\n')
+    }
+  ];
+
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.openai.apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: env.openai.quizModel,
+      reasoning: { effort: env.openai.reasoningEffort },
+      input: [
+        {
+          role: 'system',
+          content: [
+            {
+              type: 'input_text',
+              text: 'You are a professional translator. You translate quiz content between languages while preserving the exact structure, question order, option order, and correct answer markers. Return only JSON data matching the requested schema.'
+            }
+          ]
+        },
+        { role: 'user', content }
+      ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'translated_quiz',
+          strict: true,
+          schema: buildQuizJsonSchema(questionCount, optionsPerQuestion)
+        }
+      }
+    })
+  });
+
+  const responsePayload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = responsePayload?.error?.message || `OpenAI translation failed with status ${response.status}.`;
+    const error = new Error(message);
+    error.statusCode = response.status;
+    throw error;
+  }
+
+  const responseText = extractResponseText(responsePayload);
+  if (!responseText) {
+    throw new Error('OpenAI response did not include translated quiz output.');
+  }
+
+  const parsed = JSON.parse(responseText);
+
+  // Restore isCorrect values from original in case AI changed them
+  const translatedQuestions = (parsed.questions || []).map((tq, qi) => {
+    const original = quizData.questions[qi];
+    if (!original) return tq;
+    return {
+      ...tq,
+      options: (tq.options || []).map((to, oi) => ({
+        text: to.text,
+        isCorrect: original.options[oi]?.isCorrect || false
+      }))
+    };
+  });
+
+  return {
+    title: parsed.title || quiz.title,
+    questions: translatedQuestions
+  };
+};
+
 module.exports = {
   DEFAULT_QUESTION_COUNT,
   DEFAULT_OPTIONS_PER_QUESTION,
@@ -388,5 +512,7 @@ module.exports = {
   getModuleAssetUrl,
   isSupportedOpenAiFile,
   normalizeGeneratedQuiz,
-  shuffleArray
+  shuffleArray,
+  translateQuiz,
+  LOCALE_NAMES
 };

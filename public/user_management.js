@@ -80,16 +80,16 @@ async function loadUsers() {
                         </td>
                         <td style="padding: 15px 20px;">
                             <select onchange="changeUserRole(${u.id}, this.value)" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-                                <option value="USER" ${roleDisplay === 'USER' ? 'selected' : ''}>None</option>
-                                <option value="STUDENT" ${roleDisplay === 'STUDENT' ? 'selected' : ''}>Student</option>
-                                <option value="TEACHER" ${roleDisplay === 'TEACHER' ? 'selected' : ''}>Teacher</option>
-                                <option value="TUTOR" ${roleDisplay === 'TUTOR' ? 'selected' : ''}>Tutor</option>
-                                <option value="BUSINESS_MENTOR" ${roleDisplay === 'BUSINESS_MENTOR' ? 'selected' : ''}>Business Mentor</option>
-                                <option value="COORDINATOR" ${roleDisplay === 'COORDINATOR' ? 'selected' : ''}>Coordinator</option>
+                                <option value="USER" ${roleDisplay === 'USER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleNone', 'None') : 'None'}</option>
+                                <option value="STUDENT" ${roleDisplay === 'STUDENT' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleStudent', 'Student') : 'Student'}</option>
+                                <option value="TEACHER" ${roleDisplay === 'TEACHER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTeacher', 'Teacher') : 'Teacher'}</option>
+                                <option value="TUTOR" ${roleDisplay === 'TUTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTutor', 'Tutor') : 'Tutor'}</option>
+                                <option value="BUSINESS_MENTOR" ${roleDisplay === 'BUSINESS_MENTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleBusinessMentor', 'Business Mentor') : 'Business Mentor'}</option>
+                                <option value="COORDINATOR" ${roleDisplay === 'COORDINATOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleCoordinator', 'Coordinator') : 'Coordinator'}</option>
                             </select>
                         </td>
                         <td style="padding: 15px 20px; text-align: right;">
-                            <button onclick="deleteUser(${u.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px;" title="Delete User">
+                            <button onclick="deleteUser(${u.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px;" title="${window.t ? window.t('userManagement.deleteUser', 'Delete User') : 'Delete User'}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -120,17 +120,18 @@ async function changeUserRole(userId, newRole) {
             // Optional: visual indication of success
         } else {
             const data = await res.json();
-            alert(data.message || 'Failed to update user role.');
+            alert(data.message || (window.t ? window.t('userManagement.failedUpdateRole', 'Failed to update user role.') : 'Failed to update user role.'));
             loadUsers(); // Revert back to original
         }
     } catch (err) {
         console.error(err);
-        alert('An error occurred.');
+        alert(window.t ? window.t('common.error', 'Error') : 'An error occurred.');
     }
 }
 
 async function deleteUser(userId) {
-    if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+    const confirmMsg = window.t ? window.t('userManagement.confirmDelete', 'Are you sure you want to permanently delete this user? This action cannot be undone.') : 'Are you sure you want to permanently delete this user? This action cannot be undone.';
+    if (!confirm(confirmMsg)) {
         return;
     }
     
@@ -147,10 +148,10 @@ async function deleteUser(userId) {
             loadUsers();
         } else {
             const data = await res.json();
-            alert(data.message || 'Failed to delete user.');
+            alert(data.message || (window.t ? window.t('userManagement.failedDelete', 'Failed to delete user.') : 'Failed to delete user.'));
         }
     } catch (err) {
         console.error(err);
-        alert('An error occurred.');
+        alert(window.t ? window.t('common.error', 'Error') : 'An error occurred.');
     }
 }

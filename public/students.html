@@ -89,26 +89,26 @@
             <section class="students-shell">
                 <div class="students-hero">
                     <div>
-                        <p style="font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; font-weight:800; margin-bottom:8px;">Dashboard</p>
-                        <h1>Students</h1>
-                        <p>Track course progress, current stage, quiz scores, and AI tips for each enrolled student.</p>
+                        <p data-i18n="students.dashboard" style="font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; font-weight:800; margin-bottom:8px;">Dashboard</p>
+                        <h1 data-i18n="students.title">Students</h1>
+                        <p data-i18n="students.subtitle">Track course progress, current stage, quiz scores, and AI tips for each enrolled student.</p>
                     </div>
-                    <button class="btn-primary" onclick="window.location.reload()" style="background:white; color:#1e293b;"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn-primary" onclick="window.location.reload()" style="background:white; color:#1e293b;"><i class="fas fa-sync-alt"></i> <span data-i18n="common.refresh">Refresh</span></button>
                 </div>
 
                 <div class="student-stat-grid">
-                    <div class="student-stat-card"><span>Courses</span><strong id="students-total-courses">-</strong></div>
-                    <div class="student-stat-card"><span>Students</span><strong id="students-total-students">-</strong></div>
-                    <div class="student-stat-card"><span>Avg. Progress</span><strong id="students-avg-progress">-</strong></div>
+                    <div class="student-stat-card"><span data-i18n="students.courses">Courses</span><strong id="students-total-courses">-</strong></div>
+                    <div class="student-stat-card"><span data-i18n="students.studentsCount">Students</span><strong id="students-total-students">-</strong></div>
+                    <div class="student-stat-card"><span data-i18n="students.avgProgress">Avg. Progress</span><strong id="students-avg-progress">-</strong></div>
                 </div>
 
                 <div class="students-toolbar">
-                    <input id="student-search" type="search" placeholder="Search by student, email, course, stage or AI tip...">
-                    <select id="course-filter"><option value="all">All courses</option></select>
+                    <input id="student-search" type="search" data-i18n-placeholder="students.searchPlaceholder" placeholder="Search by student, email, course, stage or AI tip...">
+                    <select id="course-filter"><option value="all" data-i18n="students.allCourses">All courses</option></select>
                     <select id="status-filter">
-                        <option value="all">All statuses</option>
-                        <option value="ENROLLED">Enrolled</option>
-                        <option value="COMPLETED">Completed</option>
+                        <option value="all" data-i18n="students.allStatuses">All statuses</option>
+                        <option value="ENROLLED" data-i18n="students.enrolled">Enrolled</option>
+                        <option value="COMPLETED" data-i18n="students.completed">Completed</option>
                     </select>
                 </div>
 
@@ -116,16 +116,16 @@
                     <table class="students-table">
                         <thead>
                             <tr>
-                                <th>Student</th>
-                                <th>Course</th>
-                                <th>Current stage</th>
-                                <th>Progress</th>
-                                <th>Quiz scores</th>
-                                <th>AI tips</th>
+                                <th data-i18n="students.student">Student</th>
+                                <th data-i18n="students.course">Course</th>
+                                <th data-i18n="students.currentStage">Current stage</th>
+                                <th data-i18n="students.progress">Progress</th>
+                                <th data-i18n="students.quizScores">Quiz scores</th>
+                                <th data-i18n="students.aiTips">AI tips</th>
                             </tr>
                         </thead>
                         <tbody id="students-table-body">
-                            <tr><td colspan="6" class="empty-state">Loading students...</td></tr>
+                            <tr><td colspan="6" class="empty-state" data-i18n="students.loadingStudents">Loading students...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -143,6 +143,7 @@
         </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="global_notifications.js"></script>
     <script src="students.js"></script>
 </body>

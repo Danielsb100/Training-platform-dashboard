@@ -36,6 +36,7 @@ const trainingAiController = require('./controllers/trainingAiController');
 const aiTipsController = require('./controllers/aiTipsController');
 const systemController = require('./controllers/systemController');
 const multiplayerController = require('./controllers/multiplayerController');
+const languageSessionController = require('./controllers/languageSessionController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
@@ -248,6 +249,31 @@ app.delete('/modules/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLE
 app.get('/modules/:id/edit-format', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), moduleController.getEditFormat);
 app.get('/runtime/modules/:id', authenticateToken, moduleController.getRuntimeFormat);
 
+app.get('/api/debug/state', async (req, res) => {
+    try {
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        const user = await prisma.user.findFirst();
+        const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
+        const module = await prisma.trainingModule.findFirst({
+            include: {
+                videos: true,
+                languageSessions: true
+            }
+        });
+        res.json({
+            profile,
+            module: {
+                id: module.id,
+                videos: module.videos.map(v => ({ title: v.title, langId: v.languageSessionId })),
+                languageSessions: module.languageSessions.map(s => ({ id: s.id, locale: s.locale }))
+            }
+        });
+    } catch(e) {
+        res.status(500).json({error: e.message});
+    }
+});
+
 app.post('/modules/:id/videos', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), contentController.addVideo);
 app.put('/modules/:id/videos/:videoId', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), contentController.updateVideo);
 app.delete(
@@ -285,7 +311,16 @@ app.put(
 
 app.post('/modules/:id/quiz/submit', authenticateToken, contentController.submitQuiz);
 app.get('/modules/:id/quiz/submissions', authenticateToken, contentController.getQuizzesSubmissions);
+app.post('/modules/:id/quizzes/:quizId/translate', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), contentController.translateQuizEndpoint);
 app.post('/modules/:id/assistant/chat', authenticateToken, moduleAiController.chatWithModuleAssistant);
+
+// --- Language Sessions ---
+app.get('/modules/:id/language-sessions', authenticateToken, languageSessionController.getSessions);
+app.post('/modules/:id/language-sessions', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), languageSessionController.createSession);
+app.delete('/modules/:id/language-sessions/:sessionId', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), languageSessionController.deleteSession);
+app.post('/modules/:id/language-sessions/:sessionId/duplicate-to', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), languageSessionController.duplicateTo);
+app.post('/modules/:id/language-sessions/:sessionId/copy-from/:sourceId', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), languageSessionController.copyFrom);
+app.patch('/modules/:id/language-sessions/:sessionId/swap-locale', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), languageSessionController.swapLocale);
 
 app.get('/api/ai-tips/me', authenticateToken, aiTipsController.getMyTips);
 app.post('/api/ai-tips/:id/dismiss', authenticateToken, aiTipsController.dismissMyTip);

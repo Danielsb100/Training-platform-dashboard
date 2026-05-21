@@ -1,6 +1,6 @@
 const prisma = require('../config/db');
 const { notifyQuizSubmitted } = require('../services/notificationService');
-const { generateQuizFromModule, getModuleAssetUrl } = require('../services/openaiQuizService');
+const { generateQuizFromModule, getModuleAssetUrl, translateQuiz } = require('../services/openaiQuizService');
 const { scheduleKnowledgeBaseRefresh } = require('../services/aiKnowledgeSyncService');
 const { assertModuleAccess } = require('./moduleController');
 
@@ -44,7 +44,7 @@ const normalizeQuizOptions = (options) => {
 const addVideo = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, url, order } = req.body;
+        const { title, url, order, languageSessionId } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -54,13 +54,14 @@ const addVideo = async (req, res) => {
             return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
-        console.log(`[DEBUG] Adding video to module ${id}:`, { title, url, order });
+        console.log(`[DEBUG] Adding video to module ${id}:`, { title, url, order, languageSessionId });
         const video = await prisma.moduleVideo.create({
             data: {
                 moduleId: parseInt(req.params.id),
                 title,
                 url,
-                order: parseInt(order) || 0
+                order: parseInt(order) || 0,
+                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null
             }
         });
         console.log(`[DEBUG] Video created:`, video.id);
@@ -132,7 +133,7 @@ const deleteVideo = async (req, res) => {
 const addDocument = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, documentId, order } = req.body;
+        const { title, documentId, order, languageSessionId } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -148,7 +149,8 @@ const addDocument = async (req, res) => {
                 moduleId: parseInt(req.params.id),
                 documentId: parseInt(documentId),
                 title,
-                order: parseInt(order) || 0
+                order: parseInt(order) || 0,
+                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null
             }
         });
         console.log(`[DEBUG] ModuleDocument created:`, doc.id);
@@ -161,7 +163,7 @@ const addDocument = async (req, res) => {
 
 const updateDocument = async (req, res) => {
     try {
-        const { documentId } = req.params; // In this context, it's the bridge model's ID
+        const { documentId } = req.params;
         const { title, order } = req.body;
 
         const modDoc = await prisma.moduleDocument.findUnique({ 
@@ -215,7 +217,7 @@ const deleteDocument = async (req, res) => {
 const createQuiz = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, order } = req.body;
+        const { title, order, languageSessionId } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -230,7 +232,8 @@ const createQuiz = async (req, res) => {
             data: {
                 moduleId: parseInt(req.params.id),
                 title,
-                order: parseInt(order) || 0
+                order: parseInt(order) || 0,
+                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null
             }
         });
         console.log(`[DEBUG] Quiz created:`, quiz.id);
@@ -240,6 +243,8 @@ const createQuiz = async (req, res) => {
         res.status(500).json({ error: 'Failed to create quiz' });
     }
 };
+
+
 
 const deleteQuiz = async (req, res) => {
     try {
@@ -599,9 +604,66 @@ const getQuizzesSubmissions = async (req, res) => {
     }
 };
 
+const translateQuizEndpoint = async (req, res) => {
+    try {
+        const moduleId = parseInt(req.params.id);
+        const quizId = parseInt(req.params.quizId);
+        const { targetLocale, targetSessionId } = req.body;
+
+        if (!targetLocale) return res.status(400).json({ error: 'targetLocale is required' });
+
+        try {
+            await assertModuleAccess(moduleId, req.user);
+        } catch (authErr) {
+            return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
+        }
+
+        const quiz = await prisma.quiz.findUnique({
+            where: { id: quizId },
+            include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } }
+        });
+
+        if (!quiz || quiz.moduleId !== moduleId) {
+            return res.status(404).json({ error: 'Quiz not found' });
+        }
+
+        const translated = await translateQuiz(quiz, targetLocale);
+
+        // Create the translated quiz in the target session
+        const order = await prisma.quiz.count({ where: { moduleId, languageSessionId: targetSessionId ? parseInt(targetSessionId) : null } });
+        const newQuiz = await prisma.quiz.create({
+            data: {
+                moduleId,
+                languageSessionId: targetSessionId ? parseInt(targetSessionId) : null,
+                title: translated.title,
+                order,
+                questions: {
+                    create: translated.questions.map((q, qi) => ({
+                        text: q.text,
+                        order: qi,
+                        options: {
+                            create: (q.options || []).map((o) => ({
+                                text: o.text,
+                                isCorrect: o.isCorrect
+                            }))
+                        }
+                    }))
+                }
+            },
+            include: { questions: { include: { options: true } } }
+        });
+
+        res.status(201).json(newQuiz);
+    } catch (error) {
+        console.error('Quiz translation failed:', error);
+        res.status(error.statusCode || 500).json({ error: error.message || 'Failed to translate quiz' });
+    }
+};
+
 module.exports = {
     addVideo, updateVideo, deleteVideo,
     addDocument, updateDocument, deleteDocument,
     createQuiz, updateQuiz, deleteQuiz, createAiGeneratedQuiz, addQuizQuestion, updateQuizQuestion, deleteQuizQuestion,
-    submitQuiz, getQuizzesSubmissions
+    submitQuiz, getQuizzesSubmissions,
+    translateQuizEndpoint
 };

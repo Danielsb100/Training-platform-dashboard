@@ -146,45 +146,45 @@
     <div class="login-container">
         <div class="logo">
             <i class="fas fa-graduation-cap"></i>
-            <span>TRAINING</span>
+            <span data-i18n="login.title">TRAINING</span>
         </div>
-        <div class="subtitle">Welcome to your educational ecosystem.</div>
+        <div class="subtitle" data-i18n="login.subtitle">Welcome to your educational ecosystem.</div>
 
-        <div id="error-msg" class="error-message">Invalid credentials.</div>
+        <div id="error-msg" class="error-message" data-i18n="login.invalidCredentials">Invalid credentials.</div>
 
         <!-- Formulário de Login -->
         <form id="login-form">
             <div class="input-group">
-                <label for="login-email">Email</label>
-                <input type="email" id="login-email" placeholder="your@email.com" required>
+                <label for="login-email" data-i18n="login.email">Email</label>
+                <input type="email" id="login-email" data-i18n-placeholder="login.emailPlaceholder" placeholder="your@email.com" required>
             </div>
             <div class="input-group">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" placeholder="••••••••" required>
+                <label for="login-password" data-i18n="login.password">Password</label>
+                <input type="password" id="login-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn-submit">LOG IN</button>
+            <button type="submit" class="btn-submit" data-i18n="login.loginButton">LOG IN</button>
             <div class="toggle-form">
-                Don't have an account? <a onclick="toggleMode('register')">Sign up</a>
+                <span data-i18n="login.dontHaveAccount">Don't have an account?</span> <a onclick="toggleMode('register')" data-i18n="login.signUp">Sign up</a>
             </div>
         </form>
 
         <!-- Formulário de Registro -->
         <form id="register-form" style="display: none;">
             <div class="input-group">
-                <label for="reg-username">Username</label>
-                <input type="text" id="reg-username" placeholder="Your name" required>
+                <label for="reg-username" data-i18n="login.username">Username</label>
+                <input type="text" id="reg-username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Your name" required>
             </div>
             <div class="input-group">
-                <label for="reg-email">Email</label>
-                <input type="email" id="reg-email" placeholder="your@email.com" required>
+                <label for="reg-email" data-i18n="login.email">Email</label>
+                <input type="email" id="reg-email" data-i18n-placeholder="login.emailPlaceholder" placeholder="your@email.com" required>
             </div>
             <div class="input-group">
-                <label for="reg-password">Password</label>
-                <input type="password" id="reg-password" placeholder="••••••••" required>
+                <label for="reg-password" data-i18n="login.password">Password</label>
+                <input type="password" id="reg-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn-submit">CREATE ACCOUNT</button>
+            <button type="submit" class="btn-submit" data-i18n="login.createAccount">CREATE ACCOUNT</button>
             <div class="toggle-form">
-                Already have an account? <a onclick="toggleMode('login')">Log in</a>
+                <span data-i18n="login.alreadyHaveAccount">Already have an account?</span> <a onclick="toggleMode('login')" data-i18n="login.logIn">Log in</a>
             </div>
         </form>
     </div>
@@ -224,7 +224,7 @@
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> LOG IN';
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ' + (window.t ? window.t('login.loginButton', 'LOG IN') : 'LOG IN');
             btn.disabled = true;
 
             const email = document.getElementById('login-email').value;
@@ -252,13 +252,13 @@
                     }
                 } else {
                     const errMsg = document.getElementById('error-msg');
-                    errMsg.innerText = result.error || 'Login failed.';
+                    errMsg.innerText = result.error || (window.t ? window.t('login.loginFailed', 'Login failed.') : 'Login failed.');
                     errMsg.style.display = 'block';
                 }
             } catch (err) {
                 console.error(err);
                 const errMsg = document.getElementById('error-msg');
-                errMsg.innerText = 'Connection error.';
+                errMsg.innerText = window.t ? window.t('login.connectionError', 'Connection error.') : 'Connection error.';
                 errMsg.style.display = 'block';
             } finally {
                 btn.innerHTML = originalText;
@@ -270,7 +270,7 @@
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> CREATE ACCOUNT';
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ' + (window.t ? window.t('login.createAccount', 'CREATE ACCOUNT') : 'CREATE ACCOUNT');
             btn.disabled = true;
 
             const username = document.getElementById('reg-username').value;
@@ -291,13 +291,13 @@
                     window.location.href = '/login.html'; 
                 } else {
                     const errMsg = document.getElementById('error-msg');
-                    errMsg.innerText = result.error || 'Registration failed.';
+                    errMsg.innerText = result.error || (window.t ? window.t('login.registrationFailed', 'Registration failed.') : 'Registration failed.');
                     errMsg.style.display = 'block';
                 }
             } catch (err) {
                 console.error(err);
                 const errMsg = document.getElementById('error-msg');
-                errMsg.innerText = 'Connection error.';
+                errMsg.innerText = window.t ? window.t('login.connectionError', 'Connection error.') : 'Connection error.';
                 errMsg.style.display = 'block';
             } finally {
                 btn.innerHTML = originalText;
@@ -305,5 +305,6 @@
             }
         });
     </script>
+    <script src="i18n.js"></script>
 </body>
 </html>

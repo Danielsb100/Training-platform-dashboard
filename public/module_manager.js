@@ -44,6 +44,19 @@ async function apiCall(endpoint, method = 'GET', body = null, isFormData = false
 // ==========================================
 let dbModules = [];
 let editingModuleId = null;
+let currentLanguageSessionId = null; // Active language session filter (null = default/no session)
+let moduleLanguageSessions = []; // Cached sessions for current module
+
+const LOCALE_FLAGS = {
+    'en-US': '🇬🇧', 'pt-BR': '🇧🇷', 'es-ES': '🇪🇸', 'it-IT': '🇮🇹',
+    'fr-FR': '🇫🇷', 'ro-RO': '🇷🇴', 'de-DE': '🇩🇪', 'sq-AL': '🇦🇱',
+    'el-GR': '🇬🇷', 'ru-RU': '🇷🇺'
+};
+const LOCALE_LABELS = {
+    'en-US': 'English', 'pt-BR': 'Português', 'es-ES': 'Español', 'it-IT': 'Italiano',
+    'fr-FR': 'Français', 'ro-RO': 'Română', 'de-DE': 'Deutsch', 'sq-AL': 'Shqip',
+    'el-GR': 'Ελληνικά', 'ru-RU': 'Русский'
+};
 
 // ==========================================
 // BANCO DE MÓDULOS (SELETOR)
@@ -148,13 +161,13 @@ function renderAttachedModules() {
             <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0; pointer-events: none;"></div>
 
             <div style="position: relative; z-index: 10; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                <span style="background: rgba(255,255,255,0.2); color: #fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; backdrop-filter: blur(4px);">MODULE ${index + 1}</span>
+                <span style="background: rgba(255,255,255,0.2); color: #fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; backdrop-filter: blur(4px);">${window.t ? window.t('courseBuilder.module', 'MODULE') : 'MODULE'} ${index + 1}</span>
                 <button onclick="event.stopPropagation(); removeModuleFromCourse(${m.id})" style="background:rgba(255,255,255,0.2); border:none; color:#ef4444; padding: 4px 8px; border-radius: 4px; cursor:pointer; backdrop-filter: blur(4px);" title="Remove from Track"><i class="fas fa-trash"></i></button>
             </div>
 
             <div style="position: relative; z-index: 10; margin-top: auto;">
                 <h3 style="margin:0 0 5px 0; font-size:1.2rem; color: ${color}; font-family: ${font};">${m.title}</h3>
-                <p style="margin:0; font-size:0.85rem; color: rgba(255,255,255,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || 'No description'}</p>
+                <p style="margin:0; font-size:0.85rem; color: rgba(255,255,255,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.content || window.t ? window.t('courseBuilder.noDescription', 'No description') : 'No description'}</p>
                 <div style="display:flex; gap:10px; margin-top:10px; font-size:0.8rem; color:rgba(255,255,255,0.6);">
                     <span title="Videos"><i class="fas fa-video"></i> ${m.videos ? m.videos.length : 0}</span>
                     <span title="Documents"><i class="fas fa-file-alt"></i> ${m.documents ? m.documents.length : 0}</span>
@@ -233,7 +246,7 @@ async function openModuleEditor(moduleId = null) {
     document.getElementById('active-module-editor').style.display = 'block';
 
     if (!moduleId) {
-        document.getElementById('editor-title').innerText = 'Create New Module';
+        document.getElementById('editor-title').innerText = window.t ? window.t('courseBuilder.createNewModule', 'Create New Module') : 'Create New Module';
         try {
             const newModule = await apiCall('/modules', 'POST', {
                 title: 'New Module',
@@ -293,9 +306,9 @@ async function openModuleEditor(moduleId = null) {
             document.getElementById('active-module-editor').style.display = 'none';
         }
     } else {
-        document.getElementById('editor-title').innerText = 'Edit Module';
+        document.getElementById('editor-title').innerText = window.t ? window.t('courseBuilder.editModule', 'Edit Module') : 'Edit Module';
         document.getElementById('btn-delete-module').style.display = 'block';
-        loadModuleData(moduleId);
+        await loadModuleData(moduleId);
     }
 
     setTimeout(() => {
@@ -338,15 +351,27 @@ async function loadModuleData(id) {
         document.getElementById('m-titleFont').value = module.titleFont || 'inherit';
         document.getElementById('m-textColor').value = module.textColor || '#ffffff';
 
-        // Videos
-        renderVideos(module.videos || []);
+        // Language Sessions
+        moduleLanguageSessions = module.languageSessions || [];
+        // Preserve current session if it still exists, otherwise reset to default
+        if (currentLanguageSessionId !== null) {
+            const stillExists = moduleLanguageSessions.some(s => s.id === currentLanguageSessionId);
+            if (!stillExists) currentLanguageSessionId = null;
+        }
+        renderLanguageSessionTabs();
 
-        // Docs
+        // Filter content by current session (videos and quizzes only — documents are shared globally)
+        const filteredVideos = filterBySession(module.videos || []);
+        const filteredQuizzes = filterBySession(module.quizzes || (module.quiz ? [module.quiz] : []));
+
+        // Videos
+        renderVideos(filteredVideos);
+
+        // Docs (shared across all sessions — no filtering)
         renderDocs(module.documents || []);
 
         // Quizzes
-        const quizzes = module.quizzes || (module.quiz ? [module.quiz] : []);
-        renderQuizzes(quizzes);
+        renderQuizzes(filteredQuizzes);
 
         // Update the cover preview based on loaded data
         updateCoverPreview();
@@ -357,13 +382,521 @@ async function loadModuleData(id) {
             if (localMod) {
                 localMod.videos = module.videos || [];
                 localMod.documents = module.documents || [];
-                localMod.quizzes = quizzes;
+                localMod.quizzes = module.quizzes || (module.quiz ? [module.quiz] : []);
                 if (typeof renderAttachedModules === 'function') renderAttachedModules();
             }
         }
 
     } catch (error) {
         alert('Error loading module: ' + error.message);
+    }
+}
+
+// --- LANGUAGE SESSION MANAGEMENT ---
+
+function filterBySession(items) {
+    if (!items) return [];
+    return items.filter(item => {
+        if (currentLanguageSessionId === null) {
+            return !item.languageSessionId;
+        }
+        return item.languageSessionId === currentLanguageSessionId;
+    });
+}
+
+// Flag image URLs (high-quality European-priority from flagcdn)
+const LOCALE_FLAG_IMG = {
+    'en-US': 'https://flagcdn.com/w80/gb.png',
+    'pt-BR': 'https://flagcdn.com/w80/pt.png',
+    'es-ES': 'https://flagcdn.com/w80/es.png',
+    'it-IT': 'https://flagcdn.com/w80/it.png',
+    'fr-FR': 'https://flagcdn.com/w80/fr.png',
+    'ro-RO': 'https://flagcdn.com/w80/ro.png',
+    'de-DE': 'https://flagcdn.com/w80/de.png',
+    'sq-AL': 'https://flagcdn.com/w80/al.png',
+    'el-GR': 'https://flagcdn.com/w80/gr.png',
+    'ru-RU': 'https://flagcdn.com/w80/ru.png'
+};
+
+function renderLanguageSessionTabs() {
+    const editorDiv = document.getElementById('active-module-editor');
+    if (!editorDiv) return;
+
+    // 1. Render Flags Container (Top Right - Outside)
+    let flagsContainer = document.getElementById('language-session-flags');
+    if (!flagsContainer) {
+        flagsContainer = document.createElement('div');
+        flagsContainer.id = 'language-session-flags';
+        // Absolute position to stick out the top right
+        flagsContainer.style.cssText = 'position:absolute; top:-37px; right:20px; display:flex; gap:6px; align-items:flex-end; z-index:10;';
+        editorDiv.appendChild(flagsContainer);
+    }
+
+    // Always show English (Implicit Base)
+    const isDefaultActive = currentLanguageSessionId === null;
+    let flagsHtml = `
+        <div onclick="switchLanguageSession(null)" 
+             style="display:flex; align-items:center; justify-content:center; width:52px; height:${isDefaultActive ? '40px' : '34px'};
+                    background:white; border:1px solid #e2e8f0; border-bottom:none; border-radius:8px 8px 0 0;
+                    cursor:pointer; transition:all 0.15s ease; position:relative; box-shadow:0 -2px 4px rgba(0,0,0,0.02);
+                    ${isDefaultActive ? 'border-top: 3px solid #cf982e; height: 38px; z-index:2;' : 'opacity:0.8;'}"
+             onmouseover="if(!${isDefaultActive}) this.style.opacity='1';"
+             onmouseout="if(!${isDefaultActive}) this.style.opacity='0.8';"
+             title="English (Default)">
+            <img src="${LOCALE_FLAG_IMG['en-US']}" alt="EN" style="width:30px; height:auto; border-radius:2px; object-fit:cover;">
+        </div>
+    `;
+
+    moduleLanguageSessions.forEach(session => {
+        const flagImg = LOCALE_FLAG_IMG[session.locale] || LOCALE_FLAG_IMG['en-US'];
+        const label = LOCALE_LABELS[session.locale] || session.locale;
+        const isActive = currentLanguageSessionId === session.id;
+
+        flagsHtml += `
+            <div style="position:relative; display:inline-flex;">
+                <div onclick="switchLanguageSession(${session.id})" 
+                     style="display:flex; align-items:center; justify-content:center; width:52px; height:${isActive ? '40px' : '34px'};
+                            background:white; border:1px solid #e2e8f0; border-bottom:none; border-radius:8px 8px 0 0;
+                            cursor:pointer; transition:all 0.15s ease; box-shadow:0 -2px 4px rgba(0,0,0,0.02);
+                            ${isActive ? 'border-top: 3px solid #cf982e; height: 38px; z-index:2;' : 'opacity:0.8;'}"
+                     onmouseover="if(!${isActive}) this.style.opacity='1';"
+                     onmouseout="if(!${isActive}) this.style.opacity='0.8';"
+                     title="${label}">
+                    <img src="${flagImg}" alt="${label}" style="width:30px; height:auto; border-radius:2px; object-fit:cover;">
+                </div>
+                <button onclick="event.stopPropagation(); deleteLanguageSession(${session.id}, '${session.locale}')" 
+                        style="position:absolute; top:-6px; right:-6px; background:#ef4444; color:white; border:none; border-radius:50%; 
+                               width:16px; height:16px; font-size:0.6rem; cursor:pointer; display:flex; align-items:center; 
+                               justify-content:center; line-height:1; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:3;"
+                        title="Remove ${label}">&times;</button>
+            </div>
+        `;
+    });
+
+    flagsContainer.innerHTML = flagsHtml;
+
+    // 2. Render Action Buttons Container (Inside editor, above content tabs)
+    let actionContainer = document.getElementById('language-action-controls');
+    if (!actionContainer) {
+        const contentTabsRow = editorDiv.querySelector('[style*="gap:30px"]');
+        if (!contentTabsRow) return;
+        actionContainer = document.createElement('div');
+        actionContainer.id = 'language-action-controls';
+        actionContainer.style.cssText = 'display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap; background:#f8fafc; padding:10px 15px; border-radius:8px; border:1px solid #e2e8f0;';
+        contentTabsRow.parentElement.insertBefore(actionContainer, contentTabsRow);
+    }
+
+    // Determine current language details
+    const currentLocale = currentLanguageSessionId === null ? 'en-US' : (moduleLanguageSessions.find(s => s.id === currentLanguageSessionId)?.locale || 'en-US');
+    const currentLabel = LOCALE_LABELS[currentLocale] || currentLocale;
+    const currentFlag = LOCALE_FLAG_IMG[currentLocale];
+
+    let actionHtml = `
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color:#64748b; font-size:0.85rem; font-weight:bold;">Current Session:</span>
+            <button onclick="showSwapLanguageModal()" style="display:flex; align-items:center; gap:6px; background:white; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; color:#1e293b; box-shadow:0 1px 2px rgba(0,0,0,0.05);" title="Change this session's language">
+                <img src="${currentFlag}" style="width:18px; border-radius:2px;"> ${currentLabel} <i class="fas fa-exchange-alt" style="margin-left:4px; color:#94a3b8; font-size:0.75rem;"></i>
+            </button>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="display:inline-flex; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <button onclick="showAddLanguageModal()"
+                    style="background:white; border:none; padding:8px 14px; cursor:pointer; color:#475569; font-weight:bold; font-size:0.85rem; border-right:1px solid #cbd5e1; display:flex; align-items:center; gap:6px;"
+                    title="Add a new empty language session">
+                <i class="fas fa-plus" style="color:#cf982e;"></i> Add extra language
+            </button>
+            <button id="btn-lang-options" onclick="showSessionOptionsDropdown(event)"
+                    style="background:white; border:none; padding:8px 12px; cursor:pointer; color:#475569; font-size:0.75rem;"
+                    title="Content Actions">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+    `;
+
+    actionContainer.innerHTML = actionHtml;
+
+    // Clean up old header button if exists
+    const oldHeaderBtn = document.getElementById('lang-add-btn-wrapper');
+    if (oldHeaderBtn) oldHeaderBtn.remove();
+}
+
+function switchLanguageSession(sessionId) {
+    currentLanguageSessionId = sessionId;
+    renderLanguageSessionTabs();
+
+    if (window.currentModuleData) {
+        const module = window.currentModuleData;
+        renderVideos(filterBySession(module.videos || []));
+        renderDocs(module.documents || []); // Documents are shared globally — no session filter
+        renderQuizzes(filterBySession(module.quizzes || []));
+    }
+}
+
+// --- ADD EXTRA LANGUAGE (MODAL) ---
+function showAddLanguageModal() {
+    const existingLocales = moduleLanguageSessions.map(s => s.locale);
+    const availableLocales = Object.keys(LOCALE_LABELS).filter(l => !existingLocales.includes(l));
+
+    if (availableLocales.length === 0) {
+        alert('All supported languages have been added already.');
+        return;
+    }
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lang-modal-backdrop';
+    backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.id = 'lang-picker-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:20px; min-width:300px; max-height:80vh; overflow-y:auto;';
+
+    let html = `<div style="font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;">Add Extra Language</div>`;
+    html += `<div style="margin-bottom:15px; color:#64748b; font-size:0.85rem;">Select a new language to create an empty session:</div>`;
+
+    availableLocales.forEach(locale => {
+        const flagImg = LOCALE_FLAG_IMG[locale] || '';
+        const label = LOCALE_LABELS[locale];
+        html += `<button onclick="addLanguageSession('${locale}')" 
+                    style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px 12px; border:1px solid #e2e8f0; background:white; cursor:pointer; border-radius:8px; font-size:0.95rem; color:#334155; margin-bottom:8px; transition:all 0.1s;" 
+                    onmouseover="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                    <img src="${flagImg}" style="width:28px; height:auto; border-radius:3px;"> ${label}
+                </button>`;
+    });
+
+    html += `<button onclick="closeLangModal()" style="width:100%; margin-top:10px; padding:10px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; color:#64748b; font-weight:bold;">Cancel</button>`;
+
+    modal.innerHTML = html;
+    backdrop.onclick = () => closeLangModal();
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+// --- SESSION OPTIONS DROPDOWN (DUPLICATE / COPY) ---
+function showSessionOptionsDropdown(event) {
+    event.stopPropagation();
+    const existing = document.getElementById('session-options-dropdown');
+    if (existing) { existing.remove(); return; }
+
+    const dropdown = document.createElement('div');
+    dropdown.id = 'session-options-dropdown';
+    dropdown.style.cssText = 'position:fixed; z-index:9999; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 25px rgba(0,0,0,0.15); padding:6px; min-width:260px;';
+
+    let html = `
+        <button onclick="showDuplicateToModal()" style="display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px; border:none; background:none; cursor:pointer; border-radius:6px; font-size:0.85rem; color:#334155;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
+            <i class="fas fa-copy" style="color:#cf982e; width:20px; text-align:center;"></i> Duplicate content to...
+        </button>
+        <button onclick="showCopyFromModal()" style="display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px; border:none; background:none; cursor:pointer; border-radius:6px; font-size:0.85rem; color:#334155;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
+            <i class="fas fa-download" style="color:#497aa7; width:20px; text-align:center;"></i> Copy content from...
+        </button>
+    `;
+
+    dropdown.innerHTML = html;
+    document.body.appendChild(dropdown);
+
+    const btn = document.getElementById('btn-lang-options');
+    const rect = btn.getBoundingClientRect();
+    dropdown.style.top = (rect.bottom + 5) + 'px';
+    dropdown.style.left = Math.min(rect.right - 260, window.innerWidth - 270) + 'px';
+
+    setTimeout(() => {
+        document.addEventListener('click', function closeDropdown(e) {
+            const dd = document.getElementById('session-options-dropdown');
+            if (dd && !dd.contains(e.target)) {
+                dd.remove();
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }, 50);
+}
+
+// --- SWAP LANGUAGE MODAL ---
+function showSwapLanguageModal() {
+    // English is null. If we are in English, we are changing the base content language?
+    // The base content doesn't have a languageSessionId. If we "swap" it, we actually move base content into a session and vice versa.
+    // To keep it simple, if current is null, alert that Base is implicitly English for now.
+    // Or we allow swapping. Let's allow swapping via API.
+    
+    const availableLocales = Object.keys(LOCALE_LABELS);
+    
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lang-modal-backdrop';
+    backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.id = 'lang-picker-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:20px; min-width:300px; max-height:80vh; overflow-y:auto;';
+
+    const currentLocale = currentLanguageSessionId === null ? 'en-US' : moduleLanguageSessions.find(s => s.id === currentLanguageSessionId).locale;
+
+    let html = `<div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;">Change Session Language</div>`;
+    html += `<div style="margin-bottom:15px; color:#64748b; font-size:0.85rem;">Select the new language for this session. If it already exists, they will be swapped.</div>`;
+
+    availableLocales.forEach(locale => {
+        if (locale === currentLocale) return;
+        const flagImg = LOCALE_FLAG_IMG[locale] || '';
+        const label = LOCALE_LABELS[locale];
+        html += `<button onclick="executeSwap('${locale}')" 
+                    style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px 12px; border:1px solid #e2e8f0; background:white; cursor:pointer; border-radius:8px; font-size:0.95rem; color:#334155; margin-bottom:8px; transition:all 0.1s;" 
+                    onmouseover="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                    <img src="${flagImg}" style="width:28px; height:auto; border-radius:3px;"> ${label}
+                </button>`;
+    });
+
+    html += `<button onclick="closeLangModal()" style="width:100%; margin-top:10px; padding:10px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; color:#64748b; font-weight:bold;">Cancel</button>`;
+
+    modal.innerHTML = html;
+    backdrop.onclick = () => closeLangModal();
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+// --- DUPLICATE TO MODAL (Shows ALL system languages) ---
+function showDuplicateToModal() {
+    const dd = document.getElementById('session-options-dropdown');
+    if (dd) dd.remove();
+
+    const existingLocales = moduleLanguageSessions.map(s => s.locale);
+    const availableLocales = Object.keys(LOCALE_LABELS).filter(l => !existingLocales.includes(l));
+
+    if (availableLocales.length === 0) {
+        alert('All supported languages have been added already.');
+        return;
+    }
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lang-modal-backdrop';
+    backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.id = 'lang-picker-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:20px; min-width:300px; max-height:80vh; overflow-y:auto;';
+
+    let html = `<div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;">Duplicate to...</div>`;
+    html += `<div style="margin-bottom:15px; color:#64748b; font-size:0.85rem;">Select language to create and copy current content to:</div>`;
+
+    availableLocales.forEach(locale => {
+        const flagImg = LOCALE_FLAG_IMG[locale] || '';
+        const label = LOCALE_LABELS[locale];
+        html += `<button onclick="executeDuplicate(${currentLanguageSessionId === null ? "'base'" : currentLanguageSessionId}, '${locale}')" 
+                    style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px 12px; border:1px solid #e2e8f0; background:white; cursor:pointer; border-radius:8px; font-size:0.95rem; color:#334155; margin-bottom:8px; transition:all 0.1s;" 
+                    onmouseover="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                    <img src="${flagImg}" style="width:28px; height:auto; border-radius:3px;"> ${label}
+                </button>`;
+    });
+
+    html += `<button onclick="closeLangModal()" style="width:100%; margin-top:10px; padding:10px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; color:#64748b; font-weight:bold;">Cancel</button>`;
+
+    modal.innerHTML = html;
+    backdrop.onclick = () => closeLangModal();
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+// --- COPY FROM MODAL (Shows ONLY existing languages in this module) ---
+function showCopyFromModal() {
+    const dd = document.getElementById('session-options-dropdown');
+    if (dd) dd.remove();
+
+    // Source can be English (null) or any existing session, EXCEPT the current one
+    const sources = [];
+    if (currentLanguageSessionId !== null) {
+        sources.push({ id: null, locale: 'en-US' });
+    }
+    moduleLanguageSessions.forEach(s => {
+        if (s.id !== currentLanguageSessionId) {
+            sources.push({ id: s.id, locale: s.locale });
+        }
+    });
+
+    if (sources.length === 0) {
+        alert('There are no other languages in this module to copy from.');
+        return;
+    }
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lang-modal-backdrop';
+    backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.id = 'lang-picker-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:20px; min-width:300px; max-height:80vh; overflow-y:auto;';
+
+    let html = `<div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;">Copy content from...</div>`;
+    html += `<div style="margin-bottom:15px; color:#64748b; font-size:0.85rem;">Select an existing language to copy content into this session:</div>`;
+
+    sources.forEach(src => {
+        const flagImg = LOCALE_FLAG_IMG[src.locale] || '';
+        const label = LOCALE_LABELS[src.locale];
+        html += `<button onclick="executeCopyFrom(${src.id === null ? "'base'" : src.id})" 
+                    style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px 12px; border:1px solid #e2e8f0; background:white; cursor:pointer; border-radius:8px; font-size:0.95rem; color:#334155; margin-bottom:8px; transition:all 0.1s;" 
+                    onmouseover="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.05)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                    <img src="${flagImg}" style="width:28px; height:auto; border-radius:3px;"> ${label}
+                </button>`;
+    });
+
+    html += `<button onclick="closeLangModal()" style="width:100%; margin-top:10px; padding:10px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; color:#64748b; font-weight:bold;">Cancel</button>`;
+
+    modal.innerHTML = html;
+    backdrop.onclick = () => closeLangModal();
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+function closeLangModal() {
+    const m = document.getElementById('lang-picker-modal');
+    const b = document.getElementById('lang-modal-backdrop');
+    if (m) m.remove();
+    if (b) b.remove();
+}
+
+// --- API ACTIONS ---
+
+async function executeSwap(targetLocale) {
+    if (!editingModuleId) return;
+    if (currentLanguageSessionId === null) {
+        alert("The base (English) session cannot be swapped directly yet. Please swap from the target session instead.");
+        closeLangModal();
+        return;
+    }
+    closeLangModal();
+
+    try {
+        await apiCall(`/modules/${editingModuleId}/language-sessions/${currentLanguageSessionId}/swap-locale`, 'PATCH', { targetLocale });
+        await loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Error swapping language: ' + error.message);
+    }
+}
+
+async function addLanguageSession(locale) {
+    if (!editingModuleId) return;
+    closeLangModal();
+
+    try {
+        const session = await apiCall(`/modules/${editingModuleId}/language-sessions`, 'POST', { locale });
+        const savedSessionId = session.id;
+        await loadModuleData(editingModuleId);
+        currentLanguageSessionId = savedSessionId;
+        renderLanguageSessionTabs();
+        switchLanguageSession(savedSessionId);
+    } catch (error) {
+        alert('Error creating language session: ' + error.message);
+    }
+}
+
+async function executeDuplicate(sourceSessionId, targetLocale) {
+    if (!editingModuleId) return;
+    closeLangModal();
+
+    try {
+        // sourceSessionId can be 'base' (for base English) or a numeric session ID
+        const sourceParam = sourceSessionId === 'base' ? 'base' : sourceSessionId;
+        const result = await apiCall(`/modules/${editingModuleId}/language-sessions/${sourceParam}/duplicate-to`, 'POST', { targetLocale });
+
+        await loadModuleData(editingModuleId);
+        if (result && result.id) {
+            currentLanguageSessionId = result.id;
+            renderLanguageSessionTabs();
+            switchLanguageSession(result.id);
+        }
+    } catch (error) {
+        alert('Error duplicating content: ' + error.message);
+    }
+}
+
+async function executeCopyFrom(sourceSessionId) {
+    if (!editingModuleId || currentLanguageSessionId === null) {
+        if (currentLanguageSessionId === null) alert("Cannot copy INTO the base English session.");
+        return;
+    }
+    closeLangModal();
+
+    // Check if current session has existing content (videos or quizzes)
+    const module = window.currentModuleData;
+    const currentVideos = filterBySession(module?.videos || []);
+    const currentQuizzes = filterBySession(module?.quizzes || []);
+    const hasExistingContent = currentVideos.length > 0 || currentQuizzes.length > 0;
+
+    const sourceParam = sourceSessionId === 'base' ? 'base' : sourceSessionId;
+
+    if (hasExistingContent) {
+        // Show Replace/Merge choice modal
+        showCopyModeModal(sourceParam, currentVideos.length, currentQuizzes.length);
+    } else {
+        // Session is empty — just copy directly (merge mode, since there's nothing to replace)
+        try {
+            await apiCall(`/modules/${editingModuleId}/language-sessions/${currentLanguageSessionId}/copy-from/${sourceParam}`, 'POST', { mode: 'merge' });
+            await loadModuleData(editingModuleId);
+        } catch (error) {
+            alert('Error copying content: ' + error.message);
+        }
+    }
+}
+
+function showCopyModeModal(sourceParam, videoCount, quizCount) {
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lang-modal-backdrop';
+    backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.id = 'lang-picker-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:24px; min-width:380px; max-width:440px;';
+
+    modal.innerHTML = `
+        <div style="font-weight:bold; color:#1e293b; margin-bottom:8px; font-size:1.1rem;"><i class="fas fa-exclamation-triangle" style="color:#f59e0b; margin-right:8px;"></i>Content Already Exists</div>
+        <div style="margin-bottom:18px; color:#64748b; font-size:0.9rem; line-height:1.5;">
+            This session already has <strong>${videoCount} video(s)</strong> and <strong>${quizCount} quiz(zes)</strong>. How would you like to proceed?
+        </div>
+        <button onclick="executeCopyWithMode('${sourceParam}', 'replace')" 
+                style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:14px 16px; border:1px solid #fecaca; background:#fff5f5; cursor:pointer; border-radius:10px; font-size:0.95rem; color:#991b1b; margin-bottom:10px; transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#ef4444'; this.style.boxShadow='0 2px 8px rgba(239,68,68,0.15)';" 
+                onmouseout="this.style.borderColor='#fecaca'; this.style.boxShadow='none';">
+            <i class="fas fa-sync-alt" style="font-size:1.2rem; color:#ef4444;"></i>
+            <div>
+                <strong style="display:block; margin-bottom:2px;">Replace</strong>
+                <span style="font-size:0.8rem; color:#64748b;">Remove existing content and replace with copied content</span>
+            </div>
+        </button>
+        <button onclick="executeCopyWithMode('${sourceParam}', 'merge')" 
+                style="display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:14px 16px; border:1px solid #bbf7d0; background:#f0fdf4; cursor:pointer; border-radius:10px; font-size:0.95rem; color:#166534; margin-bottom:10px; transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#22c55e'; this.style.boxShadow='0 2px 8px rgba(34,197,94,0.15)';" 
+                onmouseout="this.style.borderColor='#bbf7d0'; this.style.boxShadow='none';">
+            <i class="fas fa-layer-group" style="font-size:1.2rem; color:#22c55e;"></i>
+            <div>
+                <strong style="display:block; margin-bottom:2px;">Merge</strong>
+                <span style="font-size:0.8rem; color:#64748b;">Add copied content alongside existing content</span>
+            </div>
+        </button>
+        <button onclick="closeLangModal()" style="width:100%; margin-top:6px; padding:10px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; color:#64748b; font-weight:bold;">Cancel</button>
+    `;
+
+    backdrop.onclick = () => closeLangModal();
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+}
+
+async function executeCopyWithMode(sourceParam, mode) {
+    closeLangModal();
+    try {
+        await apiCall(`/modules/${editingModuleId}/language-sessions/${currentLanguageSessionId}/copy-from/${sourceParam}`, 'POST', { mode });
+        await loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Error copying content: ' + error.message);
+    }
+}
+
+async function deleteLanguageSession(sessionId, locale) {
+    const label = LOCALE_LABELS[locale] || locale;
+    if (!confirm(`Remove the ${label} language session? All content specific to this language will be removed.`)) return;
+
+    try {
+        await apiCall(`/modules/${editingModuleId}/language-sessions/${sessionId}`, 'DELETE');
+        if (currentLanguageSessionId === sessionId) {
+            currentLanguageSessionId = null;
+        }
+        await loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Error deleting language session: ' + error.message);
     }
 }
 
@@ -558,7 +1091,9 @@ async function submitAddVideo() {
         if (window.editingVideoId) {
             await apiCall(`/modules/${editingModuleId}/videos/${window.editingVideoId}`, 'PUT', { title, url });
         } else {
-            await apiCall(`/modules/${editingModuleId}/videos`, 'POST', { title, url });
+            const body = { title, url };
+            if (currentLanguageSessionId) body.languageSessionId = currentLanguageSessionId;
+            await apiCall(`/modules/${editingModuleId}/videos`, 'POST', body);
         }
 
         hideAddVideoForm();
@@ -860,10 +1395,9 @@ async function handleDocUpload(e) {
             const docId = docRes.id;
 
             // 2. Vincular o Documento ao Módulo
-            await apiCall(`/modules/${editingModuleId}/documents`, 'POST', {
-                documentId: docId,
-                title: file.name
-            });
+            // Documents are shared globally across all language sessions — never send languageSessionId
+            const docLinkBody = { documentId: docId, title: file.name };
+            await apiCall(`/modules/${editingModuleId}/documents`, 'POST', docLinkBody);
         }
 
         if (btn) {
@@ -975,7 +1509,7 @@ function setDocFilter(filter) {
     });
 
     if(window.currentModuleData && window.currentModuleData.documents) {
-        renderDocs(window.currentModuleData.documents);
+        renderDocs(window.currentModuleData.documents); // Documents are shared globally — always render all
     }
 }
 
@@ -1168,7 +1702,9 @@ async function showCreateQuizForm() {
         const title = prompt('Enter the title for the new Quiz:', defaultTitle);
         if (title === null || title.trim() === '') return;
 
-        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: title.trim() });
+        const quizBody = { title: title.trim() };
+        if (currentLanguageSessionId) quizBody.languageSessionId = currentLanguageSessionId;
+        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', quizBody);
         loadModuleData(editingModuleId);
     } catch (err) {
         alert('Error creating quiz: ' + err.message);
@@ -1220,7 +1756,9 @@ function editQuestion(quizId, questionId) {
 async function createEmptyQuiz() {
     if (!editingModuleId) return;
     try {
-        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Module Quiz' });
+        const quizBody = { title: 'Module Quiz' };
+        if (currentLanguageSessionId) quizBody.languageSessionId = currentLanguageSessionId;
+        await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', quizBody);
         loadModuleData(editingModuleId);
     } catch (error) {
         alert('Error creating quiz: ' + error.message);
@@ -1236,7 +1774,9 @@ async function submitManualQuizQuestion() {
     if (!currentQuizId) {
         // Create quiz first
         try {
-            const newQuiz = await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', { title: 'Module Quiz' });
+            const quizCreateBody = { title: 'Module Quiz' };
+            if (currentLanguageSessionId) quizCreateBody.languageSessionId = currentLanguageSessionId;
+            const newQuiz = await apiCall(`/modules/${editingModuleId}/quizzes`, 'POST', quizCreateBody);
             currentQuizId = newQuiz.id;
             window.currentModuleQuizId = currentQuizId;
         } catch (error) {
@@ -1371,9 +1911,10 @@ function renderQuizzes(quizzes) {
                         </h4>
                         <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; margin-top:5px; font-weight:bold;">${questions.length} questions</span>
                     </div>
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Question</button>
                         <button onclick="showGenerateAiQuizForm()" style="padding: 8px 12px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-magic"></i> Generate with AI</button>
+                        ${currentLanguageSessionId ? `<button onclick="translateQuizToSession(${quiz.id})" style="padding: 8px 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;" title="Translate this quiz using AI"><i class="fas fa-language"></i> Translate Quiz</button>` : ''}
                         <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Delete Entire Quiz"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -1455,5 +1996,34 @@ async function deleteQuestion(questionId) {
         loadModuleData(editingModuleId);
     } catch (err) {
         alert('Error deleting: ' + err.message);
+    }
+}
+
+// --- TRANSLATE QUIZ ---
+async function translateQuizToSession(quizId) {
+    if (!editingModuleId || !currentLanguageSessionId) return;
+
+    const session = moduleLanguageSessions.find(s => s.id === currentLanguageSessionId);
+    if (!session) return;
+
+    const label = LOCALE_LABELS[session.locale] || session.locale;
+    if (!confirm(`Translate this quiz to ${label} using AI?\nA new translated quiz will be created in this language session.`)) return;
+
+    try {
+        const btn = event.target.closest('button');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+            btn.disabled = true;
+        }
+
+        await apiCall(`/modules/${editingModuleId}/quizzes/${quizId}/translate`, 'POST', {
+            targetLocale: session.locale,
+            targetSessionId: currentLanguageSessionId
+        });
+
+        alert(`Quiz translated to ${label} successfully!`);
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Error translating quiz: ' + error.message);
     }
 }

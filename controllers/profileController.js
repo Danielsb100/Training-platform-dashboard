@@ -138,24 +138,45 @@ const getMyProfile = async (req, res) => {
 const updateMyProfile = async (req, res) => {
   try {
     const data = buildProfileUpdateData(req.body);
-    if (Object.keys(data).length === 0) {
+    const prefData = req.body.preferences ? buildPreferenceUpdateData(req.body.preferences) : null;
+    const consentPayload = req.body.consents ? buildConsentPayload(req.body.consents) : null;
+
+    if (Object.keys(data).length === 0 && !prefData && !consentPayload) {
       return sendError(res, {
         status: 400,
         code: 'PROFILE_UPDATE_VALIDATION_ERROR',
-        message: 'No profile fields were provided.'
+        message: 'No profile, preference, or consent fields were provided.'
       });
     }
 
-    await prisma.userProfile.upsert({
-      where: { userId: req.user.id },
-      update: data,
-      create: {
-        userId: req.user.id,
-        ...PROFILE_DEFAULTS,
-        displayName: req.user.username,
-        ...data
-      }
-    });
+    if (Object.keys(data).length > 0) {
+      await prisma.userProfile.upsert({
+        where: { userId: req.user.id },
+        update: data,
+        create: {
+          userId: req.user.id,
+          ...PROFILE_DEFAULTS,
+          displayName: req.user.username,
+          ...data
+        }
+      });
+    }
+
+    if (prefData && Object.keys(prefData).length > 0) {
+      await prisma.userPreference.upsert({
+        where: { userId: req.user.id },
+        update: prefData,
+        create: {
+          userId: req.user.id,
+          ...PREFERENCE_DEFAULTS,
+          ...prefData
+        }
+      });
+    }
+
+    if (consentPayload && Object.keys(consentPayload).length > 0) {
+      await upsertConsentRecords(req.user.id, consentPayload, 'dashboard');
+    }
 
     const identity = await loadUserIdentity(req.user.id);
     return sendSuccess(res, {

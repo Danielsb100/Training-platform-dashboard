@@ -25,7 +25,8 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             id: v.id,
             title: v.title,
             url: v.url,
-            order: v.order
+            order: v.order,
+            languageSessionId: v.languageSessionId || null
         })).sort((a, b) => a.order - b.order),
         documents: (module.documents || []).map(d => ({
             id: d.id,
@@ -38,6 +39,7 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             id: qz.id,
             title: qz.title,
             order: qz.order,
+            languageSessionId: qz.languageSessionId || null,
             questions: (qz.questions || []).map(q => ({
                 id: q.id,
                 text: q.text,
@@ -48,7 +50,13 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
                     ...(format === 'edit' && (userRole === 'MASTER' || userRole === 'ADMIN') ? { isCorrect: o.isCorrect } : {})
                 }))
             })).sort((a, b) => a.order - b.order)
-        })).sort((a, b) => a.order - b.order)
+        })).sort((a, b) => a.order - b.order),
+        languageSessions: (module.languageSessions || []).map(ls => ({
+            id: ls.id,
+            locale: ls.locale,
+            isDefault: ls.isDefault,
+            _count: ls._count || {}
+        }))
     };
     console.log(`[DEBUG] Formatted module ${module.id}: v=${formatted.videos.length}, d=${formatted.documents.length}, q=${formatted.quizzes.length}`);
 
@@ -183,6 +191,12 @@ const getModuleById = async (req, res) => {
                 },
                 quizzes: {
                     include: { questions: { include: { options: true } } }
+                },
+                languageSessions: {
+                    include: {
+                        _count: { select: { videos: true, quizzes: true } }
+                    },
+                    orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
                 },
                 courseModules: {
                     include: {

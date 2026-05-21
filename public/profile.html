@@ -36,7 +36,7 @@
                 <span id="popup-unread-badge" style="display:none; background:#ef4444; color:white; padding:2px 8px; border-radius:20px; font-size:12px; font-weight:bold;"></span>
             </div>
             <div id="popup-notification-list" style="max-height:300px; overflow-y:auto; padding:10px 0;">
-                <div style="padding:15px; color:#64748b; text-align:center;">Loading...</div>
+                <div data-i18n="common.loading" style="padding:15px; color:#64748b; text-align:center;">Loading...</div>
             </div>
         </div>
 
@@ -45,13 +45,13 @@
             <header class="top-header">
                 <div class="logo">
                     <i class="fas fa-graduation-cap"></i>
-                    <span>PLATAFORMA</span>
+                    <span data-i18n="marketplace.platformName">PLATAFORMA</span>
                 </div>
-                <div style="flex:1; border-left:1px solid rgba(255,255,255,0.3); margin-left:20px; padding-left:20px; font-size:14px; opacity:0.8;">
+                <div style="flex:1; border-left:1px solid rgba(255,255,255,0.3); margin-left:20px; padding-left:20px; font-size:14px; opacity:0.8;" data-i18n="marketplace.platformSubtitle">
                     Building Knowledge Through Training and Inclusion
                 </div>
                 <div class="top-links">
-                    <a href="marketplace.html" class="btn-outline">Back to Home</a>
+                    <a href="marketplace.html" class="btn-outline" data-i18n="nav.backToHome">Back to Home</a>
                 </div>
             </header>
 
@@ -60,12 +60,12 @@
                 <div class="profile-info-card" style="flex-wrap: wrap;">
                     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Photo" class="profile-photo" style="background:#e2e8f0;">
                     <div class="profile-details">
-                        <h2>Loading...</h2>
+                        <h2 data-i18n="common.loading">Loading...</h2>
                         <p class="profile-role" style="text-transform: uppercase;">...</p>
                         <p class="profile-bio">...</p>
                         <div class="profile-stats">
-                            <div class="stat"><span id="pages-count">0</span> Creations</div>
-                            <div class="stat"><span>4.8</span> Average Rating</div>
+                            <div class="stat"><span id="pages-count">0</span> <span data-i18n="profile.creationsCount">Creations</span></div>
+                            <div class="stat"><span>4.8</span> <span data-i18n="profile.averageRating">Average Rating</span></div>
                         </div>
                     </div>
                     
@@ -73,23 +73,23 @@
                         <div style="display:flex; align-items:flex-start; gap:15px;">
                             <i class="fas fa-map-marker-alt" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
                             <div>
-                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Location</div>
-                                <div id="header-location" style="font-size:13px; font-weight:600; color:var(--text-primary);">Not specified</div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;" data-i18n="profile.location">Location</div>
+                                <div id="header-location" style="font-size:13px; font-weight:600; color:var(--text-primary);" data-i18n="profile.notSpecified">Not specified</div>
                             </div>
                         </div>
                         <div style="display:flex; align-items:flex-start; gap:15px;">
                             <i class="fas fa-language" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
                             <div>
-                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Languages</div>
-                                <div id="header-languages" style="font-size:13px; font-weight:600; color:var(--text-primary);">Not specified</div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;" data-i18n="profile.languages">Languages</div>
+                                <div id="header-languages" style="font-size:13px; font-weight:600; color:var(--text-primary);" data-i18n="profile.notSpecified">Not specified</div>
                             </div>
                         </div>
                         <div style="display:flex; align-items:flex-start; gap:15px;">
                             <i class="fas fa-tags" style="color:var(--primary-color, #cf982e); font-size: 1.1rem; width:24px; text-align:center; margin-top:2px;"></i>
                             <div>
-                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Top Skills</div>
+                                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;" data-i18n="profile.topSkills">Top Skills</div>
                                 <div id="header-skills" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
-                                    <span style="font-size:12px; color:#64748b; font-style:italic;">None</span>
+                                    <span style="font-size:12px; color:#64748b; font-style:italic;" data-i18n="profile.none">None</span>
                                 </div>
                             </div>
                         </div>
@@ -99,13 +99,13 @@
                 <div id="ai-tips-panel" style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin:30px 60px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px; flex-wrap:wrap;">
                         <div>
-                            <h3 style="color:#1e293b; font-size:1.4rem; margin:0; display:flex; align-items:center; gap:10px;"><i class="fas fa-wand-magic-sparkles" style="color:#cf982e;"></i> AI Tips</h3>
-                            <p style="color:#64748b; margin:6px 0 0 0; font-size:0.95rem;">Personal study guidance based on your course activity, materials, and quiz scores.</p>
+                            <h3 style="color:#1e293b; font-size:1.4rem; margin:0; display:flex; align-items:center; gap:10px;"><i class="fas fa-wand-magic-sparkles" style="color:#cf982e;"></i> <span data-i18n="profile.aiTips">AI Tips</span></h3>
+                            <p style="color:#64748b; margin:6px 0 0 0; font-size:0.95rem;" data-i18n="profile.aiTipsSubtitle">Personal study guidance based on your course activity, materials, and quiz scores.</p>
                         </div>
                         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <span id="ai-tips-count" style="background:#f1f5f9; color:#475569; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 tips</span>
-                            <span id="ai-tips-warning-count" style="background:#fff7ed; color:#c2410c; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 attention</span>
-                            <button type="button" id="btn-refresh-ai-tips" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">Refresh tips</button>
+                            <span id="ai-tips-count" style="background:#f1f5f9; color:#475569; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 <span data-i18n="profile.tips">tips</span></span>
+                            <span id="ai-tips-warning-count" style="background:#fff7ed; color:#c2410c; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 <span data-i18n="profile.attention">attention</span></span>
+                            <button type="button" id="btn-refresh-ai-tips" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;" data-i18n="profile.refreshTips">Refresh tips</button>
                         </div>
                     </div>
                     <div id="ai-tips-list" style="display:flex; flex-direction:column; gap:12px;">
@@ -115,18 +115,18 @@
                 <!-- Agenda Operacional (Integrated) -->
                 <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin:30px 60px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
-                        <h3 style="color:#1e293b; font-size:1.4rem; margin:0;">Operational Agenda</h3>
+                        <h3 style="color:#1e293b; font-size:1.4rem; margin:0;" data-i18n="profile.operationalAgenda">Operational Agenda</h3>
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <span id="ops-unread-count" style="background:#f1f5f9; color:#475569; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 unread</span>
-                            <span id="ops-urgent-count" style="background:#fee2e2; color:#ef4444; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 urgent</span>
-                            <button type="button" id="btn-mark-notifications-read" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;">Mark read</button>
+                            <span id="ops-unread-count" style="background:#f1f5f9; color:#475569; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 <span data-i18n="profile.unread">unread</span></span>
+                            <span id="ops-urgent-count" style="background:#fee2e2; color:#ef4444; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold;">0 <span data-i18n="profile.urgent">urgent</span></span>
+                            <button type="button" id="btn-mark-notifications-read" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold;" data-i18n="profile.markRead">Mark read</button>
                         </div>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; grid-column: 1 / -1;">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">
-                                <h4 style="margin:0; font-size:14px; color:#1e293b;">Automatic Reminders</h4>
-                                <span id="ops-reminders-meta" style="font-size:12px; color:#64748b;">0 reminders</span>
+                                <h4 style="margin:0; font-size:14px; color:#1e293b;" data-i18n="profile.automaticReminders">Automatic Reminders</h4>
+                                <span id="ops-reminders-meta" style="font-size:12px; color:#64748b;">0 <span data-i18n="profile.reminders">reminders</span></span>
                             </div>
                             <div id="operations-reminders" style="display:flex; flex-direction:column; gap:10px;">
                                 <p style="font-size:13px; color:#64748b;">No open automatic reminders.</p>
@@ -135,8 +135,8 @@
 
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">
-                                <h4 style="margin:0; font-size:14px; color:#1e293b;">Inbox</h4>
-                                <span id="ops-inbox-meta" style="font-size:12px; color:#64748b;">0 itens</span>
+                                <h4 style="margin:0; font-size:14px; color:#1e293b;" data-i18n="profile.inbox">Inbox</h4>
+                                <span id="ops-inbox-meta" style="font-size:12px; color:#64748b;">0 <span data-i18n="profile.items">items</span></span>
                             </div>
                             <div id="notifications-inbox" style="display:flex; flex-direction:column; gap:10px;">
                                 <p style="font-size:13px; color:#64748b;">No messages.</p>
@@ -145,8 +145,8 @@
 
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">
-                                <h4 style="margin:0; font-size:14px; color:#1e293b;">Do Today</h4>
-                                <span id="ops-today-meta" style="font-size:12px; color:#64748b;">0 pending</span>
+                                <h4 style="margin:0; font-size:14px; color:#1e293b;" data-i18n="profile.doToday">Do Today</h4>
+                                <span id="ops-today-meta" style="font-size:12px; color:#64748b;">0 <span data-i18n="profile.pendingLabel">pending</span></span>
                             </div>
                             <div id="operations-today" style="display:flex; flex-direction:column; gap:10px;">
                                 <p style="font-size:13px; color:#64748b;">Nada planejado.</p>
@@ -155,8 +155,8 @@
 
                         <div style="background:#fff1f2; border:1px solid #fecaca; border-radius:8px; padding:15px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #fecaca; padding-bottom:5px; margin-bottom:10px;">
-                                <h4 style="margin:0; font-size:14px; color:#be123c;">Urgent</h4>
-                                <span id="ops-urgent-meta" style="font-size:12px; color:#be123c;">0 blocks</span>
+                                <h4 style="margin:0; font-size:14px; color:#be123c;" data-i18n="profile.urgent">Urgent</h4>
+                                <span id="ops-urgent-meta" style="font-size:12px; color:#be123c;">0 <span data-i18n="profile.blocks">blocks</span></span>
                             </div>
                             <div id="operations-urgent" style="display:flex; flex-direction:column; gap:10px;">
                                 <p style="font-size:13px; color:#be123c;">No blocks.</p>
@@ -165,8 +165,8 @@
 
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;">
-                                <h4 style="margin:0; font-size:14px; color:#1e293b;">Weekly Goals</h4>
-                                <span id="ops-week-meta" style="font-size:12px; color:#64748b;">0 objetivos</span>
+                                <h4 style="margin:0; font-size:14px; color:#1e293b;" data-i18n="profile.weeklyGoals">Weekly Goals</h4>
+                                <span id="ops-week-meta" style="font-size:12px; color:#64748b;">0 <span data-i18n="profile.objectives">objectives</span></span>
                             </div>
                             <div id="operations-week" style="display:flex; flex-direction:column; gap:10px;">
                                 <p style="font-size:13px; color:#64748b;">Defina suas metas.</p>
@@ -180,12 +180,12 @@
             <section id="pane-creations" style="display:none; padding:40px 60px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                     <div style="display:flex; gap:15px;" class="creations-tabs">
-                        <button class="btn-tab active" onclick="switchCreationTab('courses')" id="tab-creations-courses" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:#1e293b; color:white; border:none;">My Courses</button>
-                        <button class="btn-tab" onclick="switchCreationTab('channels')" id="tab-creations-channels" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:transparent; color:#64748b; border:1px solid #cbd5e1;">My Channels</button>
+                        <button class="btn-tab active" onclick="switchCreationTab('courses')" id="tab-creations-courses" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:#1e293b; color:white; border:none;" data-i18n="profile.myCourses">My Courses</button>
+                        <button class="btn-tab" onclick="switchCreationTab('channels')" id="tab-creations-channels" style="padding:10px 25px; border-radius:30px; font-weight:bold; cursor:pointer; background:transparent; color:#64748b; border:1px solid #cbd5e1;" data-i18n="profile.myChannels">My Channels</button>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button id="creation-action-btn" onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> New Course</button>
-                        <button onclick="openExternalLinkModal()" class="btn-primary" style="background:#0f172a;"><i class="fas fa-link"></i> New Link</button>
+                        <button id="creation-action-btn" onclick="window.location.href='course_builder.html'" class="btn-primary" style="background:#497aa7;"><i class="fas fa-plus"></i> <span data-i18n="profile.newCourse">New Course</span></button>
+                        <button onclick="openExternalLinkModal()" class="btn-primary" style="background:#0f172a;"><i class="fas fa-link"></i> <span data-i18n="profile.newLink">New Link</span></button>
                     </div>
                 </div>
                 <div id="subpane-courses">
@@ -196,8 +196,8 @@
                 <div id="subpane-channels" style="display:none;">
                     <div id="empty-channels" style="text-align:center; padding:60px; background:white; border-radius:12px; border:1px dashed #cbd5e1;">
                         <i class="fas fa-tv" style="font-size:48px; color:#94a3b8; margin-bottom:15px; display:block;"></i>
-                        <h3>No channel created</h3>
-                        <button onclick="openChannelModal()" class="btn-primary" style="margin-top:20px;">Create First Channel</button>
+                        <h3 data-i18n="profile.noChannelCreated">No channel created</h3>
+                        <button onclick="openChannelModal()" class="btn-primary" style="margin-top:20px;" data-i18n="profile.createFirstChannel">Create First Channel</button>
                     </div>
                     <div id="channels-list" style="display:none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
                 </div>
@@ -208,21 +208,21 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:30px; flex-wrap:wrap;">
                     <div>
                         <h2 style="margin:0; font-family:'Inter', sans-serif; color:#1e293b; display:flex; align-items:center; gap:12px;"><i class="fas fa-sync-alt" style="color:#497aa7;"></i> Eurobot Sync</h2>
-                        <p style="margin:8px 0 0 0; color:#64748b; max-width:720px; line-height:1.5;">Manage the Training Platform knowledge-base connection and sync existing course videos, documents, quizzes, and module content to Eurobot.</p>
+                        <p style="margin:8px 0 0 0; color:#64748b; max-width:720px; line-height:1.5;"><span data-i18n="profile.eurobotSyncDesc">Manage the Training Platform knowledge-base connection and sync existing course videos, documents, quizzes, and module content to Eurobot.</span></p>
                     </div>
                 </div>
                 <div id="eurobot-sync-panel" style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; margin-bottom:24px; box-shadow:0 1px 3px rgba(15,23,42,0.04);">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
                         <div>
                             <h3 style="margin:0; color:#1e293b; font-size:1.15rem; display:flex; align-items:center; gap:10px;"><i class="fas fa-database" style="color:#497aa7;"></i> Eurobot Knowledge Sync</h3>
-                            <p style="margin:6px 0 0 0; color:#64748b; font-size:0.9rem; max-width:680px; line-height:1.45;">Sync existing course videos, documents, quizzes, and module content to the active Eurobot knowledge base.</p>
+                            <p style="margin:6px 0 0 0; color:#64748b; font-size:0.9rem; max-width:680px; line-height:1.45;"><span data-i18n="profile.eurobotSyncInfo">Sync existing course videos, documents, quizzes, and module content to the active Eurobot knowledge base.</span></p>
                         </div>
                         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <button type="button" id="btn-eurobot-ensure-default" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-plug"></i> Ensure KB</button>
-                            <button type="button" id="btn-eurobot-sync" style="background:#1e293b; border:1px solid #1e293b; color:white; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-rotate"></i> Sync now</button>
+                            <button type="button" id="btn-eurobot-ensure-default" style="background:white; border:1px solid #cbd5e1; color:#475569; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-plug"></i> <span data-i18n="profile.ensureKB">Ensure KB</span></button>
+                            <button type="button" id="btn-eurobot-sync" style="background:#1e293b; border:1px solid #1e293b; color:white; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-rotate"></i> <span data-i18n="profile.syncNow">Sync now</span></button>
                         </div>
                     </div>
-                    <div id="eurobot-sync-status" style="margin-top:16px; color:#64748b; font-size:0.9rem;">Loading Eurobot sync status...</div>
+                    <div id="eurobot-sync-status" style="margin-top:16px; color:#64748b; font-size:0.9rem;"><span data-i18n="profile.loadingSyncStatus">Loading Eurobot sync status...</span></div>
                     <div id="eurobot-sync-summary" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(105px, 1fr)); gap:10px; margin-top:14px;"></div>
                     <div id="eurobot-sync-items" style="margin-top:14px;"></div>
                 </div>
@@ -231,16 +231,16 @@
             <!-- Subscriptions Pane -->
             <section id="pane-subscriptions" style="display:none; padding:40px 60px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h2 style="margin:0; font-family:'Inter', sans-serif;">Subscribed Courses & Channels</h2>
+                    <h2 style="margin:0; font-family:'Inter', sans-serif;" data-i18n="profile.subscribedCourses">Subscribed Courses & Channels</h2>
                     <div class="filter-group" style="display:flex; gap:10px; background:#f1f5f9; padding:5px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <button onclick="filterSubscriptions('ALL')" id="sub-filter-ALL" style="border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;">All</button>
-                        <button onclick="filterSubscriptions('COURSE')" id="sub-filter-COURSE" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;">Courses</button>
-                        <button onclick="filterSubscriptions('CHANNEL')" id="sub-filter-CHANNEL" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;">Channels</button>
+                        <button onclick="filterSubscriptions('ALL')" id="sub-filter-ALL" style="border:none; background:#fff; padding:6px 15px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-weight:bold; cursor:pointer;" data-i18n="profile.filterAll">All</button>
+                        <button onclick="filterSubscriptions('COURSE')" id="sub-filter-COURSE" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;" data-i18n="profile.filterCourses">Courses</button>
+                        <button onclick="filterSubscriptions('CHANNEL')" id="sub-filter-CHANNEL" style="border:none; background:transparent; padding:6px 15px; border-radius:5px; color:#64748b; font-weight:600; cursor:pointer;" data-i18n="profile.filterChannels">Channels</button>
                     </div>
                 </div>
                 <div id="subscriptions-container" style="text-align:center; padding:60px; background:white; border-radius:12px; border:1px solid #e2e8f0;">
                     <i class="fas fa-graduation-cap" style="font-size:48px; color:#e2e8f0; margin-bottom:15px; display:block;"></i>
-                    <p>You are not subscribed to any courses or channels yet.</p>
+                    <p data-i18n="profile.noSubscriptions">You are not subscribed to any courses or channels yet.</p>
                 </div>
             </section>
 
@@ -248,22 +248,22 @@
             <section id="pane-portfolio" style="display:none; padding:40px 60px;">
                 <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:40px; margin-bottom:30px;">
                     <div style="border-bottom:1px solid #e2e8f0; padding-bottom:15px; margin-bottom:30px;">
-                        <h3 style="color:#1e293b; font-size:1.8rem; margin:0;">My Portfolio / Profile</h3>
-                        <p style="color:#64748b; margin:5px 0 0 0; font-size:1rem;">Fill in your professional information and networks.</p>
+                        <h3 style="color:#1e293b; font-size:1.8rem; margin:0;" data-i18n="profile.portfolioTitle">My Portfolio / Profile</h3>
+                        <p style="color:#64748b; margin:5px 0 0 0; font-size:1rem;" data-i18n="profile.portfolioSubtitle">Fill in your professional information and networks.</p>
                     </div>
 
                     <form id="portfolio-form">
                         <!-- Seção 1: Descrição Profissional -->
                         <div style="margin-bottom: 30px;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-user-edit" style="color:#cf982e; margin-right:8px;"></i> About me</label>
-                            <textarea id="port-bio" rows="4" placeholder="Describe your career path, who you are and what you do..." style="width:100%; padding:15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; resize:vertical;"></textarea>
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-user-edit" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="profile.aboutMe">About me</span></label>
+                            <textarea id="port-bio" rows="4" data-i18n-placeholder="profile.aboutMePlaceholder" placeholder="Describe your career path, who you are and what you do..." style="width:100%; padding:15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; resize:vertical;"></textarea>
                         </div>
 
                         <!-- Seção 2: Especializações (Tags) -->
                         <div style="margin-bottom: 30px; padding-bottom:30px; border-bottom:1px solid #e2e8f0;">
                             <label style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;">
-                                <span><i class="fas fa-tags" style="color:#cf982e; margin-right:8px;"></i> Especializações & Habilidades</span>
-                                <button type="button" onclick="openTagSelector()" style="background:#f1f5f9; color:#497aa7; border:1px solid #cbd5e1; border-radius:20px; padding:5px 15px; font-weight:bold; cursor:pointer; font-size:0.9rem; transition:0.2s;"><i class="fas fa-plus"></i> Adicionar</button>
+                                <span><i class="fas fa-tags" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="profile.specializations">Especializações & Habilidades</span></span>
+                                <button type="button" onclick="openTagSelector()" style="background:#f1f5f9; color:#497aa7; border:1px solid #cbd5e1; border-radius:20px; padding:5px 15px; font-weight:bold; cursor:pointer; font-size:0.9rem; transition:0.2s;"><i class="fas fa-plus"></i> <span data-i18n="profile.addSkill">Adicionar</span></button>
                             </label>
                             
                             <div id="selected-tags-container" style="display:flex; flex-wrap:wrap; gap:10px; min-height:40px; padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
@@ -273,7 +273,7 @@
 
                         <!-- Seção 3: Links e Redes -->
                         <div style="margin-bottom: 30px;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-link" style="color:#cf982e; margin-right:8px;"></i> Networks & External Portfolios</label>
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-link" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="profile.networks">Networks & External Portfolios</span></label>
                             
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                                 <!-- LinkedIn -->
@@ -301,31 +301,31 @@
 
                         <!-- Seção 4: Informações Adicionais (Advanced Profile) -->
                         <div style="margin-bottom: 30px;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-info-circle" style="color:#cf982e; margin-right:8px;"></i> Additional Information</label>
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-info-circle" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="profile.additionalInfo">Additional Information</span></label>
                             
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Languages</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.languages">Languages</label>
                                     <input type="text" id="port-languages" placeholder="Ex: English, Spanish" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Timezone</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.timezone">Timezone</label>
                                     <input type="text" id="port-timezone" placeholder="America/New_York" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Organization</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.organization">Organization</label>
                                     <input type="text" id="port-organization" placeholder="University, company..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Course / Track</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.courseTrack">Course / Track</label>
                                     <input type="text" id="port-course" placeholder="Robotics, XR, Engineering" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Location</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.location">Location</label>
                                     <input type="text" id="port-location" placeholder="City / Country" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Personal Website</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="profile.personalWebsite">Personal Website</label>
                                     <input type="url" id="port-website" placeholder="https://..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none;">
                                 </div>
                             </div>
@@ -335,7 +335,7 @@
 
                         <!-- Save Button -->
                         <div style="text-align:right; margin-top:20px;">
-                            <button type="button" onclick="saveAdvancedPortfolio()" class="btn-primary" style="padding:12px 30px; font-size:1.1rem; background:#497aa7;"><i class="fas fa-save"></i> Save Profile and Portfolio</button>
+                            <button type="button" onclick="saveAdvancedPortfolio()" class="btn-primary" style="padding:12px 30px; font-size:1.1rem; background:#497aa7;"><i class="fas fa-save"></i> <span data-i18n="profile.saveProfilePortfolio">Save Profile and Portfolio</span></button>
                         </div>
                     </form>
                 </div>
@@ -346,82 +346,89 @@
 
                 <!-- Perfil Avançado -->
                 <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:30px; margin-bottom:30px;">
-                    <h3 style="color:#1e293b; font-size:1.4rem; margin:0 0 20px 0; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">Advanced Profile</h3>
+                    <h3 style="color:#1e293b; font-size:1.4rem; margin:0 0 20px 0; border-bottom:1px solid #e2e8f0; padding-bottom:15px;" data-i18n="settings.title">Advanced Profile</h3>
                     <form style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div style="grid-column: span 2; display: flex; align-items: center; gap: 20px; margin-bottom: 10px;">
                             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" id="settings-profile-img-preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;">
                             <div>
-                                <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Profile Photo</label>
-                                <button type="button" onclick="document.getElementById('settings-profile-upload').click()" style="padding: 8px 15px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #475569;"><i class="fas fa-upload"></i> Choose New Photo</button>
+                                <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.profilePhoto">Profile Photo</label>
+                                <button type="button" onclick="document.getElementById('settings-profile-upload').click()" style="padding: 8px 15px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #475569;"><i class="fas fa-upload"></i> <span data-i18n="settings.chooseNewPhoto">Choose New Photo</span></button>
                                 <input type="file" id="settings-profile-upload" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
                             </div>
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Display Name</label>
+                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.displayName">Display Name</label>
                             <input type="text" id="settings-name" placeholder="Loading..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Headline (Role)</label>
-                            <input type="text" id="settings-role" readonly placeholder="Assigned by Admin" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f1f5f9; color:#64748b; cursor:not-allowed;">
+                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.headline">Headline (Role)</label>
+                            <input type="text" id="settings-role" readonly data-i18n-placeholder="settings.assignedByAdmin" placeholder="Assigned by Admin" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f1f5f9; color:#64748b; cursor:not-allowed;">
                         </div>
                         <div style="grid-column: span 2;">
-                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Biography</label>
+                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.biography">Biography</label>
                             <textarea id="settings-bio" rows="3" placeholder="Loading..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;"></textarea>
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Interests</label>
-                            <input type="text" id="settings-interests" placeholder="AI, Education, Design" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.interests">Interests</label>
+                            <input type="text" id="settings-interests" data-i18n-placeholder="settings.interestsPlaceholder" placeholder="AI, Education, Design" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;">Languages</label>
+                            <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px;" data-i18n="settings.languagesLabel">Languages</label>
                             <input type="text" id="settings-languages" value="English, Spanish" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <!-- Seção 5: Preferências -->
                         <div style="grid-column: span 2; margin-top:20px; padding-top:20px; border-top:1px solid #e2e8f0;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-sliders-h" style="color:#cf982e; margin-right:8px;"></i> Preferences</label>
-                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Language, theme, accessibility and communication.</p>
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-sliders-h" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="settings.preferences">Preferences</span></label>
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;" data-i18n="settings.preferencesSubtitle">Language, theme, accessibility and communication.</p>
                             
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">System Language</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="settings.systemLanguage">System Language</label>
                                     <select id="settings-pref-language" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;">
-                                        <option value="pt-BR">Portuguese (Brazil)</option>
-                                        <option value="en-US">English (US)</option>
+                                        <option value="en-US">English</option>
+                                        <option value="pt-BR">Português (Brasil)</option>
                                         <option value="es-ES">Español</option>
+                                        <option value="it-IT">Italiano</option>
+                                        <option value="fr-FR">Français</option>
+                                        <option value="ro-RO">Română</option>
+                                        <option value="de-DE">Deutsch</option>
+                                        <option value="sq-AL">Shqip</option>
+                                        <option value="el-GR">Ελληνικά</option>
+                                        <option value="ru-RU">Русский</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;">Theme</label>
+                                    <label style="display:block; font-size:14px; font-weight:600; color:#475569; margin-bottom:5px;" data-i18n="settings.theme">Theme</label>
                                     <select id="settings-pref-theme" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; background:white;" onchange="applyThemeToBody(this.value)">
-                                        <option value="system">System</option>
-                                        <option value="light">Light</option>
-                                        <option value="dark">Dark</option>
+                                        <option value="system" data-i18n="settings.themeSystem">System</option>
+                                        <option value="light" data-i18n="settings.themeLight">Light</option>
+                                        <option value="dark" data-i18n="settings.themeDark">Dark</option>
                                     </select>
                                 </div>
                             </div>
                             
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-email"> Receive email notifications</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contact"> Allow direct contact from other participants</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-motion"> Reduce motion and animations</label>
-                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contrast"> Enable high contrast</label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-email"> <span data-i18n="settings.emailNotifications">Receive email notifications</span></label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contact"> <span data-i18n="settings.allowContact">Allow direct contact from other participants</span></label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-motion"> <span data-i18n="settings.reduceMotion">Reduce motion and animations</span></label>
+                                <label style="display:flex; align-items:center; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-pref-contrast"> <span data-i18n="settings.highContrast">Enable high contrast</span></label>
                             </div>
                         </div>
 
                         <!-- Seção 6: Consentimentos -->
                         <div style="grid-column: span 2; margin-top:20px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-shield-alt" style="color:#cf982e; margin-right:8px;"></i> Consents</label>
-                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Privacy, profile visibility and communication.</p>
+                            <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:15px; font-size:1.1rem;"><i class="fas fa-shield-alt" style="color:#cf982e; margin-right:8px;"></i> <span data-i18n="settings.consents">Consents</span></label>
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;" data-i18n="settings.consentsSubtitle">Privacy, profile visibility and communication.</p>
                             
                             <div style="display:flex; flex-direction:column; gap:15px;">
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-terms" style="margin-top:3px;"> I confirm the current terms of use and privacy policy.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-marketing" style="margin-top:3px;"> I agree to receive product and opportunity communications by email.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-discovery" style="margin-top:3px;"> Allow basic discovery of my profile in the community.</label>
-                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-world" style="margin-top:3px;"> Allow an enriched profile card in the 3D world.</label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-terms" style="margin-top:3px;"> <span data-i18n="settings.termsPrivacy">I confirm the current terms of use and privacy policy.</span></label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-marketing" style="margin-top:3px;"> <span data-i18n="settings.marketingEmails">I agree to receive product and opportunity communications by email.</span></label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-discovery" style="margin-top:3px;"> <span data-i18n="settings.profileDiscovery">Allow basic discovery of my profile in the community.</span></label>
+                                <label style="display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#475569;"><input type="checkbox" id="settings-consent-world" style="margin-top:3px;"> <span data-i18n="settings.worldProfileCard">Allow an enriched profile card in the 3D world.</span></label>
                             </div>
                         </div>
                         <div style="grid-column: span 2; margin-top:20px;">
-                            <button type="button" class="btn-primary" onclick="saveSettingsProfile()">Save All Changes</button>
+                            <button type="button" class="btn-primary" onclick="saveSettingsProfile()" data-i18n="settings.saveAllChanges">Save All Changes</button>
                         </div>
                     </form>
                 </div>
@@ -432,30 +439,30 @@
     <!-- Modals -->
     <div id="channel-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:4000; align-items:center; justify-content:center;">
         <div style="background:white; width:400px; padding:30px; border-radius:12px;">
-            <h3>New Channel</h3>
+            <h3 data-i18n="profile.newChannel">New Channel</h3>
             
             <div id="channel-cover-preview" style="width:100%; height:120px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; cursor:pointer; position:relative; overflow:hidden;" onclick="document.getElementById('channel-thumb-upload').click()">
                 <i class="fas fa-image" style="font-size:2rem;"></i>
-                <span style="position:absolute; bottom:5px; right:10px; background:rgba(0,0,0,0.5); color:white; font-size:10px; padding:3px 8px; border-radius:4px;">Add Cover</span>
+                <span style="position:absolute; bottom:5px; right:10px; background:rgba(0,0,0,0.5); color:white; font-size:10px; padding:3px 8px; border-radius:4px;" data-i18n="common.chooseCover">Add Cover</span>
             </div>
             <input type="file" id="channel-thumb-upload" accept="image/*" style="display:none;" onchange="handleChannelThumbUpload(event)">
             
-            <input type="text" id="channel-name" placeholder="Channel Name" style="width:100%; padding:10px; margin:15px 0; border:1px solid #cbd5e1; border-radius:6px;">
-            <textarea id="channel-desc" placeholder="Description" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e1; border-radius:6px;"></textarea>
-            <button onclick="saveChannel()" class="btn-primary" style="width:100%;">Create Channel</button>
-            <button onclick="closeChannelModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b;">Cancel</button>
+            <input type="text" id="channel-name" data-i18n-placeholder="profile.channelName" placeholder="Channel Name" style="width:100%; padding:10px; margin:15px 0; border:1px solid #cbd5e1; border-radius:6px;">
+            <textarea id="channel-desc" data-i18n-placeholder="profile.description" placeholder="Description" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e1; border-radius:6px;"></textarea>
+            <button onclick="saveChannel()" class="btn-primary" style="width:100%;" data-i18n="profile.createChannel">Create Channel</button>
+            <button onclick="closeChannelModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b;" data-i18n="common.cancel">Cancel</button>
         </div>
     </div>
 
     <div id="tag-selector-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:4000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
         <div style="background:white; width:90%; max-width:600px; padding:30px; border-radius:16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="margin:0; font-size:1.4rem; color:#1e293b;">Select your Specializations</h3>
+                <h3 style="margin:0; font-size:1.4rem; color:#1e293b;" data-i18n="profile.selectSpecializations">Select your Specializations</h3>
                 <button onclick="closeTagSelector()" style="background:none; border:none; font-size:1.5rem; color:#94a3b8; cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
             
             <div style="margin-bottom:20px;">
-                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Programming & Languages</h4>
+                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;" data-i18n="profile.programmingLangs">Programming & Languages</h4>
                 <div style="display:flex; flex-wrap:wrap; gap:10px;">
                     <button class="tag-option" onclick="toggleTag('JavaScript', '#f7df1e', '#000000')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">JavaScript</button>
                     <button class="tag-option" onclick="toggleTag('Python', '#3776ab', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Python</button>
@@ -465,7 +472,7 @@
             </div>
 
             <div style="margin-bottom:20px;">
-                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Design & Creation</h4>
+                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;" data-i18n="profile.designCreation">Design & Creation</h4>
                 <div style="display:flex; flex-wrap:wrap; gap:10px;">
                     <button class="tag-option" onclick="toggleTag('Photoshop', '#31a8ff', '#001e36')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Photoshop</button>
                     <button class="tag-option" onclick="toggleTag('Illustrator', '#ff9a00', '#330000')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Illustrator</button>
@@ -476,15 +483,15 @@
             </div>
 
             <div style="margin-bottom:20px;">
-                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Soft Skills</h4>
+                <h4 style="margin:0 0 10px 0; color:#475569; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;" data-i18n="profile.softSkills">Soft Skills</h4>
                 <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                    <button class="tag-option" onclick="toggleTag('Liderança', '#10b981', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Liderança</button>
-                    <button class="tag-option" onclick="toggleTag('Gestão de Projetos', '#8b5cf6', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Gestão de Projetos</button>
-                    <button class="tag-option" onclick="toggleTag('Oratória', '#ec4899', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;">Oratória</button>
+                    <button class="tag-option" onclick="toggleTag('Liderança', '#10b981', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;" data-i18n="profile.leadership">Liderança</button>
+                    <button class="tag-option" onclick="toggleTag('Gestão de Projetos', '#8b5cf6', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;" data-i18n="profile.projectManagement">Gestão de Projetos</button>
+                    <button class="tag-option" onclick="toggleTag('Oratória', '#ec4899', '#ffffff')" style="padding:6px 15px; border-radius:20px; border:1px solid #cbd5e1; background:white; cursor:pointer; transition:0.2s; font-weight:600;" data-i18n="profile.publicSpeaking">Oratória</button>
                 </div>
             </div>
 
-            <button onclick="closeTagSelector()" class="btn-primary" style="width:100%; padding:12px; font-size:1.1rem; margin-top:10px;">Finish Selection</button>
+            <button onclick="closeTagSelector()" class="btn-primary" style="width:100%; padding:12px; font-size:1.1rem; margin-top:10px;" data-i18n="profile.finishSelection">Finish Selection</button>
         </div>
     </div>
 
@@ -725,6 +732,7 @@
                 }).catch(err => console.error('Erro ao buscar canais', err));
         });
     </script>
+    <script src="i18n.js"></script>
     <script src="profile.js?v=ai-tips-eurobot-sync-sidebar-20260512"></script>
     <script src="global_notifications.js"></script>
 
@@ -732,47 +740,47 @@
     <div id="external-link-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.75); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
         <div style="background:white; width:90%; max-width:500px; border-radius:12px; padding:30px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="margin:0; font-size:1.5rem; color:#1e293b;">Novo Link Externo</h3>
+                <h3 style="margin:0; font-size:1.5rem; color:#1e293b;" data-i18n="externalLink.newExternalLink">Novo Link Externo</h3>
                 <button onclick="closeExternalLinkModal()" style="background:none; border:none; font-size:1.5rem; color:#94a3b8; cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
             
             <div style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Título</label>
-                <input type="text" id="ext-link-title" placeholder="Ex: Portal de Treinamentos Externos" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;" data-i18n="externalLink.titleLabel">Título</label>
+                <input type="text" id="ext-link-title" data-i18n-placeholder="externalLink.titlePlaceholder" placeholder="Ex: Portal de Treinamentos Externos" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
             </div>
             
             <div style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Descrição</label>
-                <textarea id="ext-link-description" placeholder="Uma breve descrição..." rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b; resize:none;"></textarea>
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;" data-i18n="externalLink.descriptionLabel">Descrição</label>
+                <textarea id="ext-link-description" data-i18n-placeholder="externalLink.descriptionPlaceholder" placeholder="Uma breve descrição..." rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b; resize:none;"></textarea>
             </div>
             
             <div style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">URL (Link)</label>
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;" data-i18n="externalLink.urlLabel">URL (Link)</label>
                 <input type="url" id="ext-link-url" placeholder="https://..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
             </div>
 
             <div style="margin-bottom:15px;">
-                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Status</label>
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;" data-i18n="externalLink.statusLabel">Status</label>
                 <select id="ext-link-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; color:#1e293b;">
-                    <option value="DRAFT">Rascunho (Privado)</option>
-                    <option value="PUBLISHED" selected>Publicado (Visível no Marketplace)</option>
+                    <option value="DRAFT" data-i18n="externalLink.draftPrivate">Rascunho (Privado)</option>
+                    <option value="PUBLISHED" selected data-i18n="externalLink.publishedVisible">Publicado (Visível no Marketplace)</option>
                 </select>
             </div>
             
             <div style="margin-bottom:20px;">
-                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;">Imagem de Capa (Opcional - Será salva no Banco de Dados)</label>
+                <label style="display:block; font-size:0.85rem; font-weight:bold; color:#475569; margin-bottom:5px;" data-i18n="externalLink.coverImage">Imagem de Capa (Opcional - Será salva no Banco de Dados)</label>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <label for="ext-link-cover-file" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#475569; font-weight:bold;"><i class="fas fa-upload"></i> Escolher Imagem</label>
+                    <label for="ext-link-cover-file" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#475569; font-weight:bold;"><i class="fas fa-upload"></i> <span data-i18n="externalLink.chooseImage">Escolher Imagem</span></label>
                     <input type="file" id="ext-link-cover-file" accept="image/*" style="display:none;" onchange="previewExternalLinkCover(event)">
-                    <span id="ext-link-cover-name" style="font-size:0.85rem; color:#64748b;">No image selected</span>
+                    <span id="ext-link-cover-name" style="font-size:0.85rem; color:#64748b;" data-i18n="common.selectImage">No image selected</span>
                 </div>
                 <div id="ext-link-cover-preview" style="margin-top:10px; width:100%; height:120px; border-radius:8px; background-size:cover; background-position:center; display:none;"></div>
                 <input type="hidden" id="ext-link-cover">
             </div>
             
-            <button onclick="saveExternalLink()" style="width:100%; background:#1e293b; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer;">Save Link</button>
-            <button id="ext-link-delete-btn" onclick="deleteExternalLink()" style="width:100%; margin-top:10px; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer; display:none;"><i class="fas fa-trash"></i> Excluir Link</button>
-            <button onclick="closeExternalLinkModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b; font-weight:bold; padding:12px;">Cancelar</button>
+            <button onclick="saveExternalLink()" style="width:100%; background:#1e293b; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer;" data-i18n="externalLink.saveLink">Save Link</button>
+            <button id="ext-link-delete-btn" onclick="deleteExternalLink()" style="width:100%; margin-top:10px; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer; display:none;"><i class="fas fa-trash"></i> <span data-i18n="externalLink.deleteLink">Excluir Link</span></button>
+            <button onclick="closeExternalLinkModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b; font-weight:bold; padding:12px;" data-i18n="common.cancel">Cancelar</button>
         </div>
     </div>
 </body>

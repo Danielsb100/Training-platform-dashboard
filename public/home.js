@@ -93,7 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? `window.open('${course.externalUrl}', '_blank')`
             : `window.location.href='viewer.html?id=${course.id}'`;
         
-        const description = course.description ? course.description.substring(0, 80) + '...' : 'Explore este incrível curso dentro de nossa plataforma para aprimorar suas habilidades.';
+        const defaultDesc = window.t ? window.t('marketplace.exploreDescription', 'Explore this amazing course inside our platform to improve your skills.') : 'Explore this amazing course inside our platform to improve your skills.';
+        const description = course.description ? course.description.substring(0, 80) + '...' : defaultDesc;
 
         return `
             <div class="course-card" style="cursor: pointer; display: flex; flex-direction: column;" onclick="${clickAction}">
@@ -105,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="course-meta" style="margin-top: auto; margin-bottom: 15px;">
                         <div class="rating"><i class="fas fa-star" style="color: #cf982e;"></i> ${rating}</div>
                     </div>
-                    <button class="btn-outline" style="width:100%; margin-top:0; pointer-events: none;">VIEW COURSE DETAILS</button>
+                    <button class="btn-outline" style="width:100%; margin-top:0; pointer-events: none;">${window.t ? window.t('marketplace.viewCourseDetails', 'VIEW COURSE DETAILS') : 'VIEW COURSE DETAILS'}</button>
                 </div>
             </div>
         `;
@@ -131,8 +132,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             let html = '';
             if (Array.isArray(publicCourses) && publicCourses.length > 0) {
                 publicCourses.forEach(course => {
-                    html += renderCourseCard(course);
+                    const courseHtml = renderCourseCard(course);
+                    if (coursesGrid) coursesGrid.insertAdjacentHTML('beforeend', courseHtml);
+                    html += courseHtml;
                 });
+                if (window.applyTranslations && coursesGrid) window.applyTranslations(coursesGrid);
             } else {
                 // Fallback to mocks if no courses are published yet
                 mockCourses.forEach(mock => {
@@ -150,6 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 coursesGrid.innerHTML = html;
                 sessionStorage.setItem('cached_public_courses_html', html);
             }
+            if (window.applyTranslations && coursesGrid) window.applyTranslations(coursesGrid);
         })
         .catch(err => {
             console.error('Failed to load public courses:', err);
@@ -187,16 +192,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${thumbHtml}
                             <h3 style="font-size:18px; color:#1e293b; margin:0 0 5px 0;">${ch.name}</h3>
                             <p style="font-size:14px; color:#64748b; margin:0 0 15px 0;">${ch.description ? ch.description.substring(0, 30) + '...' : 'Exclusive Channel'}</p>
-                            <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">Access Channel</button>
+                            <button class="btn-outline" style="width:100%; color:#1e293b; border-color:#e2e8f0; background:#f8fafc;">${window.t ? window.t('marketplace.accessChannel', 'Access Channel') : 'Access Channel'}</button>
                         </div>
                     `;
                 });
 
                 if (featuredHtml === '') {
-                    featuredContainer.innerHTML = '<p style="color:#64748b; padding:10px;">No exclusive channels created.</p>';
+                    const emptyMsg = window.t ? window.t('marketplace.noExclusiveChannels', 'No exclusive channels created.') : 'No exclusive channels created.';
+                    featuredContainer.innerHTML = `<p data-i18n="marketplace.noExclusiveChannels" style="color:#64748b; padding:10px;">${emptyMsg}</p>`;
                 } else {
                     featuredContainer.innerHTML = featuredHtml;
                 }
+                if (window.applyTranslations) window.applyTranslations(featuredContainer);
             })
             .catch(err => {
                 console.error('Failed to load channels:', err);

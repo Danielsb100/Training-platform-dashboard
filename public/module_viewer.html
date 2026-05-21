@@ -176,38 +176,38 @@
         <div class="viewer-body">
             <div class="viewer-sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <div class="sidebar-title">Current Module</div>
+                    <div class="sidebar-title" data-i18n="moduleViewer.currentModule">Current Module</div>
                     <div class="module-name" id="module-name">Loading...</div>
                 </div>
                 <ul class="nav-tabs" id="nav-tabs">
                     <li class="nav-tab active" data-tab="overview">
                         <div class="nav-icon"><i class="fas fa-layer-group"></i></div>
-                        <div>Overview</div>
+                        <div data-i18n="moduleViewer.overview">Overview</div>
                     </li>
                     <li class="nav-tab" data-tab="videos">
                         <div class="nav-icon"><i class="fas fa-play-circle"></i></div>
-                        <div>Videos</div>
+                        <div data-i18n="moduleViewer.videos">Videos</div>
                         <div class="nav-badge" id="badge-videos">0</div>
                     </li>
                     <li class="nav-tab" data-tab="documents">
                         <div class="nav-icon"><i class="fas fa-file-pdf"></i></div>
-                        <div>Documents</div>
+                        <div data-i18n="moduleViewer.documents">Documents</div>
                         <div class="nav-badge" id="badge-documents">0</div>
                     </li>
                     <li class="nav-tab" data-tab="quizzes">
                         <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
-                        <div>Quizzes</div>
+                        <div data-i18n="moduleViewer.quizzes">Quizzes</div>
                         <div class="nav-badge" id="badge-quizzes">0</div>
                     </li>
-                    <li class="nav-tab" onclick="window.open('https://eurobot-production.up.railway.app/', '_blank')" title="Access Eurobot AI">
+                    <li class="nav-tab" onclick="window.open('https://eurobot-production.up.railway.app/', '_blank')" data-i18n-title="moduleViewer.eurobotAI" title="Access Eurobot AI">
                         <div class="nav-icon"><i class="fas fa-robot" style="color:#0ea5e9;"></i></div>
-                        <div>Eurobot AI</div>
+                        <div data-i18n="moduleViewer.eurobotAI">Eurobot AI</div>
                     </li>
-                    <li class="nav-tab nav-world-tab" id="btn-enter-course-world" data-action="course-world" title="Open the existing 3D course world">
+                    <li class="nav-tab nav-world-tab" id="btn-enter-course-world" data-action="course-world" data-i18n-title="moduleViewer.enter3DWorld" title="Open the existing 3D course world">
                         <div class="nav-icon"><i class="fas fa-cube"></i></div>
                         <div class="nav-world-copy">
-                            <strong>Enter 3D Course World</strong>
-                            <span>Immersive environment</span>
+                            <strong data-i18n="moduleViewer.enter3DWorld">Enter 3D Course World</strong>
+                            <span data-i18n="moduleViewer.immersiveEnv">Immersive environment</span>
                         </div>
                     </li>
                 </ul>
@@ -222,32 +222,32 @@
                 <!-- Hub Sections -->
                 <div class="hub-section active" id="section-overview">
                     <div class="hub-header">
-                        <h2>Module Overview</h2>
-                        <p>Browse all available content.</p>
+                        <h2 data-i18n="moduleViewer.moduleOverview">Module Overview</h2>
+                        <p data-i18n="moduleViewer.browseContent">Browse all available content.</p>
                     </div>
                     <div class="grid-layout" id="overview-grid">
-                        <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading content...</div>
+                        <div class="loading" data-i18n="moduleViewer.loadingContent"><i class="fas fa-spinner fa-spin"></i> Loading content...</div>
                     </div>
                 </div>
                 
                 <div class="hub-section" id="section-videos">
                     <div class="hub-header">
-                        <h2>Video Gallery</h2>
-                        <p>Recorded lessons and audiovisual materials.</p>
+                        <h2 data-i18n="moduleViewer.videoGallery">Video Gallery</h2>
+                        <p data-i18n="moduleViewer.recordedLessons">Recorded lessons and audiovisual materials.</p>
                     </div>
                     <div class="grid-layout" id="videos-grid"></div>
                 </div>
                 
                 <div class="hub-section" id="section-documents">
                     <div class="hub-header">
-                        <h2>Support Material</h2>
-                        <p>View or download module documents.</p>
+                        <h2 data-i18n="moduleViewer.supportMaterial">Support Material</h2>
+                        <p data-i18n="moduleViewer.viewDownloadDocs">View or download module documents.</p>
                         <div class="doc-filters" id="doc-filters">
-                            <button class="doc-filter active" data-type="all">All</button>
-                            <button class="doc-filter" data-type="pdf">PDFs</button>
-                            <button class="doc-filter" data-type="word">Word</button>
-                            <button class="doc-filter" data-type="ppt">PowerPoint</button>
-                            <button class="doc-filter" data-type="image">Images</button>
+                            <button class="doc-filter active" data-type="all" data-i18n="common.all">All</button>
+                            <button class="doc-filter" data-type="pdf" data-i18n="moduleViewer.pdfs">PDFs</button>
+                            <button class="doc-filter" data-type="word" data-i18n="moduleViewer.word">Word</button>
+                            <button class="doc-filter" data-type="ppt" data-i18n="moduleViewer.powerPoint">PowerPoint</button>
+                            <button class="doc-filter" data-type="image" data-i18n="moduleViewer.images">Images</button>
                         </div>
                     </div>
                     <div id="documents-container"></div>
@@ -255,8 +255,8 @@
                 
                 <div class="hub-section" id="section-quizzes">
                     <div class="hub-header">
-                        <h2>Assessments</h2>
-                        <p>Test your knowledge with practical exercises.</p>
+                        <h2 data-i18n="moduleViewer.assessments">Assessments</h2>
+                        <p data-i18n="moduleViewer.testKnowledge">Test your knowledge with practical exercises.</p>
                     </div>
                     <div class="list-layout" id="quizzes-list"></div>
                 </div>
@@ -264,8 +264,8 @@
                 <!-- Player View (Full Screen Content) -->
                 <div class="player-view" id="player-view">
                     <div class="player-header">
-                        <button class="btn-back-hub" id="btn-back-hub"><i class="fas fa-arrow-left"></i> Back to Hub</button>
-                        <div class="player-title" id="player-title">Viewing Content</div>
+                        <button class="btn-back-hub" id="btn-back-hub"><i class="fas fa-arrow-left"></i> <span data-i18n="moduleViewer.backToHub">Back to Hub</span></button>
+                        <div class="player-title" id="player-title" data-i18n="moduleViewer.viewingContent">Viewing Content</div>
                         <div style="width:130px;"></div> <!-- Spacer -->
                     </div>
                     <div class="player-content" id="player-content">
@@ -278,10 +278,10 @@
     
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
-            <h2>Resultado do Quiz</h2>
+            <h2 data-i18n="moduleViewer.quizResult">Quiz Result</h2>
             <div class="score-circle" id="quiz-score">0%</div>
-            <p id="quiz-feedback">Você completou o questionário!</p>
-            <button class="btn-close-modal" onclick="document.getElementById('quiz-modal').classList.remove('active')">Fechar</button>
+            <p id="quiz-feedback" data-i18n="moduleViewer.youCompleted">You completed the quiz!</p>
+            <button class="btn-close-modal" onclick="document.getElementById('quiz-modal').classList.remove('active')" data-i18n="common.close">Close</button>
         </div>
     </div>
 
@@ -289,6 +289,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.1/dist/docx-preview.min.js"></script>
     <script src="/app-config.js"></script>
-    <script src="module_viewer.js"></script>
+    <script src="i18n.js"></script>
+    <script src="module_viewer.js?v=20260520_2"></script>
 </body>
 </html>

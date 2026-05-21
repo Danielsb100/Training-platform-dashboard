@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const courseId = urlParams.get('courseId');
     
     if (!moduleId) {
-        alert('ID do módulo está ausente');
+        alert(window.t ? window.t('moduleViewer.missingId', 'ID do módulo está ausente') : 'ID do módulo está ausente');
         window.location.href = 'home.html';
         return;
     }
@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         isWorldMode = false;
         viewerContainer.classList.remove('world-mode');
         worldIframe.src = ''; // Free up memory and WebGL context
-        btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> Back';
-        btnBack.title = 'Back to Course';
+        btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> ' + (window.t ? window.t('moduleViewer.back', 'Back') : 'Back');
+        btnBack.title = window.t ? window.t('moduleViewer.backToCourse', 'Back to Course') : 'Back to Course';
         
         // Reset tabs to overview if coming from world mode
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         viewerContainer.classList.add('world-mode');
         
         // Change back button behavior
-        btnBack.innerHTML = '<i class="fas fa-times"></i> Exit 3D World';
-        btnBack.title = 'Return to course content';
+        btnBack.innerHTML = '<i class="fas fa-times"></i> ' + (window.t ? window.t('moduleViewer.exit3DWorld', 'Exit 3D World') : 'Exit 3D World');
+        btnBack.title = window.t ? window.t('moduleViewer.returnCourseContent', 'Return to course content') : 'Return to course content';
     }
     
     let moduleData = null;
@@ -105,17 +105,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         if (!response.ok) {
-            throw new Error('Falha ao carregar os dados do módulo');
+            throw new Error(window.t ? window.t('moduleViewer.loadFailed', 'Falha ao carregar os dados do módulo') : 'Falha ao carregar os dados do módulo');
         }
         
         moduleData = await response.json();
         
-        document.getElementById('module-name').textContent = moduleData.title || 'Unnamed Module';
-        document.getElementById('course-title').textContent = 'Course Content';
+        document.getElementById('module-name').textContent = moduleData.title || window.t ? window.t('moduleViewer.unnamedModule', 'Unnamed Module') : 'Unnamed Module';
+        document.getElementById('course-title').textContent = window.t ? window.t('moduleViewer.courseContent', 'Course Content') : 'Course Content';
         
-        videos = (moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
-        documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order);
-        quizzes = (moduleData.quizzes || []).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
+        // --- Language Session Auto-detect ---
+        const languageSessions = moduleData.languageSessions || [];
+        let activeSessionId = null;
+        
+        if (languageSessions.length > 0) {
+            // Get user's preferred locale from profile
+            let userLocale = null;
+            try {
+                const profileRes = await fetch('/api/profile/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (profileRes.ok) {
+                    const profile = await profileRes.json();
+                    const profileData = profile.data || profile;
+                    let prefs = {};
+                    if (typeof profileData.preferences === 'string') {
+                        try { prefs = JSON.parse(profileData.preferences); } catch(e){}
+                    } else {
+                        prefs = profileData.preferences || {};
+                    }
+                    userLocale = prefs.language || profileData.language || null;
+                }
+            } catch (e) {
+                console.warn('Could not fetch user locale for language session:', e);
+            }
+
+            if (userLocale) {
+                const matchSession = languageSessions.find(s => s.locale === userLocale);
+                if (matchSession) {
+                    activeSessionId = matchSession.id;
+                }
+            }
+            // If no match found, activeSessionId stays null => base content
+        }
+
+        // Filter content by session
+        const filterBySession = (items) => {
+            if (!items) return [];
+            return items.filter(item => {
+                if (activeSessionId === null) {
+                    return !item.languageSessionId;
+                }
+                return item.languageSessionId === activeSessionId;
+            });
+        };
+
+        videos = filterBySession(moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
+        documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order); // Documents are shared globally — no session filter
+        quizzes = filterBySession(moduleData.quizzes || []).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
         
         // Update Badges
         document.getElementById('badge-videos').textContent = videos.length;
@@ -126,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     } catch (error) {
         console.error(error);
-        document.getElementById('overview-grid').innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">Erro ao carregar o conteúdo do módulo.</div>`;
+        document.getElementById('overview-grid').innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">${window.t ? window.t('moduleViewer.errorLoadContent', 'Erro ao carregar o conteúdo do módulo.') : 'Erro ao carregar o conteúdo do módulo.'}</div>`;
     }
     
     function escapeHtml(value) {
@@ -206,10 +252,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="card-body">
                     <div class="card-title">${escapeHtml(v.title)}</div>
-                    <div class="card-meta"><i class="fas fa-video"></i> Video Lesson</div>
+                    <div class="card-meta"><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</div>
                 </div>
             </div>`;
-        }).join('') : '<p style="color:#94a3b8;">No videos available in this module.</p>';
+        }).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noVideos', 'No videos available in this module.') : 'No videos available in this module.') + '</p>';
         
         // --- Documents ---
         renderDocuments('all');
@@ -221,11 +267,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="list-icon" style="color:#cf9c33; background:rgba(207, 156, 51, 0.2);"><i class="fas fa-question-circle"></i></div>
                 <div class="list-content">
                     <div class="list-title">${q.title}</div>
-                    <p class="list-desc">${q.questions ? q.questions.length : 0} Questions • Practical Assessment</p>
+                    <p class="list-desc">${q.questions ? q.questions.length : 0} ${window.t ? window.t('moduleViewer.questionsAssessment', 'Questions') : 'Questions'} • ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</p>
                 </div>
-                <div class="list-action"><i class="fas fa-pencil-alt"></i> Start</div>
+                <div class="list-action"><i class="fas fa-pencil-alt"></i>${window.t ? window.t('moduleViewer.start', 'Start') : 'Start'}</div>
             </div>
-        `).join('') : '<p style="color:#94a3b8;">No quizzes available in this module.</p>';
+        `).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noQuizzes', 'No quizzes available in this module.') : 'No quizzes available in this module.') + '</p>';
         
         // --- Overview Grid (Combines everything for the home page of the module) ---
         const overviewGrid = document.getElementById('overview-grid');
@@ -242,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas fa-video"></i> Video Lesson</div>
+                        <div class="card-meta"><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</div>
                     </div>
                 </div>`;
             } else if (item.contentType === 'quiz') {
@@ -254,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${item.title}</div>
-                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> Practical Assessment</div>
+                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</div>
                     </div>
                 </div>`;
             } else if (item.contentType === 'document') {
@@ -275,14 +321,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="card-body">
                         <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas ${icon}"></i> Document</div>
+                        <div class="card-meta"><i class="fas ${icon}"></i> ${window.t ? window.t('moduleViewer.document', 'Document') : 'Document'}</div>
                     </div>
                 </div>`;
             }
         }).join('');
         
         if (allItems.length === 0) {
-            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">This module does not have interactive content yet.</p>';
+            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">' + (window.t ? window.t('moduleViewer.noInteractiveContent', 'This module does not have interactive content yet.') : 'This module does not have interactive content yet.') + '</p>';
         }
     }
     
@@ -306,7 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const filteredDocs = documents.filter(d => filter === 'all' || getDocType(d.title) === filter);
 
         if (filteredDocs.length === 0) {
-            container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">No documents found for this filter.</p>';
+            container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">' + (window.t ? window.t('moduleViewer.noDocsFilter', 'No documents found for this filter.') : 'No documents found for this filter.') + '</p>';
             return;
         }
 
@@ -346,10 +392,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 let icon = 'fa-file-alt';
                 let color = '#94a3b8';
-                let desc = 'Generic Document';
+                let desc = (window.t ? window.t('moduleViewer.genericDocument', 'Generic Document') : 'Generic Document');
                 
-                if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = 'Interactive PDF File'; }
-                if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = 'Text Document'; }
+                if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = (window.t ? window.t('moduleViewer.interactivePdf', 'Interactive PDF File') : 'Interactive PDF File'); }
+                if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = (window.t ? window.t('moduleViewer.textDocument', 'Text Document') : 'Text Document'); }
 
                 listItems.push(`
                     <div class="list-item">
@@ -490,12 +536,12 @@ btnBackHub.addEventListener('click', () => {
                     </div>
                 `;
             } else {
-                const externalLabel = 'Abrir vídeo em nova aba';
+                const externalLabel = (window.t ? window.t('moduleViewer.openVideoNewTab', 'Abrir vídeo em nova aba') : 'Abrir vídeo em nova aba');
                 playerContent.innerHTML = `
                     <div class="video-container">
                         <div class="video-info" style="padding:40px; text-align:center;">
                             <h2 style="color:#fff;">${title}</h2>
-                            <p style="color:#cbd5e1; margin-top:8px;">Este vídeo abre em uma nova aba.</p>
+                            <p style="color:#cbd5e1; margin-top:8px;">${window.t ? window.t('moduleViewer.videoOpensNewTab', 'Este vídeo abre em uma nova aba.') : 'Este vídeo abre em uma nova aba.'}</p>
                             <a href="${escapeAttr(v.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; margin-top:12px; color:#cf9c33; font-weight:700;">
                                 <i class="fas fa-external-link-alt"></i> ${externalLabel}
                             </a>
@@ -531,7 +577,7 @@ btnBackHub.addEventListener('click', () => {
             } else if (docType === 'image') {
                 playerContent.innerHTML = `
                     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;" id="img-container">
-                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Image...</div>
+                        <div style="text-align:center; color:#64748b; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>${window.t ? window.t('moduleViewer.loadingImage', 'Loading Image...') : 'Loading Image...'}</div>
                     </div>
                 `;
                 
@@ -544,11 +590,11 @@ btnBackHub.addEventListener('click', () => {
                         const blobUrl = URL.createObjectURL(blob);
                         document.getElementById('img-container').innerHTML = `
                             <img src="${blobUrl}" class="doc-viewer-image" alt="${title}" style="max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; margin-top:20px; text-decoration:none;"><i class="fas fa-download"></i> Fazer Download Original</a>
+                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; margin-top:20px; text-decoration:none;"><i class="fas fa-download"></i> ${window.t ? window.t('moduleViewer.downloadOriginal', 'Fazer Download Original') : 'Fazer Download Original'}</a>
                         `;
                     })
                     .catch(err => {
-                        document.getElementById('img-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>Falha ao carregar a imagem.</div>`;
+                        document.getElementById('img-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>${window.t ? window.t('moduleViewer.failedLoadImage', 'Falha ao carregar a imagem.') : 'Falha ao carregar a imagem.'}</div>`;
                     });
             } else if (docType === 'ppt') {
                 // PowerPoint Fallback to Office Viewer (Requires Public URL)
@@ -562,7 +608,7 @@ btnBackHub.addEventListener('click', () => {
                         </div>
                         <iframe src="${msViewerUrl}" class="doc-viewer-iframe" style="flex:1; border-radius:0;"></iframe>
                         <div style="text-align:center; padding: 15px; background:#fff; border-top: 1px solid #e2e8f0;">
-                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; text-decoration:none;"><i class="fas fa-download"></i> Baixar Arquivo PPTX Original</a>
+                            <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="width:auto; text-decoration:none;"><i class="fas fa-download"></i> ${window.t ? window.t('moduleViewer.downloadFile', 'Baixar Arquivo') : 'Baixar Arquivo'} PPTX Original</a>
                         </div>
                     </div>
                 `;
@@ -589,19 +635,19 @@ btnBackHub.addEventListener('click', () => {
                             ignoreWidth: false,
                             ignoreHeight: false
                         }).catch(err => {
-                            container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-exclamation-triangle fa-2x"></i><br>Erro ao renderizar documento. O arquivo pode não estar no formato .docx moderno.<br><br><a href="${rawDownloadUrl}" class="btn-submit-quiz" style="display:inline-block; width:auto; text-decoration:none; margin-top:15px;"><i class="fas fa-download"></i> Fazer Download Tradicional</a></div>`;
+                            container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-exclamation-triangle fa-2x"></i><br>Erro ao renderizar documento. O arquivo pode não estar no formato .docx moderno.<br><br><a href="${rawDownloadUrl}" class="btn-submit-quiz" style="display:inline-block; width:auto; text-decoration:none; margin-top:15px;"><i class="fas fa-download"></i> ${window.t ? window.t('moduleViewer.downloadTraditional', 'Fazer Download Tradicional') : 'Fazer Download Tradicional'}</a></div>`;
                         });
                     })
                     .catch(err => {
-                        document.getElementById('docx-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>Falha ao baixar arquivo.</div>`;
+                        document.getElementById('docx-container').innerHTML = `<div style="text-align:center; color:#ef4444; padding:50px;"><i class="fas fa-times-circle fa-2x"></i><br>${window.t ? window.t('moduleViewer.failedDownload', 'Falha ao baixar arquivo.') : 'Falha ao baixar arquivo.'}</div>`;
                     });
             } else {
                 playerContent.innerHTML = `
                     <div class="quiz-container" style="text-align:center; margin: 0 auto; max-width: 600px;">
                         <i class="fas fa-file-alt" style="font-size: 5rem; color:#94a3b8; margin-bottom: 20px;"></i>
-                        <h2 style="color:#0f172a; margin-bottom: 10px;">Documento Genérico</h2>
-                        <p style="color:#64748b; margin-bottom: 25px;">Visualização web não disponível para este formato.</p>
-                        <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="text-decoration:none; display:inline-block; width:auto;"><i class="fas fa-download"></i> Baixar Arquivo</a>
+                        <h2 style="color:#0f172a; margin-bottom: 10px;">${window.t ? window.t('moduleViewer.genericDocument', 'Documento Genérico') : 'Documento Genérico'}</h2>
+                        <p style="color:#64748b; margin-bottom: 25px;">${window.t ? window.t('moduleViewer.noWebPreview', 'Visualização web não disponível para este formato.') : 'Visualização web não disponível para este formato.'}</p>
+                        <a href="${rawDownloadUrl}" class="btn-submit-quiz" style="text-decoration:none; display:inline-block; width:auto;"><i class="fas fa-download"></i> ${window.t ? window.t('moduleViewer.downloadFile', 'Baixar Arquivo') : 'Baixar Arquivo'}</a>
                     </div>
                 `;
             }
@@ -614,7 +660,7 @@ btnBackHub.addEventListener('click', () => {
             playerTitle.textContent = q.title;
             
             if (!q.questions || q.questions.length === 0) {
-                playerContent.innerHTML = `<div class="quiz-container"><h2>${q.title}</h2><p>Este questionário ainda não possui perguntas.</p></div>`;
+                playerContent.innerHTML = `<div class="quiz-container"><h2>${q.title}</h2><p>${window.t ? window.t('moduleViewer.noQuestionsYet', 'Este questionário ainda não possui perguntas.') : 'Este questionário ainda não possui perguntas.'}</p></div>`;
                 return;
             }
             
@@ -639,7 +685,7 @@ btnBackHub.addEventListener('click', () => {
                     </div>
                     <form id="quiz-form" data-quiz-id="${q.id}">
                         ${questionsHtml}
-                        <button type="submit" class="btn-submit-quiz">Enviar Respostas</button>
+                        <button type="submit" class="btn-submit-quiz">${window.t ? window.t('moduleViewer.submitAnswers', 'Enviar Respostas') : 'Enviar Respostas'}</button>
                     </form>
                 </div>
             `;
@@ -691,13 +737,13 @@ btnBackHub.addEventListener('click', () => {
         });
         
         if (!allAnswered) {
-            alert('Por favor, responda a todas as perguntas antes de enviar.');
+            alert(window.t ? window.t('moduleViewer.answerAllQuestions', 'Por favor, responda a todas as perguntas antes de enviar.') : 'Por favor, responda a todas as perguntas antes de enviar.');
             return;
         }
         
         const btn = form.querySelector('.btn-submit-quiz');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moduleViewer.submitting', 'Enviando...') : 'Enviando...');
         
         try {
             const res = await fetch(`/modules/${moduleId}/quiz/submit`, {
@@ -709,7 +755,7 @@ btnBackHub.addEventListener('click', () => {
                 body: JSON.stringify({ answers, courseId })
             });
             
-            if (!res.ok) throw new Error('Falha ao enviar respostas');
+            if (!res.ok) throw new Error(window.t ? window.t('moduleViewer.failedSubmitAnswers', 'Falha ao enviar respostas') : 'Falha ao enviar respostas');
             
             const result = await res.json();
             
@@ -724,26 +770,26 @@ btnBackHub.addEventListener('click', () => {
             if (scorePercent >= 80) {
                 scoreEl.style.borderColor = '#22c55e';
                 scoreEl.style.color = '#22c55e';
-                feedbackEl.textContent = 'Excelente! Você foi aprovado no quiz.';
+                feedbackEl.textContent = window.t ? window.t('moduleViewer.excellentQuiz', 'Excelente! Você foi aprovado no quiz.') : 'Excelente! Você foi aprovado no quiz.';
             } else if (scorePercent >= 60) {
                 scoreEl.style.borderColor = '#f59e0b';
                 scoreEl.style.color = '#f59e0b';
-                feedbackEl.textContent = 'Bom esforço! Mas você pode tentar de novo para melhorar.';
+                feedbackEl.textContent = window.t ? window.t('moduleViewer.goodEffort', 'Bom esforço! Mas você pode tentar de novo para melhorar.') : 'Bom esforço! Mas você pode tentar de novo para melhorar.';
             } else {
                 scoreEl.style.borderColor = '#ef4444';
                 scoreEl.style.color = '#ef4444';
-                feedbackEl.textContent = 'Continue estudando e tente novamente!';
+                feedbackEl.textContent = window.t ? window.t('moduleViewer.keepStudying', 'Continue estudando e tente novamente!') : 'Continue estudando e tente novamente!';
             }
             
             modal.classList.add('active');
             
-            btn.innerHTML = 'Refazer Quiz';
+            btn.innerHTML = window.t ? window.t('moduleViewer.retakeQuiz', 'Refazer Quiz') : 'Refazer Quiz';
             btn.disabled = false;
             
         } catch (error) {
             console.error(error);
-            alert('Ocorreu um erro ao enviar suas respostas.');
-            btn.innerHTML = 'Enviar Respostas';
+            alert(window.t ? window.t('moduleViewer.errorSubmitAnswers', 'Ocorreu um erro ao enviar suas respostas.') : 'Ocorreu um erro ao enviar suas respostas.');
+            btn.innerHTML = (window.t ? window.t('moduleViewer.submitAnswers', 'Enviar Respostas') : 'Enviar Respostas');
             btn.disabled = false;
         }
     }
