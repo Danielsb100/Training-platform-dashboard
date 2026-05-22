@@ -551,15 +551,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Sobrescrevendo a funÃƒÂ§ÃƒÂ£o de salvar no perfil para bater na API
+// Sobrescrevendo a função de salvar no perfil para bater na API
 window.saveSettingsProfile = async function() {
     const token = localStorage.getItem('token');
     const name = document.getElementById('settings-name').value;
     const role = document.getElementById('settings-role').value;
     const bio = document.getElementById('settings-bio').value;
-    const interests = document.getElementById('settings-interests').value.split(',').map(s => s.trim());
-    const languages = document.getElementById('settings-languages').value.split(',').map(s => s.trim());
+    const interestsStr = document.getElementById('settings-interests').value;
+    const interests = interestsStr ? interestsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const languagesStr = document.getElementById('settings-languages').value;
+    const languages = languagesStr ? languagesStr.split(',').map(s => s.trim()).filter(Boolean) : [];
     const photo = window.profileCustomPhoto; // Base64 if updated
+
+    const language = document.getElementById('settings-pref-language')?.value || 'en-US';
+    const theme = document.getElementById('settings-pref-theme')?.value || 'system';
+    const emailNotifications = document.getElementById('settings-pref-email')?.checked || false;
+    const allowDirectMessages = document.getElementById('settings-pref-contact')?.checked || false;
+    const reduceMotion = document.getElementById('settings-pref-motion')?.checked || false;
+    const highContrast = document.getElementById('settings-pref-contrast')?.checked || false;
+
+    const termsAndPrivacy = document.getElementById('settings-consent-terms')?.checked || false;
+    const marketingEmails = document.getElementById('settings-consent-marketing')?.checked || false;
+    const profileDiscovery = document.getElementById('settings-consent-discovery')?.checked || false;
+    const worldProfileCard = document.getElementById('settings-consent-world')?.checked || false;
 
     try {
         const res = await fetch('/api/profile/me', {
@@ -573,11 +587,23 @@ window.saveSettingsProfile = async function() {
                 headline: role,
                 bio: bio,
                 interests: interests,
-                spokenLanguages: languages
+                spokenLanguages: languages,
+                preferences: {
+                    language, theme, emailNotifications, allowDirectMessages, reduceMotion, highContrast
+                },
+                consents: {
+                    termsAndPrivacy: { granted: termsAndPrivacy },
+                    marketingEmails: { granted: marketingEmails },
+                    profileDiscovery: { granted: profileDiscovery },
+                    worldProfileCard: { granted: worldProfileCard }
+                }
             })
         });
 
         if (res.ok) {
+            if (window.setLanguage) {
+                window.setLanguage(language);
+            }
             // Se houver uma foto nova, envia para a rota de upload (que aceita multipart)
             if (photo && photo.startsWith('data:image')) {
                 // Convert Base64 to File
@@ -594,14 +620,14 @@ window.saveSettingsProfile = async function() {
                     body: formData
                 });
             }
-            alert('Profile saved successfully!');
+            alert(window.t ? window.t('common.success', 'Success') : 'Profile saved successfully!');
             location.reload();
         } else {
-            alert('Failed to save profile.');
+            alert(window.t ? window.t('common.error', 'Error') : 'Failed to save profile.');
         }
     } catch (err) {
         console.error(err);
-        alert('Error saving profile.');
+        alert(window.t ? window.t('common.error', 'Error') : 'Error saving profile.');
     }
 };
 
@@ -681,7 +707,7 @@ window.saveAdvancedPortfolio = async function() {
     }
 };
 
-window.saveSettingsProfile = window.saveAdvancedPortfolio;
+
 
 // --- OPERATIONAL AGENDA & NOTIFICATIONS LOGIC ---
 

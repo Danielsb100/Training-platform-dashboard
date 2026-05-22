@@ -4380,7 +4380,7 @@ function markModuleMaterialViewed(type, id, extra = {}) {
 
 function buildViewedStatusPill(viewed) {
     const label = viewed ? (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed');
-    return `<span style="font-size:0.76rem; border-radius:999px; padding:0.24rem 0.55rem; color:${viewed ? '#86efac' : '#94a3b8'}; border:1px solid ${viewed ? 'rgba(52,211,153,0.35)' : 'rgba(148,163,184,0.22)'}; background:${viewed ? 'rgba(16,185,129,0.14)' : 'rgba(148,163,184,0.08)'}; white-space:nowrap;">${label}</span>`;
+    return `<span style="font-size:0.76rem; border-radius:999px; padding:0.24rem 0.55rem; color:${viewed ? '#16a34a' : '#475569'}; border:1px solid ${viewed ? 'rgba(22,163,74,0.35)' : 'rgba(71,85,105,0.22)'}; background:${viewed ? 'rgba(22,163,74,0.1)' : 'rgba(71,85,105,0.08)'}; white-space:nowrap;">${label}</span>`;
 }
 
 function buildModuleMaterialProgressSection(module = currentModulePayload) {
@@ -4405,8 +4405,8 @@ function buildModuleMaterialProgressSection(module = currentModulePayload) {
         viewedCount === items.length ? (window.t ? window.t('world.complete', 'Complete') : 'Complete') : (window.t ? window.t('world.inProgress', 'In progress') : 'In progress'),
         () => { }
     );
-    section.style.borderColor = viewedCount === items.length ? 'rgba(52,211,153,0.24)' : 'rgba(255,255,255,0.08)';
-    section.style.background = viewedCount === items.length ? 'rgba(16,185,129,0.08)' : 'rgba(15,23,42,0.45)';
+    section.style.borderColor = viewedCount === items.length ? 'rgba(22,163,74,0.24)' : '#e2e8f0';
+    section.style.background = viewedCount === items.length ? 'rgba(22,163,74,0.08)' : '#f8fafc';
     return section;
 }
 
@@ -4695,8 +4695,8 @@ function renderModuleVideos(videos) {
     videos.forEach(v => {
         const card = document.createElement('div');
         // Solid background and border to make it undeniably a separate container
-        card.style.background = '#1e293b';
-        card.style.border = '1px solid #334155';
+        card.style.background = '#f4f8fb';
+        card.style.border = '1px solid #d1e0ec';
         card.style.borderRadius = '12px';
         card.style.padding = '15px';
         card.style.cursor = 'pointer';
@@ -4709,7 +4709,7 @@ function renderModuleVideos(videos) {
         titleTop.innerText = v.title || (window.t ? window.t('world.videoNoTitle', 'Untitled video') : 'Untitled video');
         titleTop.style.margin = '0';
         titleTop.style.fontSize = '1.1rem';
-        titleTop.style.color = '#fff';
+        titleTop.style.color = '#1e293b';
 
         const videoViewed = Boolean(v.viewed || v.completed || Number(v.progress || 0) >= 80);
         const statusPill = document.createElement('div');
@@ -4995,23 +4995,24 @@ function renderModuleQuiz(quizzes) {
         quizBox.style.marginBottom = '20px';
         quizBox.style.padding = '15px';
         quizBox.style.borderRadius = '12px';
-        quizBox.style.background = 'rgba(15,23,42,0.72)';
-        quizBox.style.color = '#e2e8f0';
+        quizBox.style.background = '#f8fafc';
+        quizBox.style.color = '#1e293b';
+        quizBox.style.border = '1px solid #e2e8f0';
 
-        quizBox.innerHTML = `<h3 style="color: var(--accent-color); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">${quiz.title}</h3>`;
+        quizBox.innerHTML = `<h3 style="color: var(--accent-color); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px;">${quiz.title}</h3>`;
 
         quiz.questions.forEach((q, qIdx) => {
             const qDiv = document.createElement('div');
             qDiv.className = 'quiz-question';
             qDiv.style.marginBottom = '15px';
-            qDiv.style.color = '#e2e8f0';
-            qDiv.innerHTML = `<p style="margin-bottom: 8px; color:#f8fafc;"><strong>${qIdx + 1}. ${q.text}</strong></p>`;
+            qDiv.style.color = '#1e293b';
+            qDiv.innerHTML = `<p style="margin-bottom: 8px; color:#1e293b;"><strong>${qIdx + 1}. ${q.text}</strong></p>`;
 
             q.options.forEach(opt => {
                 const optDiv = document.createElement('div');
                 optDiv.style.marginBottom = '4px';
                 optDiv.innerHTML = `
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; color:#e2e8f0; line-height:1.45;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; color:#1e293b; line-height:1.45;">
                         <input type="radio" name="quiz_${quiz.id}_question_${q.id}" value="${opt.id}">
                         <span>${opt.text}</span>
                     </label>
@@ -5195,12 +5196,15 @@ async function openModuleForumThread(threadId) {
         const thread = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(thread.error || 'Failed to load discussion.');
 
-        const replies = (thread.replies || []).map((reply) => `
-            <div class="forum-reply-card">
+        const replies = (thread.replies || []).map((reply) => {
+            const isMine = reply.user?.username === localUsername;
+            return `
+            <div class="forum-reply-card ${isMine ? 'my-message' : ''}">
                 <strong>${escapeWorldHtml(reply.user?.username || 'User')}</strong>
                 <p>${escapeWorldHtml(reply.content || '')}</p>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         container.innerHTML = `
             <div class="module-forum-panel">
