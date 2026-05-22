@@ -15,6 +15,7 @@ let localUsername = '';
 let localProfilePicture = null;
 let authToken = '';
 let localUserRole = 'USER'; // New: Store user role
+let userLocale = null; // User's language preference for content filtering
 const loginScreen = document.getElementById('login-screen');
 const joinBtn = document.getElementById('join-btn');
 const emailInput = document.getElementById('email-input');
@@ -577,6 +578,24 @@ async function performJoin(token, user) {
     await refreshWorldOperationsSummary();
     if (worldOperationsRefreshTimer) clearInterval(worldOperationsRefreshTimer);
     worldOperationsRefreshTimer = setInterval(refreshWorldOperationsSummary, 60000);
+
+    // Fetch user locale from profile for language-based content filtering
+    try {
+        const profileRes = await fetch(`${AUTH_API}/api/profile/me`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            userLocale = (profileData.preferences && profileData.preferences.language) || 'en-US';
+            // Also sync i18n localStorage so 3D world displays correct UI language
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('i18n_lang', userLocale);
+            }
+            if (window.setLanguage) window.setLanguage(userLocale);
+        }
+    } catch (e) {
+        console.warn('Could not fetch user locale:', e);
+    }
 
     if (document.activeElement) document.activeElement.blur();
     window.focus();
@@ -4095,27 +4114,52 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
         const module = await response.json();
 
         if (response.status === 403) {
-            const errorMsg = module.error || 'Módulo indisponível ou em manutenção.';
+            const errorMsg = module.error || (window.t ? window.t('world.moduleUnavailable', 'Module unavailable or under maintenance.') : 'Module unavailable or under maintenance.');
             alert(errorMsg);
             moduleSidebar.classList.add('hidden');
             return;
         }
 
-        if (!response.ok) throw new Error(module.error || 'Erro ao carregar módulo');
+        if (!response.ok) throw new Error(module.error || (window.t ? window.t('world.errorLoadModule', 'Error loading module') : 'Error loading module'));
 
         currentModulePayload = module;
         currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
         moduleTitle.innerText = module.title;
-        moduleDescription.innerText = module.description || 'Sem descrição.';
+        moduleDescription.innerText = module.description || (window.t ? window.t('world.noDescription', 'No description.') : 'No description.');
 
         if (module.isPreview) {
             document.getElementById('sidebar-preview-banner').classList.add('active');
         }
 
-        renderModuleGeneral(module);
-        renderModuleVideos(module.videos);
+        // --- Language Session Filtering ---
+        // Determine the active language session based on user's locale preference
+        let activeSessionId = null;
+        if (userLocale && module.languageSessions && module.languageSessions.length > 0) {
+            const matchingSession = module.languageSessions.find(s => s.locale === userLocale);
+            if (matchingSession) {
+                activeSessionId = matchingSession.id;
+            }
+            // If no matching session, activeSessionId stays null (shows base/default content)
+        }
+
+        // Filter videos and quizzes by language session (documents are global, not filtered)
+        const filteredVideos = (module.videos || []).filter(v => {
+            if (activeSessionId === null) return !v.languageSessionId;
+            return v.languageSessionId === activeSessionId;
+        });
+        const filteredQuizzes = (module.quizzes || []).filter(q => {
+            if (activeSessionId === null) return !q.languageSessionId;
+            return q.languageSessionId === activeSessionId;
+        });
+
+        // Store globally so getModuleMaterialGroups/refreshModuleProgressSurfaces use filtered data
+        _filteredModuleVideos = filteredVideos;
+        _filteredModuleQuizzes = filteredQuizzes;
+
+        renderModuleGeneral(module, filteredVideos, filteredQuizzes);
+        renderModuleVideos(filteredVideos);
         renderModuleDocs(module.documents);
-        renderModuleQuiz(module.quizzes);
+        renderModuleQuiz(filteredQuizzes);
         renderModuleForum(moduleId);
         renderModuleReports(module);
 
@@ -4257,11 +4301,15 @@ function trackModuleDocumentDownload(doc) {
     }).catch(() => null);
 }
 
+// Filtered content arrays (set during openModuleSidebar language filtering)
+let _filteredModuleVideos = null;
+let _filteredModuleQuizzes = null;
+
 function getModuleMaterialGroups(module = currentModulePayload) {
     return {
-        videos: Array.isArray(module?.videos) ? module.videos : [],
+        videos: _filteredModuleVideos !== null ? _filteredModuleVideos : (Array.isArray(module?.videos) ? module.videos : []),
         documents: Array.isArray(module?.documents) ? module.documents : [],
-        quizzes: Array.isArray(module?.quizzes) ? module.quizzes : []
+        quizzes: _filteredModuleQuizzes !== null ? _filteredModuleQuizzes : (Array.isArray(module?.quizzes) ? module.quizzes : [])
     };
 }
 
@@ -4276,10 +4324,12 @@ function getModuleMaterialItems(module = currentModulePayload) {
 
 function refreshModuleProgressSurfaces() {
     if (!currentModulePayload) return;
-    renderModuleGeneral(currentModulePayload);
-    renderModuleVideos(currentModulePayload.videos || []);
+    const videos = _filteredModuleVideos !== null ? _filteredModuleVideos : (currentModulePayload.videos || []);
+    const quizzes = _filteredModuleQuizzes !== null ? _filteredModuleQuizzes : (currentModulePayload.quizzes || []);
+    renderModuleGeneral(currentModulePayload, videos, quizzes);
+    renderModuleVideos(videos);
     renderModuleDocs(currentModulePayload.documents || []);
-    renderModuleQuiz(currentModulePayload.quizzes || []);
+    renderModuleQuiz(quizzes);
 }
 
 async function maybeAutoCompleteCurrentCourseModule() {
@@ -4329,7 +4379,8 @@ function markModuleMaterialViewed(type, id, extra = {}) {
 }
 
 function buildViewedStatusPill(viewed) {
-    return `<span style="font-size:0.76rem; border-radius:999px; padding:0.24rem 0.55rem; color:${viewed ? '#86efac' : '#94a3b8'}; border:1px solid ${viewed ? 'rgba(52,211,153,0.35)' : 'rgba(148,163,184,0.22)'}; background:${viewed ? 'rgba(16,185,129,0.14)' : 'rgba(148,163,184,0.08)'}; white-space:nowrap;">${viewed ? 'Visualizado' : 'Not viewed'}</span>`;
+    const label = viewed ? (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed');
+    return `<span style="font-size:0.76rem; border-radius:999px; padding:0.24rem 0.55rem; color:${viewed ? '#86efac' : '#94a3b8'}; border:1px solid ${viewed ? 'rgba(52,211,153,0.35)' : 'rgba(148,163,184,0.22)'}; background:${viewed ? 'rgba(16,185,129,0.14)' : 'rgba(148,163,184,0.08)'}; white-space:nowrap;">${label}</span>`;
 }
 
 function buildModuleMaterialProgressSection(module = currentModulePayload) {
@@ -4337,21 +4388,21 @@ function buildModuleMaterialProgressSection(module = currentModulePayload) {
     if (!items.length) return null;
     const viewedCount = items.filter(item => item.viewed).length;
     const section = buildModuleGeneralSection(
-        'Materials / Progress',
-        `${viewedCount}/${items.length} visualized`,
+        window.t ? window.t('world.materialsProgress', 'Materials / Progress') : 'Materials / Progress',
+        `${viewedCount}/${items.length} ${window.t ? window.t('world.visualized', 'visualized') : 'visualized'}`,
         items.map((item) => ({
             label: item.type === 'video' ? 'Video' : item.type === 'document' ? 'Material' : 'Quiz',
             accent: item.viewed ? '#34d399' : '#94a3b8',
             title: item.title,
-            caption: `${item.viewed ? '✓ Visualizado' : '○ Not viewed'}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` · Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
-            actionLabel: item.type === 'video' ? 'Open' : item.type === 'document' ? 'Open' : 'Go to quiz',
+            caption: `${item.viewed ? '✓ ' + (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : '○ ' + (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed')}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` · Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
+            actionLabel: item.type === 'video' ? (window.t ? window.t('world.open', 'Open') : 'Open') : item.type === 'document' ? (window.t ? window.t('world.open', 'Open') : 'Open') : (window.t ? window.t('world.goToQuiz', 'Go to quiz') : 'Go to quiz'),
             onClick: () => {
                 if (item.type === 'video') openModuleVideoAsset(item.source);
                 else if (item.type === 'document') openModuleDocumentAsset(item.source);
                 else activateModuleTab('quiz');
             }
         })),
-        viewedCount === items.length ? 'Complete' : 'In progress',
+        viewedCount === items.length ? (window.t ? window.t('world.complete', 'Complete') : 'Complete') : (window.t ? window.t('world.inProgress', 'In progress') : 'In progress'),
         () => { }
     );
     section.style.borderColor = viewedCount === items.length ? 'rgba(52,211,153,0.24)' : 'rgba(255,255,255,0.08)';
@@ -4502,12 +4553,12 @@ function buildModuleGeneralSection(title, helperText, items, actionLabel, onActi
     return section;
 }
 
-function renderModuleGeneral(module) {
+function renderModuleGeneral(module, filteredVideos, filteredQuizzes) {
     if (!moduleGeneralShortcuts || !moduleGeneralAssets) return;
 
-    const videos = Array.isArray(module.videos) ? module.videos : [];
+    const videos = Array.isArray(filteredVideos) ? filteredVideos : (Array.isArray(module.videos) ? module.videos : []);
     const documents = Array.isArray(module.documents) ? module.documents : [];
-    const quizzes = Array.isArray(module.quizzes) ? module.quizzes : [];
+    const quizzes = Array.isArray(filteredQuizzes) ? filteredQuizzes : (Array.isArray(module.quizzes) ? module.quizzes : []);
 
     moduleGeneralShortcuts.innerHTML = '';
     moduleGeneralAssets.innerHTML = '';
@@ -4633,7 +4684,7 @@ function renderModuleGeneral(module) {
 function renderModuleVideos(videos) {
     const grid = document.getElementById('module-videos-grid');
     if (!grid) return;
-    grid.innerHTML = videos.length ? '' : '<p style="padding: 20px; color: #94a3b8;">No videos available.</p>';
+    grid.innerHTML = videos.length ? '' : `<p style="padding: 20px; color: #94a3b8;">${window.t ? window.t('world.noVideos', 'No videos available.') : 'No videos available.'}</p>`;
 
     grid.style.display = 'flex';
     grid.style.flexDirection = 'column';
@@ -4655,7 +4706,7 @@ function renderModuleVideos(videos) {
         card.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
 
         const titleTop = document.createElement('h4');
-        titleTop.innerText = v.title || 'Vídeo sem título';
+        titleTop.innerText = v.title || (window.t ? window.t('world.videoNoTitle', 'Untitled video') : 'Untitled video');
         titleTop.style.margin = '0';
         titleTop.style.fontSize = '1.1rem';
         titleTop.style.color = '#fff';
@@ -4925,9 +4976,9 @@ function renderModuleDocs(docs) {
         }
     });
 
-    if (pdfList.innerHTML === '') pdfList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">No PDF files.</div>';
-    if (wordList.innerHTML === '') wordList.innerHTML = '<div style="color: #94a3b8; padding: 10px;">No Word files.</div>';
-    if (imgGrid.innerHTML === '') imgGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 10px;">No images.</div>';
+    if (pdfList.innerHTML === '') pdfList.innerHTML = `<div style="color: #94a3b8; padding: 10px;">${window.t ? window.t('world.noPdfFiles', 'No PDF files.') : 'No PDF files.'}</div>`;
+    if (wordList.innerHTML === '') wordList.innerHTML = `<div style="color: #94a3b8; padding: 10px;">${window.t ? window.t('world.noWordFiles', 'No Word files.') : 'No Word files.'}</div>`;
+    if (imgGrid.innerHTML === '') imgGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 10px;">${window.t ? window.t('world.noImages', 'No images.') : 'No images.'}</div>`;
 
     if (typeof window.switchModuleDocTab === 'function') {
         window.switchModuleDocTab('pdf');
@@ -4936,7 +4987,7 @@ function renderModuleDocs(docs) {
 
 function renderModuleQuiz(quizzes) {
     const container = document.querySelector('#module-tab-quiz .quiz-container');
-    container.innerHTML = (quizzes && quizzes.length) ? '' : '<p style="padding: 20px; color: #94a3b8;">No quizzes available.</p>';
+    container.innerHTML = (quizzes && quizzes.length) ? '' : `<p style="padding: 20px; color: #94a3b8;">${window.t ? window.t('world.noQuizzes', 'No quizzes available.') : 'No quizzes available.'}</p>`;
 
     (quizzes || []).forEach((quiz) => {
         const quizBox = document.createElement('div');
@@ -4975,7 +5026,7 @@ function renderModuleQuiz(quizzes) {
             submitBtn.className = 'btn-open';
             submitBtn.style.marginTop = '10px';
             submitBtn.style.width = '100%';
-            submitBtn.innerText = 'Enviar este Quiz';
+            submitBtn.innerText = window.t ? window.t('world.submitQuiz', 'Submit this Quiz') : 'Submit this Quiz';
             submitBtn.onclick = async () => {
                 const answers = [];
                 quiz.questions.forEach(q => {
@@ -4984,13 +5035,13 @@ function renderModuleQuiz(quizzes) {
                 });
 
                 if (answers.length < quiz.questions.length) {
-                    alert('Responda todas as perguntas deste quiz antes de enviar.');
+                    alert(window.t ? window.t('world.answerAll', 'Answer all questions in this quiz before submitting.') : 'Answer all questions in this quiz before submitting.');
                     return;
                 }
 
                 try {
                     submitBtn.disabled = true;
-                    submitBtn.innerText = 'Submitting...';
+                    submitBtn.innerText = window.t ? window.t('world.submitting', 'Submitting...') : 'Submitting...';
                     const res = await fetch(`${AUTH_API}/modules/${currentModuleId}/quiz/submit`, {
                         method: 'POST',
                         headers: {
@@ -5004,12 +5055,13 @@ function renderModuleQuiz(quizzes) {
                     markModuleMaterialViewed('quiz', quiz.id, { bestScore: result.score });
                     updateRuntimeModuleFromQuizSubmission(result.score);
                     await refreshCourseWorldRuntime();
-                    alert(`Quiz "${quiz.title}" enviado! Sua nota parcial: ${result.score.toFixed(1)}%`);
+                    const scoreMsg = window.t ? window.t('world.quizSubmitted', 'Quiz "{title}" submitted! Your score: {score}%').replace('{title}', quiz.title).replace('{score}', result.score.toFixed(1)) : `Quiz "${quiz.title}" submitted! Your score: ${result.score.toFixed(1)}%`;
+                    alert(scoreMsg);
                 } catch (err) {
-                    alert('Erro ao enviar quiz: ' + err.message);
+                    alert((window.t ? window.t('world.quizSubmitError', 'Error submitting quiz: ') : 'Error submitting quiz: ') + err.message);
                 } finally {
                     submitBtn.disabled = false;
-                    submitBtn.innerText = 'Enviar este Quiz';
+                    submitBtn.innerText = window.t ? window.t('world.submitQuiz', 'Submit this Quiz') : 'Submit this Quiz';
                 }
             };
             quizBox.appendChild(submitBtn);

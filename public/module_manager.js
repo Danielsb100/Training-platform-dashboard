@@ -245,6 +245,9 @@ async function openModuleEditor(moduleId = null) {
     switchModuleTab('basics');
     document.getElementById('active-module-editor').style.display = 'block';
 
+    // Scroll immediately so the user sees the editor area without waiting for API data
+    document.getElementById('active-module-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     if (!moduleId) {
         document.getElementById('editor-title').innerText = window.t ? window.t('courseBuilder.createNewModule', 'Create New Module') : 'Create New Module';
         try {
@@ -310,10 +313,6 @@ async function openModuleEditor(moduleId = null) {
         document.getElementById('btn-delete-module').style.display = 'block';
         await loadModuleData(moduleId);
     }
-
-    setTimeout(() => {
-        document.getElementById('active-module-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
 }
 
 function switchModuleTab(tabName) {

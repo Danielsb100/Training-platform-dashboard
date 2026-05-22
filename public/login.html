@@ -242,6 +242,20 @@
                 if (response.ok && result.ok) {
                     if (result.token) localStorage.setItem('token', result.token);
                     
+                    // Sync language preference from user profile to prevent stale cache from previous account
+                    try {
+                        const profileRes = await fetch('/api/profile/me', {
+                            headers: { 'Authorization': `Bearer ${result.token}` }
+                        });
+                        if (profileRes.ok) {
+                            const profileData = await profileRes.json();
+                            const userLang = (profileData.preferences && profileData.preferences.language) || 'en-US';
+                            localStorage.setItem('i18n_lang', userLang);
+                        }
+                    } catch (langErr) {
+                        console.warn('Could not sync language preference on login:', langErr);
+                    }
+
                     const urlParams = new URLSearchParams(window.location.search);
                     const redirectUrl = urlParams.get('redirect');
                     
@@ -304,6 +318,10 @@
                 btn.disabled = false;
             }
         });
+    </script>
+    <script>
+        // Login page must always use browser language, not a stale preference from a previous user
+        localStorage.removeItem('i18n_lang');
     </script>
     <script src="i18n.js"></script>
 </body>

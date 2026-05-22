@@ -62,28 +62,29 @@
         latestRuntime = runtime;
         panel.classList.remove('hidden');
         titleEl.textContent = runtime.title;
-        summaryEl.textContent = runtime.description || 'Follow the rooms in order and complete the required modules to unlock the next ones.';
-        progressEl.textContent = `${runtime.progressPercent || 0}% complete • ${runtime.completedCount || 0}/${(runtime.modules || []).length} modules completed`;
+        summaryEl.textContent = runtime.description || (window.t ? window.t('world.followRooms', 'Follow the rooms in order and complete the required modules to unlock the next ones.') : 'Follow the rooms in order and complete the required modules to unlock the next ones.');
+        const _tc = (k, f) => window.t ? window.t(k, f) : f;
+        progressEl.textContent = `${runtime.progressPercent || 0}% ${_tc('world.completeLabel','complete')} • ${runtime.completedCount || 0}/${(runtime.modules || []).length} ${_tc('world.modulesCompleted','modules completed')}`;
 
         const activeModuleId = bridge.getActiveCourseRoomModuleId?.() || null;
         lastRenderedActiveModuleId = activeModuleId;
         const actionButtonStyle = 'padding:0.58rem 0.9rem; border:none; border-radius:12px; cursor:pointer; font-weight:700; letter-spacing:0.01em; transition:transform 120ms ease, opacity 120ms ease;';
 
         listEl.innerHTML = (runtime.modules || []).map((module, index) => {
-            const statusLabel = module.completed ? 'Done' : (module.unlocked ? 'Ready' : 'Locked');
+            const statusLabel = module.completed ? _tc('world.done','Done') : (module.unlocked ? _tc('world.ready','Ready') : _tc('world.locked','Locked'));
             const statusColor = module.completed ? '#10b981' : (module.unlocked ? '#60a5fa' : '#ef4444');
             const stepIcon = module.completed ? '✓' : (module.unlocked ? '•' : '⨯');
             const isCurrentRoom = activeModuleId === module.moduleId;
             const quizRuleText = module.quizRequirementActive
-                ? `Quiz gate ${Math.round(module.minimumQuizScore || 0)}%`
-                : (module.hasQuiz ? 'Quiz available' : null);
+                ? `${_tc('world.quizGate','Quiz gate')} ${Math.round(module.minimumQuizScore || 0)}%`
+                : (module.hasQuiz ? _tc('world.quizAvailable','Quiz available') : null);
             const quizProgressText = module.hasQuiz
                 ? (module.bestQuizScore === null || module.bestQuizScore === undefined
-                    ? 'No graded attempt yet.'
-                    : `Best score ${module.bestQuizScore.toFixed(1)}%${module.quizRequirementActive ? (module.quizPassed ? ' • Requirement met' : ' • Requirement not met yet') : ''}`)
+                    ? _tc('world.noGradedAttempt','No graded attempt yet.')
+                    : `${_tc('world.bestScore','Best score')} ${module.bestQuizScore.toFixed(1)}%${module.quizRequirementActive ? (module.quizPassed ? ' • ' + _tc('world.requirementMet','Requirement met') : ' • ' + _tc('world.requirementNotMet','Requirement not met yet')) : ''}`)
                 : null;
             const showCompleteButton = module.unlocked && !module.completed;
-            const completeButtonLabel = module.canMarkComplete ? 'Mark done' : 'Pass quiz first';
+            const completeButtonLabel = module.canMarkComplete ? _tc('world.markDone','Mark done') : _tc('world.passQuizFirst','Pass quiz first');
             const completeButtonStyle = module.canMarkComplete
                 ? `${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(207,156,51,0.2); color:#fde047; border:1px solid rgba(207,156,51,0.4);' : 'background:rgba(207,156,51,0.15); color:#b48600; border:1px solid rgba(207,156,51,0.4);'}`
                 : `${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(37,99,235,0.12); color:#dbeafe; border:1px solid rgba(96,165,250,0.22);' : 'background:rgba(59,130,246,0.1); color:#2563eb; border:1px solid rgba(59,130,246,0.3);'} opacity:0.72; cursor:not-allowed;`;
@@ -94,26 +95,26 @@
                         <div style="display:flex; gap:0.75rem; align-items:flex-start;">
                             <span style="display:inline-flex; width:30px; height:30px; border-radius:999px; align-items:center; justify-content:center; background:${isCurrentRoom ? 'rgba(186,230,253,0.22)' : (module.completed ? 'rgba(16,185,129,0.18)' : 'rgba(148,163,184,0.2)')}; color:${isCurrentRoom ? '#e0f2fe' : (module.completed ? '#059669' : '#64748b')}; font-weight:800; flex:0 0 30px;">${stepIcon}</span>
                             <div>
-                                <strong style="display:block; margin-bottom:0.25rem; color:${isCurrentRoom ? '#f8fafc' : '#1e293b'};">Room ${index + 1}. ${escapeHtml(module.title)}</strong>
-                                <span style="font-size:0.8rem; color:${isCurrentRoom ? '#dbeafe' : '#64748b'};">${escapeHtml(module.roomLabel || 'Module room')}</span>
+                                <strong style="display:block; margin-bottom:0.25rem; color:${isCurrentRoom ? '#f8fafc' : '#1e293b'};">${_tc('world.roomLabel','Room')} ${index + 1}. ${escapeHtml(module.title)}</strong>
+                                <span style="font-size:0.8rem; color:${isCurrentRoom ? '#dbeafe' : '#64748b'};">${escapeHtml(module.roomLabel || _tc('world.moduleRoom','Module room'))}</span>
                             </div>
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
-                            ${isCurrentRoom ? '<span style="font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:#e0f2fe; background:rgba(14,165,233,0.22); border:1px solid rgba(125,211,252,0.55); border-radius:999px; padding:0.22rem 0.55rem; font-weight:800;">You are here</span>' : ''}
+                            ${isCurrentRoom ? `<span style="font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:#e0f2fe; background:rgba(14,165,233,0.22); border:1px solid rgba(125,211,252,0.55); border-radius:999px; padding:0.22rem 0.55rem; font-weight:800;">${_tc('world.youAreHere','You are here')}</span>` : ''}
                             <span style="font-size:0.74rem; color:white; background:${statusColor}; border-radius:999px; padding:0.25rem 0.6rem;">${statusLabel}</span>
                         </div>
                     </div>
                     <div style="font-size:0.8rem; color:${isCurrentRoom ? '#e2e8f0' : '#475569'}; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                        <span>${module.isRequired ? 'Required' : 'Optional'}</span>
+                        <span>${module.isRequired ? _tc('world.required','Required') : _tc('world.optional','Optional')}</span>
                         <span>•</span>
                         <span>${escapeHtml(module.moduleStatus || 'DRAFT')}</span>
                         ${quizRuleText ? `<span>•</span><span>${escapeHtml(quizRuleText)}</span>` : ''}
-                        ${isCurrentRoom ? '<span>•</span><strong style="color:#e0f2fe;">Current room</strong>' : ''}
+                        ${isCurrentRoom ? `<span>•</span><strong style="color:#e0f2fe;">${_tc('world.currentRoom','Current room')}</strong>` : ''}
                     </div>
                     ${quizProgressText ? `<div style="font-size:0.78rem; color:${module.quizPassed ? (isCurrentRoom ? '#86efac' : '#059669') : (isCurrentRoom ? '#93c5fd' : '#2563eb')};">${escapeHtml(quizProgressText)}</div>` : ''}
                     <div style="display:flex; gap:0.55rem; flex-wrap:wrap;">
-                        ${module.unlocked && !isCurrentRoom ? `<button type="button" data-course-trail-action="teleport" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:linear-gradient(135deg, #2563eb, #38bdf8); color:white; box-shadow:0 10px 24px rgba(37,99,235,0.28);">Go to room</button>` : ''}
-                        ${module.unlocked ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);' : 'background:white; color:#334155; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.02);'}">Open module</button>` : ''}
+                        ${module.unlocked && !isCurrentRoom ? `<button type="button" data-course-trail-action="teleport" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:linear-gradient(135deg, #2563eb, #38bdf8); color:white; box-shadow:0 10px 24px rgba(37,99,235,0.28);">${_tc('world.goToRoom','Go to room')}</button>` : ''}
+                        ${module.unlocked ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);' : 'background:white; color:#334155; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.02);'}">${_tc('world.openModule','Open module')}</button>` : ''}
                         ${showCompleteButton ? `<button type="button" data-course-trail-action="complete" data-module-id="${module.moduleId}" style="${completeButtonStyle}" ${module.canMarkComplete ? '' : 'data-completion-blocked="true"'}>${completeButtonLabel}</button>` : ''}
                     </div>
                 </article>
@@ -131,7 +132,7 @@
                 const module = runtime.modules.find((entry) => entry.moduleId === moduleId);
                 if (!module) return;
                 if (!module.unlocked && button.dataset.courseTrailAction !== 'complete') {
-                    alert(module.completionBlockedReason || 'Complete the required previous module before entering this room.');
+                    alert(module.completionBlockedReason || (window.t ? window.t('world.completePreviousModule', 'Complete the required previous module before entering this room.') : 'Complete the required previous module before entering this room.'));
                     return;
                 }
 
@@ -152,7 +153,7 @@
 
                 if (button.dataset.courseTrailAction === 'complete') {
                     if (button.dataset.completionBlocked === 'true') {
-                        alert(module.completionBlockedReason || 'Pass the quiz requirement before marking this room as done.');
+                        alert(module.completionBlockedReason || (window.t ? window.t('world.passQuizRequirement', 'Pass the quiz requirement before marking this room as done.') : 'Pass the quiz requirement before marking this room as done.'));
                         return;
                     }
 

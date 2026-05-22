@@ -200,7 +200,7 @@
         <!-- Player List Container -->
         <div id="player-list-container" class="hidden">
             <div class="player-list-header">
-                <h3>Online Players</h3>
+                <h3 data-i18n="world.onlinePlayers">Online Players</h3>
             </div>
             <div id="player-list-content"></div>
         </div>
@@ -237,20 +237,20 @@
             <div id="chat-history-container">
                 <div class="chat-panel-header">
                     <div>
-                        <span class="chat-panel-eyebrow">Room chat</span>
-                        <strong>Conversation</strong>
+                        <span class="chat-panel-eyebrow" data-i18n="world.roomChat">Room chat</span>
+                        <strong data-i18n="world.conversation">Conversation</strong>
                     </div>
-                    <span class="chat-panel-hint">Enter to focus</span>
+                    <span class="chat-panel-hint" data-i18n="world.enterToFocus">Enter to focus</span>
                 </div>
-                <div id="chat-history-empty">No messages yet. Press <kbd>Enter</kbd> or use the field below to start
+                <div id="chat-history-empty" data-i18n="world.noMessagesYet">No messages yet. Press <kbd>Enter</kbd> or use the field below to start
                     chatting.</div>
                 <div id="chat-history"></div>
             </div>
 
             <!-- Estrutura do Chat Global - Entrada de Texto -->
             <div id="chat-input-container">
-                <input type="text" id="chat-input" placeholder="Type your message and press Enter" autocomplete="off">
-                <button type="button" id="chat-send-btn">Send</button>
+                <input type="text" id="chat-input" data-i18n-placeholder="world.typeMessage" placeholder="Type your message and press Enter" autocomplete="off">
+                <button type="button" id="chat-send-btn" data-i18n="world.send">Send</button>
             </div>
         </div>
 
@@ -259,9 +259,9 @@
             <div class="general-ai-panel module-assistant-panel">
                 <div class="general-ai-header">
                     <div class="module-assistant-intro general-ai-intro">
-                        <span class="module-assistant-eyebrow">General AI assistant</span>
-                        <h3>Ask across all Eurobot knowledge bases</h3>
-                        <p>This assistant uses Eurobot's global RAG scope by default, not only the current module and not
+                        <span class="module-assistant-eyebrow" data-i18n="world.generalAiAssistant">General AI assistant</span>
+                        <h3 data-i18n="world.askAcrossKb">Ask across all Eurobot knowledge bases</h3>
+                        <p data-i18n="world.aiAssistantDesc">This assistant uses Eurobot's global RAG scope by default, not only the current module and not
                             only Training-selected knowledge bases.</p>
                     </div>
                     <button id="general-ai-close" class="close-btn" type="button"
@@ -271,10 +271,10 @@
                 <div id="general-ai-status" class="module-assistant-status" role="status"></div>
                 <div class="module-assistant-input-row general-ai-input-row">
                     <textarea id="general-ai-input" class="module-assistant-input" rows="2"
-                        placeholder="Ask the general AI assistant..."></textarea>
-                    <button id="general-ai-voice" class="btn-open secondary" type="button">Record</button>
-                    <button id="general-ai-speak" class="btn-open secondary" type="button">Play</button>
-                    <button id="general-ai-send" class="btn-open" type="button">Send</button>
+                        data-i18n-placeholder="world.askAiPlaceholder" placeholder="Ask the general AI assistant..."></textarea>
+                    <button id="general-ai-voice" class="btn-open secondary" type="button" data-i18n="world.record">Record</button>
+                    <button id="general-ai-speak" class="btn-open secondary" type="button" data-i18n="world.play">Play</button>
+                    <button id="general-ai-send" class="btn-open" type="button" data-i18n="world.send">Send</button>
                 </div>
             </div>
         </div>
@@ -285,8 +285,8 @@
             <div class="card-inner">
                 <div class="world-operations-header">
                     <div>
-                        <span class="world-operations-eyebrow">Operational Agenda</span>
-                        <h3>Pending actions</h3>
+                        <span class="world-operations-eyebrow" data-i18n="world.operationalAgenda">Operational Agenda</span>
+                        <h3 data-i18n="world.pendingActions">Pending actions</h3>
                     </div>
                 </div>
                 <div class="world-operations-counts">
@@ -294,7 +294,7 @@
                     <span id="world-operations-urgent" class="world-operations-pill warning">0 urgent</span>
                 </div>
                 <ul id="world-operations-list" class="world-operations-list">
-                    <li class="world-operations-empty">No pending items right now.</li>
+                    <li class="world-operations-empty" data-i18n="world.noPendingItems">No pending items right now.</li>
                 </ul>
             </div>
         </div>
@@ -303,8 +303,8 @@
             <div class="card-inner">
                 <div class="world-operations-header">
                     <div>
-                        <span class="world-operations-eyebrow">AI Tips</span>
-                        <h3>Study guidance</h3>
+                        <span class="world-operations-eyebrow" data-i18n="world.aiTips">AI Tips</span>
+                        <h3 data-i18n="world.studyGuidance">Study guidance</h3>
                     </div>
                     <button id="world-ai-tips-close" class="close-btn" type="button" title="Close AI tips">&times;</button>
                 </div>
@@ -313,10 +313,10 @@
                     <span id="world-ai-tips-attention" class="world-operations-pill warning">0 attention</span>
                 </div>
                 <ul id="world-ai-tips-list" class="world-operations-list">
-                    <li class="world-operations-empty">Open this card to load AI study tips.</li>
+                    <li class="world-operations-empty" data-i18n="world.openToLoadTips">Open this card to load AI study tips.</li>
                 </ul>
                 <div class="world-ai-tips-footer">
-                    <button id="world-ai-tips-refresh" type="button">Refresh tips</button>
+                    <button id="world-ai-tips-refresh" type="button" data-i18n="world.refreshTips">Refresh tips</button>
                 </div>
             </div>
         </div>
@@ -346,7 +346,7 @@
     <aside id="course-trail-panel" class="ui-layer hidden"
         style="position:fixed; right:16px; top:96px; bottom:16px; width:min(360px, calc(100vw - 24px)); overflow:auto; padding:1rem; border-radius:20px; background:var(--panel-bg); border:1px solid var(--panel-border); box-shadow:0 20px 60px rgba(0,0,0,0.15); backdrop-filter:blur(18px); overscroll-behavior:contain; z-index:1150;">
         <div style="display:flex; flex-direction:column; gap:0.35rem; margin-bottom:1rem;">
-            <span
+            <span data-i18n="world.courseWorldLabel"
                 style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent-color);">Course
                 world</span>
             <h3 id="course-trail-title" style="margin:0; font-size:1.15rem; color:var(--text-primary);">Course trail
@@ -384,18 +384,18 @@
 
     <!-- Module Sidebar -->
     <div id="module-sidebar" class="ui-layer hidden module-sidebar">
-        <div id="sidebar-preview-banner" class="preview-banner">PREVIEW MODE: Unpublished module</div>
+        <div id="sidebar-preview-banner" class="preview-banner" data-i18n="world.previewBanner">PREVIEW MODE: Unpublished module</div>
         <div class="sidebar-header">
             <h2 id="module-sidebar-title">Module Name</h2>
             <button id="close-module-sidebar" class="close-btn">&times;</button>
         </div>
         <div class="sidebar-tabs">
-            <button class="module-tab-btn active" data-tab="general">General</button>
-            <button class="module-tab-btn" data-tab="videos">Videos</button>
-            <button class="module-tab-btn" data-tab="docs">Documentos</button>
-            <button class="module-tab-btn" data-tab="quiz">Quiz</button>
-            <button class="module-tab-btn" data-tab="forum">Forum</button>
-            <button class="module-tab-btn" data-tab="reports">Reports</button>
+            <button class="module-tab-btn active" data-tab="general" data-i18n="world.tabGeneral">General</button>
+            <button class="module-tab-btn" data-tab="videos" data-i18n="world.tabVideos">Videos</button>
+            <button class="module-tab-btn" data-tab="docs" data-i18n="world.tabDocuments">Documents</button>
+            <button class="module-tab-btn" data-tab="quiz" data-i18n="world.tabQuiz">Quiz</button>
+            <button class="module-tab-btn" data-tab="forum" data-i18n="world.tabForum">Forum</button>
+            <button class="module-tab-btn" data-tab="reports" data-i18n="world.tabReports">Reports</button>
         </div>
         <div class="sidebar-content">
             <div id="module-tab-general" class="tab-pane active">
@@ -403,15 +403,15 @@
                 <div class="module-general-layout">
                     <div class="module-general-section">
                         <div class="module-general-section-head">
-                            <h3>Quick access</h3>
-                            <span>Open any module content from here.</span>
+                            <h3 data-i18n="world.quickAccess">Quick access</h3>
+                            <span data-i18n="world.quickAccessDesc">Open any module content from here.</span>
                         </div>
                         <div id="module-general-shortcuts" class="module-general-shortcuts"></div>
                     </div>
                     <div class="module-general-section">
                         <div class="module-general-section-head">
-                            <h3>Module assets</h3>
-                            <span>Videos, docs, quizzes and tools in one place.</span>
+                            <h3 data-i18n="world.moduleAssets">Module assets</h3>
+                            <span data-i18n="world.moduleAssetsDesc">Videos, docs, quizzes and tools in one place.</span>
                         </div>
                         <div id="module-general-assets" class="module-general-assets"></div>
                     </div>
@@ -453,7 +453,7 @@
             </div>
             <div id="module-tab-quiz" class="tab-pane">
                 <div id="module-quiz-container" class="quiz-container"></div>
-                <button id="btn-submit-quiz" class="btn-open" style="margin-top: 20px;">Submit Answers</button>
+                <button id="btn-submit-quiz" class="btn-open" style="margin-top: 20px;" data-i18n="world.submitAnswers">Submit Answers</button>
             </div>
             <div id="module-tab-forum" class="tab-pane">
                 <div id="module-forum-container" class="forum-container"></div>
@@ -510,7 +510,7 @@
     <!-- Indicador de Carregamento (Spinner) para modelos pesados -->
     <div id="loading-indicator" class="hidden">
         <div class="spinner"></div>
-        <span>Loading model...</span>
+        <span data-i18n="world.loadingModel">Loading model...</span>
     </div>
 
     <!-- Biblioteca Socket.io para comunicação em tempo real -->
@@ -545,6 +545,7 @@
     </div>
 
     <!-- Main Logic -->
+    <script src="/i18n.js"></script>
     <script type="module" src="main.js?v=1.4.2"></script>
     <script src="course-world.js?v=1"></script>
     <div
