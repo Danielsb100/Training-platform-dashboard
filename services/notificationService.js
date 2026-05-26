@@ -6,6 +6,7 @@ const NotificationTypes = Object.freeze({
   QUIZ_SUBMITTED: 'QUIZ_SUBMITTED',
   EVENT_INVITE: 'EVENT_INVITE',
   ENROLLMENT_CREATED: 'ENROLLMENT_CREATED',
+  ENROLLMENT_REQUEST: 'ENROLLMENT_REQUEST',
   FEEDBACK_RECEIVED: 'FEEDBACK_RECEIVED',
   SYSTEM_REMINDER: 'SYSTEM_REMINDER'
 });
@@ -344,6 +345,18 @@ async function createEnrollmentNotification(options, tx = prisma) {
   );
 }
 
+async function createEnrollmentRequestNotification(options, tx = prisma) {
+  return createNotificationBundle(
+    buildFutureEventPayload({
+      ...options,
+      type: NotificationTypes.ENROLLMENT_REQUEST,
+      priority: NotificationPriority.HIGH,
+      bucket: TaskQueueBucket.TODAY
+    }),
+    tx
+  );
+}
+
 async function createFeedbackNotification(options, tx = prisma) {
   return createNotificationBundle(
     buildFutureEventPayload({
@@ -484,6 +497,7 @@ module.exports = {
   notifyQuizSubmitted,
   createEventInviteNotification,
   createEnrollmentNotification,
+  createEnrollmentRequestNotification,
   createFeedbackNotification,
   getOperationalSummary,
   markNotificationAsRead,

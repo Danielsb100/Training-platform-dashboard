@@ -1,6 +1,6 @@
 const prisma = require('../config/db');
 const { deepDeleteModule } = require('./moduleController');
-const { createEnrollmentNotification, createEventInviteNotification } = require('../services/notificationService');
+const { createEnrollmentNotification, createEnrollmentRequestNotification, createEventInviteNotification } = require('../services/notificationService');
 const { generateCourseInsightsForStudent } = require('../services/moduleAiService');
 
 function getEffectiveUserRoles(user) {
@@ -298,7 +298,7 @@ async function assertCourseAccess(courseId, user) {
   }
 
   const managerView = isCourseManager(user, course);
-  const enrollment = course.enrollments.find((item) => item.userId === user.id && item.status !== 'CANCELLED');
+  const enrollment = course.enrollments.find((item) => item.userId === user.id && item.status !== 'CANCELLED' && item.status !== 'PENDING');
 
   if (!managerView && !enrollment) {
     throw new Error('COURSE_ACCESS_DENIED');
@@ -393,10 +393,10 @@ async function getAccessibleCourses(req, res) {
         ? {
             OR: [
               { ownerMasterId: req.user.id },
-              { enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } } }
+              { enrollments: { some: { userId: req.user.id, status: { in: ['ENROLLED', 'COMPLETED'] } } } }
             ]
           }
-        : { enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } } },
+        : { enrollments: { some: { userId: req.user.id, status: { in: ['ENROLLED', 'COMPLETED'] } } } },
       include: {
         ...buildCourseInclude(req.user.id),
         landingPage: {
@@ -910,32 +910,67 @@ async function selfEnroll(req, res) {
       return res.status(403).json({ error: 'Cannot subscribe to an unpublished course.' });
     }
 
+    // Check if the user already has an enrollment
+    const existingEnrollment = await prisma.enrollment.findUnique({
+      where: { courseId_userId: { courseId, userId } }
+    });
+
+    if (existingEnrollment) {
+      if (existingEnrollment.status === 'PENDING') {
+        return res.status(200).json({ ...existingEnrollment, alreadyPending: true });
+      }
+      if (existingEnrollment.status === 'ENROLLED' || existingEnrollment.status === 'COMPLETED') {
+        return res.status(200).json({ ...existingEnrollment, alreadyEnrolled: true });
+      }
+    }
+
+    // Create enrollment as PENDING (request)
     const enrollment = await prisma.enrollment.upsert({
       where: { courseId_userId: { courseId, userId } },
-      update: { status: 'ENROLLED' },
-      create: { courseId, userId, status: 'ENROLLED' }
+      update: { status: 'PENDING' },
+      create: { courseId, userId, status: 'PENDING' }
     });
 
     if (enrollment) {
-      // Notify the student
+      // Notify the student that the request was sent
       await createEnrollmentNotification({
         recipientUserId: userId,
-        title: `You have subscribed to ${course.title}`,
-        message: `You successfully enrolled in ${course.title}.`,
+        title: `Enrollment request sent for ${course.title}`,
+        message: `Your enrollment request for ${course.title} has been submitted. The instructor will review it shortly.`,
         actorUserId: userId,
         sourceEntityType: 'Course',
-        sourceEntityId: course.id
+        sourceEntityId: course.id,
+        actionUrl: `/viewer.html?id=${course.id}`
       });
+
       // Notify the course owner
       if (course.ownerMasterId && course.ownerMasterId !== userId) {
-        await createEnrollmentNotification({
+        await createEnrollmentRequestNotification({
           recipientUserId: course.ownerMasterId,
-          title: `${req.user.username} has subscribed to ${course.title}`,
-          message: `${req.user.username} enrolled in your course.`,
+          title: `${req.user.username} requested to join ${course.title}`,
+          message: `${req.user.username} is requesting enrollment in your course. Review the request in Course Builder.`,
           actorUserId: userId,
           sourceEntityType: 'Course',
-          sourceEntityId: course.id
+          sourceEntityId: course.id,
+          actionUrl: `/course_builder.html?id=${course.id}`
         });
+      }
+
+      // Notify co-editors
+      if (course.editors && course.editors.length > 0) {
+        for (const editor of course.editors) {
+          if (editor.userId !== userId && editor.userId !== course.ownerMasterId) {
+            await createEnrollmentRequestNotification({
+              recipientUserId: editor.userId,
+              title: `${req.user.username} requested to join ${course.title}`,
+              message: `${req.user.username} is requesting enrollment. Review the request in Course Builder.`,
+              actorUserId: userId,
+              sourceEntityType: 'Course',
+              sourceEntityId: course.id,
+              actionUrl: `/course_builder.html?id=${course.id}`
+            });
+          }
+        }
       }
     }
 
@@ -946,11 +981,60 @@ async function selfEnroll(req, res) {
   }
 }
 
+async function approveEnrollment(req, res) {
+  try {
+    const courseId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { editors: true }
+    });
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+    if (!isCourseManager(req.user, course)) {
+      return res.status(403).json({ error: 'Not authorized to approve enrollments.' });
+    }
+
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { courseId_userId: { courseId, userId } }
+    });
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found.' });
+    }
+    if (enrollment.status !== 'PENDING') {
+      return res.status(400).json({ error: 'This enrollment is not pending approval.' });
+    }
+
+    const updated = await prisma.enrollment.update({
+      where: { courseId_userId: { courseId, userId } },
+      data: { status: 'ENROLLED' }
+    });
+
+    // Notify the student that they have been approved
+    await createEnrollmentNotification({
+      recipientUserId: userId,
+      title: `You have been approved for ${course.title}`,
+      message: `Your enrollment request for ${course.title} has been approved! You now have full access to the course content.`,
+      actorUserId: req.user.id,
+      sourceEntityType: 'Course',
+      sourceEntityId: course.id,
+      actionUrl: `/course_content.html?id=${course.id}`
+    });
+
+    return res.json(updated);
+  } catch (error) {
+    console.error('Error approving enrollment:', error);
+    return res.status(500).json({ error: 'Failed to approve enrollment.' });
+  }
+}
+
 async function getEnrolledCourses(req, res) {
   try {
     const courses = await prisma.course.findMany({
       where: { 
-        enrollments: { some: { userId: req.user.id, status: { not: 'CANCELLED' } } },
+        enrollments: { some: { userId: req.user.id, status: { in: ['ENROLLED', 'COMPLETED'] } } },
         ownerMasterId: { not: req.user.id }
       },
       include: {
@@ -1421,6 +1505,7 @@ module.exports = {
   removeCourseModule,
   enrollUser,
   selfEnroll,
+  approveEnrollment,
   unsubscribe,
   getEnrolledCourses,
   getCourseRuntime,

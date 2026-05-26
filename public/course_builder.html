@@ -1080,7 +1080,13 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    window.enrolledStudentsData = data.map(e => e.user).filter(u => u);
+                    // Keep enrollment status alongside user data
+                    window.enrolledStudentsData = data
+                        .filter(e => e.user)
+                        .map(e => ({
+                            ...e.user,
+                            enrollmentStatus: e.status || 'ENROLLED'
+                        }));
                     renderEnrolledStudents();
                 }
             } catch (err) {
@@ -1102,21 +1108,67 @@
                 return;
             }
 
-            list.innerHTML = filtered.map(u => `
-                <li style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: white;">
-                    <div>
-                        <strong style="display: block; color: #1e293b; font-size: 0.95rem;">${u.username || 'Unknown'}</strong>
-                        <span style="color: #64748b; font-size: 0.85rem;">${u.email}</span>
-                    </div>
-                    <button onclick="unenrollStudent(${u.id})" style="background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;" title="Unsubscribe Student">
-                        <i class="fas fa-user-minus"></i>
-                    </button>
-                </li>
-            `).join('');
+            // Sort: PENDING students first, then ENROLLED
+            const sorted = [...filtered].sort((a, b) => {
+                if (a.enrollmentStatus === 'PENDING' && b.enrollmentStatus !== 'PENDING') return -1;
+                if (a.enrollmentStatus !== 'PENDING' && b.enrollmentStatus === 'PENDING') return 1;
+                return 0;
+            });
+
+            list.innerHTML = sorted.map(u => {
+                const isPending = u.enrollmentStatus === 'PENDING';
+                
+                if (isPending) {
+                    return `
+                        <li style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f0fdf4;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div>
+                                    <strong style="display: block; color: #1e293b; font-size: 0.95rem;">${u.username || 'Unknown'}</strong>
+                                    <span style="color: #64748b; font-size: 0.85rem;">${u.email}</span>
+                                </div>
+                                <span style="background: #fef3c7; color: #92400e; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">Pending</span>
+                            </div>
+                            <button onclick="approveStudent(${u.id})" style="background: #d1fae5; color: #059669; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;" title="Approve Enrollment" onmouseover="this.style.background='#a7f3d0'" onmouseout="this.style.background='#d1fae5'">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </li>
+                    `;
+                }
+
+                return `
+                    <li style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: white;">
+                        <div>
+                            <strong style="display: block; color: #1e293b; font-size: 0.95rem;">${u.username || 'Unknown'}</strong>
+                            <span style="color: #64748b; font-size: 0.85rem;">${u.email}</span>
+                        </div>
+                        <button onclick="unenrollStudent(${u.id})" style="background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;" title="Unsubscribe Student">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                    </li>
+                `;
+            }).join('');
         }
 
         function filterEnrolledStudents() {
             renderEnrolledStudents();
+        }
+
+        async function approveStudent(userId) {
+            try {
+                const res = await fetch(`/api/courses/${window.editingCourseId}/enrollments/${userId}/approve`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    loadStudents(window.editingCourseId);
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to approve student');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error approving student');
+            }
         }
 
         async function unenrollStudent(userId) {

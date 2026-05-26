@@ -197,6 +197,7 @@ app.post('/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MA
 app.post('/api/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.enrollUser);
 app.get('/api/courses/:id/enrollments', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.getCourseStudents);
 app.delete('/api/courses/:id/enrollments/:userId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.removeStudent);
+app.patch('/api/courses/:id/enrollments/:userId/approve', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.approveEnrollment);
 
 // --- Channels ---
 app.post('/channels', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), channelController.createChannel);

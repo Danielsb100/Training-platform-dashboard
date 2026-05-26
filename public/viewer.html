@@ -46,6 +46,111 @@
         #page-content {
             min-height: 100vh;
         }
+
+        /* Enrollment Request Modal */
+        .enrollment-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: modalFadeIn 0.3s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .enrollment-modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            animation: modalSlideUp 0.3s ease;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .enrollment-modal .modal-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.8rem;
+        }
+        .enrollment-modal .modal-icon.locked {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .enrollment-modal .modal-icon.success {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .enrollment-modal .modal-icon.pending {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+        .enrollment-modal h2 {
+            margin: 0 0 12px;
+            color: #1e293b;
+            font-size: 1.5rem;
+        }
+        .enrollment-modal p {
+            margin: 0 0 25px;
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .enrollment-modal .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .enrollment-modal .btn-request {
+            background: linear-gradient(135deg, #cf982e, #b8860b);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .enrollment-modal .btn-request:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(207, 152, 46, 0.4);
+        }
+        .enrollment-modal .btn-request:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .enrollment-modal .btn-close-modal {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .enrollment-modal .btn-close-modal:hover {
+            background: #e2e8f0;
+        }
     </style>
 </head>
 <body class="view-mode">
@@ -53,7 +158,6 @@
     <a href="marketplace.html" class="viewer-home-btn" title="Back to Home">
         <i class="fas fa-home"></i>
     </a>
-
     <div id="page-content">
         <!-- Content will be injected here -->
         <div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;">
@@ -83,13 +187,7 @@
             if (accessTrainingCta && btnAccessTraining) {
                 accessTrainingCta.style.display = 'block';
                 btnAccessTraining.addEventListener('click', () => {
-                    const token = localStorage.getItem('token');
-                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
-                    if (token) {
-                        window.location.href = targetUrl;
-                    } else {
-                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
-                    }
+                    handleCourseAccess(pageId);
                 });
             }
 
@@ -174,13 +272,7 @@
                 inlineBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const token = localStorage.getItem('token');
-                    const targetUrl = '/course_content.html?id=' + encodeURIComponent(pageId);
-                    if (token) {
-                        window.location.href = targetUrl;
-                    } else {
-                        window.location.href = '/login.html?redirect=' + encodeURIComponent(targetUrl);
-                    }
+                    handleCourseAccess(pageId);
                 });
 
                 // Insert after or inside the anchor element
@@ -195,49 +287,18 @@
             document.addEventListener('click', async (e) => {
                 const viewBtn = e.target.closest('[data-is-view-modules-btn="true"]');
                 if (viewBtn) {
-                    // Check login before allowing access
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    window.location.href = 'course_content.html?id=' + pageId;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCourseAccess(pageId);
                     return;
                 }
                 
                 const subBtn = e.target.closest('.btn-subscribe, [data-is-subscribe-btn="true"]');
                 if (subBtn) {
-                    // Check login before allowing subscribe
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-
-                    if (subBtn.style.pointerEvents === 'none') return;
-                    
-                    const originalText = subBtn.innerText;
-                    subBtn.innerText = 'Subscribing...';
-                    subBtn.style.opacity = '0.7';
-                    subBtn.style.pointerEvents = 'none';
-                    try {
-                        const res = await fetch(`/api/courses/${pageId}/subscribe`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': 'Bearer ' + token
-                            }
-                        });
-                        if(!res.ok) {
-                            throw new Error('Failed to subscribe');
-                        }
-                        window.location.href = 'course_content.html?id=' + pageId;
-                    } catch(err) {
-                        console.error(err);
-                        alert('Erro ao se inscrever. Tente novamente mais tarde.');
-                        subBtn.innerText = originalText;
-                        subBtn.style.opacity = '1';
-                        subBtn.style.pointerEvents = 'auto';
-                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCourseAccess(pageId);
+                    return;
                 }
 
                 // --- YouTube Video Play in View Mode ---
@@ -302,6 +363,140 @@
                     // Fallback to localStorage if API fails or 404
                     loadFromLocalStorage();
                 });
+
+            // --- Enrollment Request Modal Logic ---
+            async function handleCourseAccess(courseId) {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/course_content.html?id=' + courseId);
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/courses/' + courseId, {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+
+                    if (res.ok) {
+                        // User has access — redirect normally
+                        window.location.href = '/course_content.html?id=' + courseId;
+                        return;
+                    }
+
+                    if (res.status === 403) {
+                        // No access — show enrollment request modal
+                        showEnrollmentModal(courseId);
+                        return;
+                    }
+
+                    // Other errors (404 etc)
+                    showEnrollmentModal(courseId, 'error');
+                } catch (err) {
+                    console.error('Access check failed:', err);
+                    showEnrollmentModal(courseId, 'error');
+                }
+            }
+
+            function showEnrollmentModal(courseId, mode) {
+                // Remove existing modal if any
+                const existing = document.getElementById('enrollment-request-modal');
+                if (existing) existing.remove();
+
+                const overlay = document.createElement('div');
+                overlay.id = 'enrollment-request-modal';
+                overlay.className = 'enrollment-modal-overlay';
+
+                if (mode === 'error') {
+                    overlay.innerHTML = `
+                        <div class="enrollment-modal">
+                            <div class="modal-icon locked"><i class="fas fa-exclamation-triangle"></i></div>
+                            <h2>Course Unavailable</h2>
+                            <p>This course could not be found or is currently unavailable. Please try again later.</p>
+                            <div class="modal-actions">
+                                <button class="btn-close-modal" onclick="this.closest('.enrollment-modal-overlay').remove()">Close</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    overlay.innerHTML = `
+                        <div class="enrollment-modal">
+                            <div class="modal-icon locked"><i class="fas fa-lock"></i></div>
+                            <h2>Access Restricted</h2>
+                            <p>You are not enrolled in this course. Request enrollment and the instructor will review your application.</p>
+                            <div class="modal-actions">
+                                <button class="btn-close-modal" onclick="this.closest('.enrollment-modal-overlay').remove()">Cancel</button>
+                                <button class="btn-request" id="btn-request-enrollment"><i class="fas fa-paper-plane" style="margin-right:8px;"></i>Request Enrollment</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.body.appendChild(overlay);
+
+                // Close on overlay click (outside modal)
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) overlay.remove();
+                });
+
+                // Bind request button
+                const requestBtn = document.getElementById('btn-request-enrollment');
+                if (requestBtn) {
+                    requestBtn.addEventListener('click', async () => {
+                        requestBtn.disabled = true;
+                        requestBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Sending...';
+
+                        try {
+                            const token = localStorage.getItem('token');
+                            const res = await fetch('/api/courses/' + courseId + '/subscribe', {
+                                method: 'POST',
+                                headers: { 'Authorization': 'Bearer ' + token }
+                            });
+
+                            if (!res.ok) {
+                                throw new Error('Request failed');
+                            }
+
+                            const data = await res.json();
+
+                            // Update modal to show success
+                            const modal = overlay.querySelector('.enrollment-modal');
+                            if (data.alreadyPending) {
+                                modal.innerHTML = `
+                                    <div class="modal-icon pending"><i class="fas fa-clock"></i></div>
+                                    <h2>Request Already Sent</h2>
+                                    <p>Your enrollment request is already being reviewed by the instructor. You will be notified once it's approved.</p>
+                                    <div class="modal-actions">
+                                        <button class="btn-close-modal" onclick="this.closest('.enrollment-modal-overlay').remove()">OK</button>
+                                    </div>
+                                `;
+                            } else if (data.alreadyEnrolled) {
+                                modal.innerHTML = `
+                                    <div class="modal-icon success"><i class="fas fa-check"></i></div>
+                                    <h2>Already Enrolled!</h2>
+                                    <p>You already have access to this course.</p>
+                                    <div class="modal-actions">
+                                        <button class="btn-request" onclick="window.location.href='/course_content.html?id=${courseId}'"><i class="fas fa-arrow-right" style="margin-right:8px;"></i>Open Course</button>
+                                    </div>
+                                `;
+                            } else {
+                                modal.innerHTML = `
+                                    <div class="modal-icon success"><i class="fas fa-check"></i></div>
+                                    <h2>Request Sent!</h2>
+                                    <p>Your enrollment request has been submitted successfully. The instructor will review it and you'll receive a notification once approved.</p>
+                                    <div class="modal-actions">
+                                        <button class="btn-close-modal" onclick="this.closest('.enrollment-modal-overlay').remove()">OK</button>
+                                    </div>
+                                `;
+                            }
+                        } catch (err) {
+                            console.error('Enrollment request failed:', err);
+                            requestBtn.disabled = false;
+                            requestBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i>Request Enrollment';
+                            alert('Failed to send enrollment request. Please try again.');
+                        }
+                    });
+                }
+            }
         });
     </script>
 </body>

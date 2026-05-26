@@ -407,6 +407,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const profile = actualData.profile || {};
             const user = actualData.user || {};
 
+            // Enforce student access control for creations tab early
+            const earlyRoles = user.roles || [];
+            const isCreator = earlyRoles.some(r => ['TEACHER', 'TUTOR', 'BUSINESS_MENTOR', 'COORDINATOR', 'ADMIN', 'SUPER_ADMIN'].includes(r)) || ['MASTER', 'ADMIN'].includes(user.role) || publishedCourses.length > 0;
+            if (!isCreator && new URLSearchParams(window.location.search).get('tab') === 'creations') {
+                window.location.replace('marketplace.html');
+                return;
+            }
+
             // Preenche Header Visual
             const nameToDisplay = profile.displayName || user.username || 'No Name';
             if (document.getElementById('settings-name')) document.getElementById('settings-name').value = nameToDisplay;
