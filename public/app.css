@@ -531,14 +531,60 @@ body {
 }
 
 /* ==========================================================================
-   MOBILE RESPONSIVENESS (Media Queries)
+   MOBILE RESPONSIVENESS (App-like Native UI)
    ========================================================================== */
 @media (max-width: 768px) {
-    /* 1. Transform Side Nav into Bottom Nav */
+    /* 1. App Container & Main Flow */
     .app-container {
         flex-direction: column;
+        overflow-x: hidden;
     }
     
+    .main-content {
+        padding-bottom: 75px; /* Space for the bottom nav */
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    /* 2. Top Header (Minimalist & Sticky) */
+    .top-header {
+        position: sticky;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px 20px;
+        height: 60px;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .logo {
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+    .logo i { font-size: 20px; }
+    
+    /* Hide heavy desktop elements */
+    .top-links, 
+    .auth-buttons .btn-outline, 
+    .auth-buttons .btn-primary {
+        display: none !important;
+    }
+    
+    /* Keep avatar visible */
+    .auth-buttons {
+        margin-left: auto;
+        gap: 0;
+    }
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* 3. Bottom Navigation (Scrollable Native App Style) */
     .side-nav {
         flex-direction: row;
         width: 100%;
@@ -547,94 +593,146 @@ body {
         bottom: 0;
         left: 0;
         top: auto;
-        padding-top: 0;
-        justify-content: space-around;
+        padding: 0 10px;
+        margin: 0;
+        justify-content: flex-start; /* For scroll */
         align-items: center;
         z-index: 9999;
-        box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
     }
     
     body.dark-theme .side-nav {
-        box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+        background: rgba(37, 37, 38, 0.95) !important;
+        border-top: 1px solid rgba(80, 80, 80, 0.5);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
     }
     
     .nav-item {
-        width: 100%;
+        width: auto;
+        min-width: 65px; /* Minimum width for touch target */
         height: 100%;
-        flex: 1;
+        flex: none; /* Don't stretch */
         border-radius: 0;
         margin: 0 !important;
-    }
-    
-    /* 2. Main Content spacing for Bottom Nav */
-    .main-content {
-        padding-bottom: 80px; /* Space for the bottom nav */
-        height: auto;
-        min-height: 100vh;
-    }
-    
-    /* 3. Layout and Sidebar Fixes */
-    .content-layout {
+        display: inline-flex;
         flex-direction: column;
-        padding: 0 15px 30px 15px;
-        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
     }
     
-    .filters-sidebar {
-        width: 100%;
+    /* Clean up the active state (remove solid background) */
+    .nav-item.active {
+        background: transparent !important;
+        color: var(--accent-color) !important;
+        border-bottom: 3px solid var(--accent-color);
     }
     
-    /* 4. Top Header Adjustments */
-    .top-header {
-        padding: 15px;
-        flex-wrap: wrap;
-        height: auto;
-        gap: 10px;
+    .nav-item:active {
+        background: rgba(0,0,0,0.05) !important;
     }
     
-    .logo {
-        font-size: 16px;
+    /* Hide scrollbar for nav */
+    .side-nav::-webkit-scrollbar {
+        display: none;
     }
-    
-    .top-links {
-        display: none; /* Hide top links to save space, usually non-essential */
+    .side-nav {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
     }
-    
-    .auth-buttons {
-        margin-left: auto;
+
+    /* 4. Top Header & Subtitle cleanup */
+    .header-subtitle, /* If it has a class */
+    .top-header span[style*="border-left"] {
+        display: none !important; /* Hide the long text */
     }
-    
-    .btn-outline, .btn-primary {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-    
-    /* 5. Hero Section Fixes */
+
+    /* 5. Hero Section (Edge-to-Edge Feel) */
     .hero-section {
         margin: 15px;
-        padding: 30px 15px;
+        padding: 40px 20px;
+        border-radius: 12px;
         min-height: auto;
     }
     
     .hero-section h1 {
-        font-size: 26px;
+        font-size: 24px;
+        margin-bottom: 10px;
     }
     
     .hero-subtitle {
-        font-size: 15px;
+        font-size: 14px;
+        margin-bottom: 20px;
     }
     
-    /* 6. Courses Grid */
+    /* 6. Layout and Sidebar (Column Stack) */
+    .content-layout {
+        flex-direction: column;
+        padding: 0 15px 30px 15px;
+        gap: 15px;
+    }
+    
+    .filters-sidebar {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .filter-dropdown {
+        padding: 12px 15px;
+        border-radius: 8px;
+    }
+    
+    /* 7. Courses Grid (Mobile Cards) */
     .courses-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .course-card {
+        border-radius: 12px;
+        padding: 12px;
+    }
+    
+    .course-thumb {
+        height: 160px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .course-title {
+        font-size: 15px;
+        margin-bottom: 10px;
     }
 
-    /* 7. Tables Horizontal Scroll */
+    /* 8. Fix Tabs Overflow (Scroll Horizontal) */
+    .creations-tabs,
+    div[style*="display:flex; gap:15px;"] {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 5px; /* space for scrollbar */
+    }
+
+    /* 9. Fix Forms / Profile Inputs Grid */
+    form[style*="grid-template-columns"], 
+    div[style*="grid-template-columns: 1fr 1fr"],
+    div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 10. Tables (Horizontal Scroll) */
     table {
         display: block;
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        white-space: nowrap; /* Prevent text wrapping in tiny columns */
+        white-space: nowrap;
     }
 }

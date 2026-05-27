@@ -142,26 +142,97 @@ window.templatePresets = [
         thumb: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 
             <!-- HEADER -->
             <section class="module-section" style="background-color:#ffffff; padding:20px; align-items:center;">
@@ -278,26 +349,97 @@ window.templatePresets = [
         thumb: "https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=500&q=80",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- TOP BAR -->
             <section class="module-section" style="background-color:#003399; padding:5px 20px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
@@ -486,26 +628,97 @@ window.templatePresets = [
         thumb: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- HEADER -->
             <section class="module-section" style="background-color:#1c1917; padding:15px 30px; border-bottom:4px solid #78350f;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
@@ -660,26 +873,97 @@ window.templatePresets = [
         thumb: "image/ngo_crisis_thumb.png",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- SENSITIVE ALERT TOP HEADER -->
             <section class="module-section" style="background-color:#991b1b; padding:10px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:center;">
@@ -812,26 +1096,97 @@ window.templatePresets = [
         thumb: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=500&q=80",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- NAVBAR -->
             <section class="module-section" style="background-color:rgba(15,23,42,0.8); backdrop-filter:blur(10px); position:sticky; top:0; z-index:500; min-height:70px;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
@@ -978,26 +1333,97 @@ window.templatePresets = [
         thumb: "image/institution_justice_thumb.png",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- TOP NOTIFIER BAR -->
             <section class="module-section" style="background-color:#0f172a; padding:8px 30px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; color:#94a3b8; font-size:0.75rem; font-family:'Arial', sans-serif;">
@@ -1199,26 +1625,97 @@ window.templatePresets = [
         thumb: "agency_template_thumb_1777569867995.png",
         html: `
             <style>html { scroll-behavior: smooth; }
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 \n            <!-- TOP NOTIFIER BAR -->
             <section class="module-section" style="background-color:#334155; padding:8px 30px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; color:#94a3b8; font-size:0.75rem; font-family:'Arial', sans-serif;">
@@ -1523,26 +2020,97 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 .partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
 .footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
 
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 
 
 <div class="page">
@@ -1818,26 +2386,97 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 .partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
 .footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
 
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 
 
 <div class="page">
@@ -1915,26 +2554,97 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
     .intercepted-pdf-training-section .ipt-risk-footer { justify-content:center; }
 }
 
+
 /* MOBILE RESPONSIVENESS INJECTED */
-@media (max-width: 768px) {
-    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
-        flex-direction: column !important;
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 20px !important;
-        padding: 15px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout cleanly */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
-    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
-    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
-    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
-    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
-    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
-    section, .hero { padding: 30px 15px !important; }
-    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
-    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Improve Touch Targets & Widths */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
     svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
+    }
 }
 </style>
+
 
 
 <section id="intercepted-pdf-training-section" class="intercepted-pdf-training-section" data-page="intercepted">

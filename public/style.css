@@ -936,58 +936,92 @@ b o d y . v i e w - m o d e   d i v [ d a t a - i s - s u b s c r i b e - b t n 
 body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -165px !important; }
 
 /* ==========================================================================
-   MOBILE RESPONSIVENESS (Media Queries for Templates)
+   MOBILE RESPONSIVENESS (Progressive App-Like UI)
    ========================================================================== */
+
+/* TABLET & SMALL DESKTOPS (992px) */
+@media (max-width: 992px) {
+    .features, .mission-grid, .avatar-grid, .intel-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+    
+    .mission-grid { flex-direction: column !important; }
+    
+    div[style*="width:50%"],
+    div[style*="flex:2"] { width: 100% !important; flex: none !important; }
+}
+
+/* SMARTPHONES (768px) */
 @media (max-width: 768px) {
-    /* 1. Force Column Layout for Inline Rows injected by templates.js */
+    /* 1. Force Column Layout cleanly */
     div[style*="flex-direction:row"],
     div[style*="flex-direction: row"],
     .module-content,
-    .hero-inner {
+    .hero-inner,
+    .features,
+    .avatar-grid,
+    .intel-grid,
+    .footer-top {
         flex-direction: column !important;
+        grid-template-columns: 1fr !important;
         gap: 20px !important;
-        padding: 15px !important;
+        padding: 20px !important;
         align-items: center !important;
         text-align: center !important;
     }
     
-    /* 2. Fix Hero Sections */
-    .hero-content {
+    /* 2. Hero & Header Fixes */
+    .hero-content, .intel-left, .intel-right {
         width: 100% !important;
     }
     
     .hero-logo {
-        max-width: 200px !important;
+        max-width: 250px !important;
         margin: 0 auto !important;
     }
     
     /* 3. Typography Adjustments */
-    h1, h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
-        font-size: 2rem !important;
+    h1, h2, .hero h1, .hero h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2.2rem !important;
         line-height: 1.2 !important;
     }
     
-    /* 4. Reset specific inline widths/flex that break layouts */
-    div[style*="width:50%"],
-    div[style*="width: 50%"],
-    div[style*="flex:2"],
-    div[style*="flex: 2"],
-    div[style*="flex:1"],
-    div[style*="flex: 1"] {
-        width: 100% !important;
-        flex: none !important;
-    }
-    
-    /* 5. Improve Button/Actions Mobile Layout */
+    /* 4. Improve Touch Targets & Widths */
     div[style*="display:flex; gap:20px"],
-    div[style*="display: flex; gap: 20px"] {
+    div[style*="display: flex; gap: 20px"],
+    .hero-ctas {
         flex-direction: column !important;
         width: 100% !important;
         align-items: stretch !important;
     }
     
-    /* 6. General Padding Reductions */
-    section {
-        padding: 30px 15px !important;
+    .editable-text[style*="padding:10px 20px"], .hero-btn {
+        text-align: center !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important; /* Larger touch target */
+    }
+    
+    /* 5. Padding Reductions (Edge-to-Edge feel) */
+    section, .hero, .mission, .avatar-section, .intel, .footer {
+        padding: 40px 15px !important;
+    }
+    
+    /* 6. Hide SVG Decorations that break vertical flow */
+    svg.pipe { display: none !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+}
+
+/* SMALL SMARTPHONES (480px) */
+@media (max-width: 480px) {
+    h1, .hero h1, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+    }
+    p, .editable-text[style*="font-size:1.1rem"] {
+        font-size: 1rem !important;
+    }
+    section, .hero {
+        padding: 30px 10px !important;
     }
 }
