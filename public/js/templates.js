@@ -141,7 +141,28 @@ window.templatePresets = [
         name: "Corporate PRO",
         thumb: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+
             <!-- HEADER -->
             <section class="module-section" style="background-color:#ffffff; padding:20px; align-items:center;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; width:100%;">
@@ -256,7 +277,28 @@ window.templatePresets = [
         name: "Institution: Global Commission",
         thumb: "https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- TOP BAR -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- TOP BAR -->
             <section class="module-section" style="background-color:#003399; padding:5px 20px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
                     <div style="display:flex; gap:15px; font-size:0.75rem; color:#cbd5e1;">
@@ -443,7 +485,28 @@ window.templatePresets = [
         name: "Institution: International Court",
         thumb: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- HEADER -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- HEADER -->
             <section class="module-section" style="background-color:#1c1917; padding:15px 30px; border-bottom:4px solid #78350f;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
                     <div style="display:flex; flex-direction:column;">
@@ -596,7 +659,28 @@ window.templatePresets = [
         name: "NGO: Crisis Observatory",
         thumb: "image/ngo_crisis_thumb.png",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- SENSITIVE ALERT TOP HEADER -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- SENSITIVE ALERT TOP HEADER -->
             <section class="module-section" style="background-color:#991b1b; padding:10px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:center;">
                     <p class="editable-text" style="color:white; font-family:'Arial', sans-serif; font-weight:bold; font-size:0.85rem; letter-spacing:0.5px; margin:0; text-align:center;">⚠ CONTENT WARNING: Reports on this platform describe severe fundamental rights violations, humanitarian crises, and armed conflict victims.</p>
@@ -727,7 +811,28 @@ window.templatePresets = [
         name: "SaaS Dark Tech",
         thumb: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=500&q=80",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- NAVBAR -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- NAVBAR -->
             <section class="module-section" style="background-color:rgba(15,23,42,0.8); backdrop-filter:blur(10px); position:sticky; top:0; z-index:500; min-height:70px;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; align-items:center;">
                     <h2 class="editable-text text-white" style="margin:0; font-weight:800; font-size:1.5rem; letter-spacing:1px; color:#c084fc;">NEXUS<span style="color:white;">.API</span></h2>
@@ -872,7 +977,28 @@ window.templatePresets = [
         name: "Institution: Global Justice & Legislation",
         thumb: "image/institution_justice_thumb.png",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- TOP NOTIFIER BAR -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- TOP NOTIFIER BAR -->
             <section class="module-section" style="background-color:#0f172a; padding:8px 30px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; color:#94a3b8; font-size:0.75rem; font-family:'Arial', sans-serif;">
                     <span class="editable-text">Official Global Legislative & Judiciary Public Record</span>
@@ -1072,7 +1198,28 @@ window.templatePresets = [
         name: "Institution: AGENFOR Security",
         thumb: "agency_template_thumb_1777569867995.png",
         html: `
-            <style>html { scroll-behavior: smooth; }</style>\n            <!-- TOP NOTIFIER BAR -->
+            <style>html { scroll-behavior: smooth; }
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
+</style>
+\n            <!-- TOP NOTIFIER BAR -->
             <section class="module-section" style="background-color:#334155; padding:8px 30px; min-height:0;">
                 <div class="module-content" style="flex-direction:row; justify-content:space-between; color:#94a3b8; font-size:0.75rem; font-family:'Arial', sans-serif;">
                     <span class="editable-text">Official Global Legislative & Judiciary Public Record</span>
@@ -1375,7 +1522,28 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
 .partners-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
 .partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
 .footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
+
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
 </style>
+
 
 <div class="page">
 
@@ -1649,7 +1817,28 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 .partners-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
 .partners-row div{background:#f1f5f9;padding:4px 8px;border-radius:3px;font-weight:700;font-size:0.65rem;color:#0f172a;}
 .footer-bottom{border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;font-size:0.75rem;color:#94a3b8;}
+
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
 </style>
+
 
 <div class="page">
 
@@ -1725,7 +1914,28 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
     .intercepted-pdf-training-section .ipt-exercise-divider { display:none; }
     .intercepted-pdf-training-section .ipt-risk-footer { justify-content:center; }
 }
+
+/* MOBILE RESPONSIVENESS INJECTED */
+@media (max-width: 768px) {
+    div[style*="flex-direction:row"], div[style*="flex-direction: row"], .module-content, .hero-inner, .mission-grid, .avatar-grid, .intel-grid, .footer-top {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hero-content, .intel-left, .intel-right { width: 100% !important; text-align: center !important; }
+    .hero-logo { max-width: 200px !important; margin: 0 auto !important; }
+    h1, h2, .editable-text[style*="font-size:2.5rem"] { font-size: 1.8rem !important; line-height: 1.2 !important; }
+    div[style*="width:50%"], div[style*="flex:2"], div[style*="flex:1"] { width: 100% !important; flex: none !important; }
+    div[style*="display:flex; gap:20px"], div[style*="display: flex; gap: 20px"] { flex-direction: column !important; width: 100% !important; align-items: stretch !important; }
+    section, .hero { padding: 30px 15px !important; }
+    .features { grid-template-columns: 1fr !important; margin-top: 20px !important; }
+    .step { position: static !important; width: 100% !important; margin-bottom: 15px !important; }
+    svg.pipe { display: none !important; }
+}
 </style>
+
 
 <section id="intercepted-pdf-training-section" class="intercepted-pdf-training-section" data-page="intercepted">
     <div class="ipt-intro module-section" id="ipt-intro-section">

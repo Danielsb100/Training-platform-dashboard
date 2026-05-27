@@ -934,3 +934,60 @@ body.edit-mode .anim-slide-up {
 b o d y . v i e w - m o d e   d i v [ d a t a - i s - s u b s c r i b e - b t n = ' t r u e ' ] ,   b o d y . v i e w - m o d e   d i v [ d a t a - i s - v i e w - m o d u l e s - b t n = ' t r u e ' ]   {   m a r g i n - t o p :   - 1 2 5 p x   ! i m p o r t a n t ;   }  
  
 body.view-mode .editable-text[data-is-subscribe-btn='true'], body.view-mode .editable-text[data-is-view-modules-btn='true'] { margin-top: -165px !important; }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (Media Queries for Templates)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* 1. Force Column Layout for Inline Rows injected by templates.js */
+    div[style*="flex-direction:row"],
+    div[style*="flex-direction: row"],
+    .module-content,
+    .hero-inner {
+        flex-direction: column !important;
+        gap: 20px !important;
+        padding: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    
+    /* 2. Fix Hero Sections */
+    .hero-content {
+        width: 100% !important;
+    }
+    
+    .hero-logo {
+        max-width: 200px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* 3. Typography Adjustments */
+    h1, h2, .editable-text[style*="font-size:2.5rem"], .editable-text[style*="font-size: 2.5rem"] {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* 4. Reset specific inline widths/flex that break layouts */
+    div[style*="width:50%"],
+    div[style*="width: 50%"],
+    div[style*="flex:2"],
+    div[style*="flex: 2"],
+    div[style*="flex:1"],
+    div[style*="flex: 1"] {
+        width: 100% !important;
+        flex: none !important;
+    }
+    
+    /* 5. Improve Button/Actions Mobile Layout */
+    div[style*="display:flex; gap:20px"],
+    div[style*="display: flex; gap: 20px"] {
+        flex-direction: column !important;
+        width: 100% !important;
+        align-items: stretch !important;
+    }
+    
+    /* 6. General Padding Reductions */
+    section {
+        padding: 30px 15px !important;
+    }
+}

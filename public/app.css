@@ -529,3 +529,112 @@ body {
     background-size: 300% 300%;
     animation: rotateGradient 10s ease infinite;
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (Media Queries)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* 1. Transform Side Nav into Bottom Nav */
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .side-nav {
+        flex-direction: row;
+        width: 100%;
+        height: 65px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        top: auto;
+        padding-top: 0;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 9999;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    }
+    
+    body.dark-theme .side-nav {
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+    }
+    
+    .nav-item {
+        width: 100%;
+        height: 100%;
+        flex: 1;
+        border-radius: 0;
+        margin: 0 !important;
+    }
+    
+    /* 2. Main Content spacing for Bottom Nav */
+    .main-content {
+        padding-bottom: 80px; /* Space for the bottom nav */
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    /* 3. Layout and Sidebar Fixes */
+    .content-layout {
+        flex-direction: column;
+        padding: 0 15px 30px 15px;
+        gap: 20px;
+    }
+    
+    .filters-sidebar {
+        width: 100%;
+    }
+    
+    /* 4. Top Header Adjustments */
+    .top-header {
+        padding: 15px;
+        flex-wrap: wrap;
+        height: auto;
+        gap: 10px;
+    }
+    
+    .logo {
+        font-size: 16px;
+    }
+    
+    .top-links {
+        display: none; /* Hide top links to save space, usually non-essential */
+    }
+    
+    .auth-buttons {
+        margin-left: auto;
+    }
+    
+    .btn-outline, .btn-primary {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    /* 5. Hero Section Fixes */
+    .hero-section {
+        margin: 15px;
+        padding: 30px 15px;
+        min-height: auto;
+    }
+    
+    .hero-section h1 {
+        font-size: 26px;
+    }
+    
+    .hero-subtitle {
+        font-size: 15px;
+    }
+    
+    /* 6. Courses Grid */
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* 7. Tables Horizontal Scroll */
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap; /* Prevent text wrapping in tiny columns */
+    }
+}
