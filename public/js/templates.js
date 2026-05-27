@@ -314,7 +314,7 @@ window.templatePresets = [
                             <div class="editable-text" style="padding:10px 20px; background:#f1f5f9; color:#0f172a; font-weight:bold; border-radius:4px; font-size:0.9rem;">View Official Document (PDF)</div>
                         </div>
                         
-                        <div class="editable-image-wrapper"><img src="https://images.unsplash.com/photo-1541882198-46ba08061e38?w=900" class="body-img" style="border-radius:4px; height:350px;"></div>
+                        <div class="editable-image-wrapper"><img src="image/global_comission.png" alt="Global Comission" class="body-img" style="border-radius:4px; height:350px;"></div>
                     </div>
                     
                     <!-- Sidebar Links & Quick Actions -->
@@ -594,7 +594,7 @@ window.templatePresets = [
     {
         id: "human-rights-observatory",
         name: "NGO: Crisis Observatory",
-        thumb: "ngo_crisis_thumb.png",
+        thumb: "image/ngo_crisis_thumb.png",
         html: `
             <style>html { scroll-behavior: smooth; }</style>\n            <!-- SENSITIVE ALERT TOP HEADER -->
             <section class="module-section" style="background-color:#991b1b; padding:10px; min-height:0;">
@@ -870,7 +870,7 @@ window.templatePresets = [
     {
         id: "global-justice-legislation",
         name: "Institution: Global Justice & Legislation",
-        thumb: "institution_justice_thumb.png",
+        thumb: "image/institution_justice_thumb.png",
         html: `
             <style>html { scroll-behavior: smooth; }</style>\n            <!-- TOP NOTIFIER BAR -->
             <section class="module-section" style="background-color:#0f172a; padding:8px 30px; min-height:0;">
@@ -1387,7 +1387,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
             <p class="editable-text">PHYGITAL-OC is an EU-funded project designed to strengthen cooperation among law enforcement agencies and partner organisations. It focuses on organised crime groups operating across physical and digital spaces, using advanced technologies, intelligence analysis and specialised training to better detect, monitor and disrupt transnational criminal networks.</p>
         </div>
         <div class="hero-logo">
-            <div class="editable-image-wrapper"><img class="body-img" src="phygital_logo_transparent.png" alt="Project Phygital-OC" style="width:100%;height:auto;object-fit:contain;"></div>
+            <div class="editable-image-wrapper"><img class="body-img" src="image/phygital_logo_transparent.png" alt="Project Phygital-OC" style="width:100%;height:auto;object-fit:contain;"></div>
         </div>
     </div>
 </section>
@@ -1489,7 +1489,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
     <h2 class="editable-text">Knowledge Assistant / AI Avatar</h2>
     <div class="avatar-grid">
         <div class="avatar-img">
-            <div class="editable-image-wrapper"><img class="body-img" src="ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
+            <div class="editable-image-wrapper"><img class="body-img" src="image/ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
         </div>
         <div class="avatar-feats">
             <div class="av-f"><div><h4 class="editable-text">Interactive Guide</h4><p class="editable-text">Helps participants navigate PHYGITAL-OC training materials, technical terminology, OSINT concepts and investigative workflows.</p></div></div>
@@ -1534,7 +1534,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
         </div>
     </div>
     <div style="padding:20px 0;text-align:center;">
-        <div class="editable-image-wrapper"><img class="body-img" src="phygital-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
+        <div class="editable-image-wrapper"><img class="body-img" src="image/phygital-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
     </div>
     
 </footer>
@@ -1545,7 +1545,7 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1e293b;}
     {
         id: "intercepted-new",
         name: "Project INTERCEPTED",
-        thumb: "intercepted-hero-hand.png",
+        thumb: "image/intercepted-hero-hand.png",
         html: `<style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
@@ -1561,7 +1561,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
 
 /* HERO — darker teal/slate tone */
 .hero{background:linear-gradient(135deg,#0c2d3f 0%,#1a4a5a 40%,#245d6e 100%);position:relative;padding:60px 50px 60px 50px;overflow:hidden;}
-.hero::before{content:'';position:absolute;inset:0;background:url('intercepted-hero-hand.png') center/cover;opacity:0.4;mix-blend-mode:luminosity;}
+.hero::before{content:'';position:absolute;inset:0;background:url('image/intercepted-hero-hand.png') center/cover;opacity:0.4;mix-blend-mode:luminosity;}
 .hero-inner{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:40px;}
 .hero-content{flex:1;}
 .hero-logo{flex-shrink:0;max-width:350px;}
@@ -1740,7 +1740,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
             </div>
             <div class="ipt-intro-media">
                 <div class="editable-image-wrapper" style="width:100%;max-width:480px;">
-                    <img class="body-img" src="intercepted_logo_transparent.png" alt="Project INTERCEPTED" loading="lazy" style="width:100%;height:auto;border-radius:12px;">
+                    <img class="body-img" src="image/intercepted_logo_transparent.png" alt="Project INTERCEPTED" loading="lazy" style="width:100%;height:auto;border-radius:12px;">
                 </div>
             </div>
         </div>
@@ -1936,7 +1936,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
     <h2 class="editable-text">AI Avatar</h2>
     <div class="avatar-grid">
         <div class="avatar-img">
-            <div class="editable-image-wrapper"><img class="body-img" src="ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
+            <div class="editable-image-wrapper"><img class="body-img" src="image/ai_avatar_metahuman.png" alt="AI Avatar" style="width:100%;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);position:relative;z-index:5;"></div>
         </div>
         <div class="avatar-feats">
             <div class="av-f"><div><h4 class="editable-text">Interactive Guide</h4><p class="editable-text">Explores national and EU jurisprudence on human trafficking and organized crime.</p></div></div>
@@ -1978,7 +1978,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f6;color:#1e293b;}
         </div>
     </div>
     <div style="padding:20px 0;text-align:center;">
-        <div class="editable-image-wrapper"><img class="body-img" src="intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
+        <div class="editable-image-wrapper"><img class="body-img" src="image/intercepted-footer-logos.png" alt="Partner Logos" style="width:100%;max-width:1000px;object-fit:contain;"></div>
     </div>
     
 </footer>
