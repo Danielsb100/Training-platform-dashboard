@@ -568,12 +568,24 @@ btnBackHub.addEventListener('click', () => {
 
             if (docType === 'pdf') {
                 playerContent.style.padding = '0'; // Remove padding for full bleed
-                const downloadUrlWithToken = `/api/documents/download/${d.documentId}?inline=true&token=${token}`;
                 playerContent.innerHTML = `
                     <div class="doc-viewer-wrapper" id="pdf-container" style="width:100%; height:100%; max-width:100%; max-height:100%; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
-                        <iframe src="${downloadUrlWithToken}" style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
+                        <div style="text-align:center; color:#64748b;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Gerando ticket de acesso...</div>
                     </div>
                 `;
+                
+                fetch(`/api/documents/${d.documentId}/ticket`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.ticket) {
+                            document.getElementById('pdf-container').innerHTML = `<iframe src="/api/documents/ticket/${data.ticket}?inline=true" style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>`;
+                        } else {
+                            document.getElementById('pdf-container').innerHTML = `<div style="color:red; text-align:center;"><i class="fas fa-times-circle fa-2x"></i><br>Erro ao gerar acesso seguro.</div>`;
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('pdf-container').innerHTML = `<div style="color:red; text-align:center;"><i class="fas fa-times-circle fa-2x"></i><br>Falha na comunicação.</div>`;
+                    });
             } else if (docType === 'image') {
                 playerContent.innerHTML = `
                     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;" id="img-container">
@@ -701,8 +713,16 @@ btnBackHub.addEventListener('click', () => {
     
     // Telemetry and Actions
     window.downloadDocument = async function(documentId) {
-        window.open(`/api/documents/download/${documentId}`, '_blank');
         try {
+            const ticketRes = await fetch(`/api/documents/${documentId}/ticket`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            const { ticket } = await ticketRes.json();
+            if (ticket) {
+                window.open(`/api/documents/ticket/${ticket}`, '_blank');
+            } else {
+                alert('Falha ao gerar ticket de download.');
+                return;
+            }
+            
             await fetch(`/modules/${moduleId}/documents/${documentId}/download`, {
                 method: 'POST',
                 headers: { 

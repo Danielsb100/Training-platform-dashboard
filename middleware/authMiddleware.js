@@ -6,8 +6,9 @@ const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   let token = authHeader && authHeader.split(' ')[1];
 
-  if (!token && req.query && req.query.token) {
-      token = req.query.token;
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/(?:^|; )token=([^;]*)/);
+    if (match) token = match[1];
   }
 
   if (!token) {

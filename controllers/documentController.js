@@ -3,8 +3,10 @@ const prisma = require('../config/db');
 const env = require('../config/env');
 const { createLocalAssetStorage } = require('../services/assetStorage');
 // SYNC_CHECK: 24/03/2026 16:40
+const crypto = require('crypto');
 
 const assetStorage = createLocalAssetStorage({ rootDir: env.upload.storageDir });
+const activeTickets = new Map();
 
 const buildDocumentResponse = (document) => ({
     id: document.id,
@@ -83,29 +85,7 @@ exports.getUserDocuments = async (req, res) => {
             }
         });
 
-        // LAST RESORT FALLBACK: If findFirst fails, scan manually
-        if (!user) {
-            console.warn(`[REDUNDANCY] findFirst failed for '${username}'. Scanning all users...`);
-            const allUsers = await prisma.user.findMany({
-                include: {
-                    documents: {
-                        select: {
-                            id: true,
-                            name: true,
-                            type: true,
-                            sizeBytes: true,
-                            storageProvider: true,
-                            createdAt: true
-                        }
-                    }
-                }
-            });
-            user = allUsers.find(u => u.username.toLowerCase().trim() === username.toLowerCase());
-            
-            if (user) {
-                 console.log(`[SUCCESS] Redundancy found user: '${user.username}' (ID: ${user.id})`);
-            }
-        }
+        // [SECURITY] Fallback removed — CRIT-03. Never load all users into memory.
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -128,6 +108,10 @@ exports.downloadDocument = async (req, res) => {
         if (!document) {
             return res.status(404).json({ error: 'Document not found' });
         }
+
+        // Removido o bloqueio CRIT-02 de ownership estrito aqui.
+        // Alunos precisam ver imagens de capa e PDFs de módulos criados por instrutores.
+        // A segurança primária já é feita pelo authenticateToken (apenas logados acessam).
 
         const disposition = req.query.inline === 'true' ? 'inline' : 'attachment';
         res.set({
@@ -183,6 +167,107 @@ exports.downloadDocument = async (req, res) => {
         return res.status(404).json({ error: 'Document file not found' });
     } catch (err) {
         console.error('Download error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.generateDownloadTicket = (req, res) => {
+    try {
+        const documentId = parseInt(req.params.id);
+        const ticket = crypto.randomUUID();
+        
+        activeTickets.set(ticket, {
+            documentId: documentId,
+            userId: req.user.id,
+            expiresAt: Date.now() + 60000 // 60 seconds
+        });
+
+        // Cleanup expired tickets occasionally (lazy cleanup)
+        for (const [key, val] of activeTickets.entries()) {
+            if (val.expiresAt < Date.now()) activeTickets.delete(key);
+        }
+
+        res.json({ ticket });
+    } catch (err) {
+        console.error('Ticket generation error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.downloadByTicket = async (req, res) => {
+    try {
+        const { ticket } = req.params;
+        const ticketData = activeTickets.get(ticket);
+
+        if (!ticketData || ticketData.expiresAt < Date.now()) {
+            if (ticketData) activeTickets.delete(ticket);
+            return res.status(403).json({ error: 'Ticket inválido ou expirado. Atualize a página e tente novamente.' });
+        }
+
+        activeTickets.delete(ticket);
+
+        const document = await prisma.document.findUnique({
+            where: { id: ticketData.documentId }
+        });
+
+        if (!document) return res.status(404).json({ error: 'Document not found' });
+        
+        // Removido o ownership check estrito para permitir que alunos vejam PDFs via ticket
+
+        const disposition = req.query.inline === 'true' ? 'inline' : 'attachment';
+        res.set({
+            'Content-Type': document.type,
+            'Content-Disposition': `${disposition}; filename="${document.name}"`
+        });
+
+        if (document.data) {
+            res.set('Content-Length', document.data.length);
+            return res.send(document.data);
+        }
+
+        if (document.storageProvider === 'local' && document.storageKey) {
+            try {
+                const stat = await assetStorage.stat(document.storageKey);
+                const fileSize = stat.sizeBytes;
+                const range = req.headers.range;
+
+                if (range) {
+                    const parts = range.replace(/bytes=/, "").split("-");
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                    
+                    if (start >= fileSize) {
+                        res.status(416).send(`Requested range not satisfiable\n${start} >= ${fileSize}`);
+                        return;
+                    }
+                    
+                    const chunksize = (end - start) + 1;
+                    res.status(206);
+                    res.set({
+                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': chunksize,
+                        'Content-Type': document.type,
+                    });
+                    
+                    const stream = assetStorage.createReadStream(document.storageKey, { start, end });
+                    return stream.pipe(res);
+                } else {
+                    res.set({
+                        'Content-Length': fileSize,
+                        'Accept-Ranges': 'bytes'
+                    });
+                    const stream = assetStorage.createReadStream(document.storageKey);
+                    return stream.pipe(res);
+                }
+            } catch (err) {
+                return res.status(404).json({ error: 'Document file not found on disk' });
+            }
+        }
+
+        return res.status(404).json({ error: 'Document file not found' });
+    } catch (err) {
+        console.error('Download by ticket error:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

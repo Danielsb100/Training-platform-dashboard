@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let editingPageId = null;
     let isSyncing = false;
 
+    // Sincroniza o token do localStorage para um Cookie para permitir carregamento seguro de imagens
+    const token = localStorage.getItem('token');
+    if (token && !document.cookie.includes('token=')) {
+        document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Strict`;
+    }
+
     // Load existing page if ID is in URL
     const urlParams = new URLSearchParams(window.location.search);
     const pageIdParam = urlParams.get('id');

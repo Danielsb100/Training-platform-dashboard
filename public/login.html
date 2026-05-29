@@ -240,7 +240,10 @@
                 const result = await response.json();
                 
                 if (response.ok && result.ok) {
-                    if (result.token) localStorage.setItem('token', result.token);
+                    if (result.token) {
+                        localStorage.setItem('token', result.token);
+                        document.cookie = `token=${result.token}; path=/; max-age=86400; SameSite=Strict`;
+                    }
                     
                     // Sync language preference from user profile to prevent stale cache from previous account
                     try {
@@ -301,7 +304,10 @@
                 const result = await response.json();
                 
                 if (response.ok && result.ok) {
-                    if (result.token) localStorage.setItem('token', result.token);
+                    if (result.token) {
+                        localStorage.setItem('token', result.token);
+                        document.cookie = `token=${result.token}; path=/; max-age=86400; SameSite=Strict`;
+                    }
                     window.location.href = '/login.html'; 
                 } else {
                     const errMsg = document.getElementById('error-msg');

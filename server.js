@@ -1,4 +1,6 @@
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -114,9 +116,29 @@ const corsOptions = env.cors.origins.length
     }
   : undefined;
 
+app.use(helmet({
+  contentSecurityPolicy: false // Disabled: frontend uses inline scripts. Re-enable with nonces later.
+}));
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
+
+// --- Rate Limiting ---
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Please try again in 15 minutes.' }
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please slow down.' }
+});
 
 app.use('/peerjs', peerServer);
 app.get('/api/catalog', multiplayerController.getCatalog);
@@ -139,12 +161,12 @@ app.use(
   })
 );
 
-app.post('/auth/register', authController.register);
-app.post('/auth/login', authController.login);
-app.post('/auth/verify-email', authController.verifyEmail);
-app.post('/auth/resend-code', authController.resendCode);
-app.post('/auth/password/request', authController.requestPasswordReset);
-app.post('/auth/password/reset', authController.resetPassword);
+app.post('/auth/register', authLimiter, authController.register);
+app.post('/auth/login', authLimiter, authController.login);
+app.post('/auth/verify-email', authLimiter, authController.verifyEmail);
+app.post('/auth/resend-code', authLimiter, authController.resendCode);
+app.post('/auth/password/request', authLimiter, authController.requestPasswordReset);
+app.post('/auth/password/reset', authLimiter, authController.resetPassword);
 app.get('/auth/verify', authenticateToken, authController.verify);
 
 app.get('/api/users', authenticateToken, roleMiddleware(['ADMIN', 'MASTER']), userController.getAllUsers);
@@ -250,30 +272,7 @@ app.delete('/modules/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLE
 app.get('/modules/:id/edit-format', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), moduleController.getEditFormat);
 app.get('/runtime/modules/:id', authenticateToken, moduleController.getRuntimeFormat);
 
-app.get('/api/debug/state', async (req, res) => {
-    try {
-        const { PrismaClient } = require('@prisma/client');
-        const prisma = new PrismaClient();
-        const user = await prisma.user.findFirst();
-        const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
-        const module = await prisma.trainingModule.findFirst({
-            include: {
-                videos: true,
-                languageSessions: true
-            }
-        });
-        res.json({
-            profile,
-            module: {
-                id: module.id,
-                videos: module.videos.map(v => ({ title: v.title, langId: v.languageSessionId })),
-                languageSessions: module.languageSessions.map(s => ({ id: s.id, locale: s.locale }))
-            }
-        });
-    } catch(e) {
-        res.status(500).json({error: e.message});
-    }
-});
+// [SECURITY] Debug endpoint removed — CRIT-01
 
 app.post('/modules/:id/videos', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), contentController.addVideo);
 app.put('/modules/:id/videos/:videoId', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), contentController.updateVideo);
@@ -390,16 +389,18 @@ app.get(
 );
 
 app.post('/api/documents/upload', authenticateToken, handleUploadToDiskError('document'), documentController.uploadDocument);
+app.post('/api/documents/:id/ticket', authenticateToken, documentController.generateDownloadTicket);
+app.get('/api/documents/ticket/:ticket', documentController.downloadByTicket);
 app.get('/api/documents', authenticateToken, (req, res) => {
   req.params.username = req.user.username;
   documentController.getUserDocuments(req, res);
 });
-app.get('/api/documents/user/:username', documentController.getUserDocuments);
-app.get('/api/documents/download/:id', documentController.downloadDocument);
+app.get('/api/documents/user/:username', authenticateToken, documentController.getUserDocuments);
+app.get('/api/documents/download/:id', authenticateToken, documentController.downloadDocument);
 app.delete('/api/documents/:id', authenticateToken, documentController.deleteDocument);
 
 // --- System Settings API ---
-app.get('/api/system/settings/:key', systemController.getSettings);
+app.get('/api/system/settings/:key', authenticateToken, systemController.getSettings);
 app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
 
 app.get('/', (req, res) => {
