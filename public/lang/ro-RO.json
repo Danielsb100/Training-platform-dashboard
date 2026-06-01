@@ -326,7 +326,8 @@
         "overview": "Prezentare Generală",
         "videos": "Videoclipuri",
         "documents": "Documente",
-        "quizzes": "Teste (Quiz)",
+        "entryTest": "Test de Intrare",
+        "quizzes": "Evaluare Finală",
         "eurobotAI": "Eurobot AI",
         "enter3DWorld": "Intră în Lumea 3D",
         "immersiveEnv": "Mediu imersiv",
@@ -352,7 +353,10 @@
         "pdfs": "PDF-uri",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Imagini"
+        "images": "Imagini",
+        "entryTestDesc": "Începeți modulul completând testul de intrare",
+        "noEntryTest": "Niciun test de intrare disponibil încă.",
+        "completEntryTestFirst": "Completați Testul de Intrare pentru a debloca"
     },
     "students": {
         "dashboard": "Panou",

@@ -39,6 +39,7 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             id: qz.id,
             title: qz.title,
             order: qz.order,
+            type: qz.type || 'FINAL_EVALUATION',
             languageSessionId: qz.languageSessionId || null,
             questions: (qz.questions || []).map(q => ({
                 id: q.id,

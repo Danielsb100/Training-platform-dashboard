@@ -326,7 +326,8 @@
         "overview": "Επισκόπηση",
         "videos": "Βίντεο",
         "documents": "Έγγραφα",
-        "quizzes": "Κουίζ",
+        "entryTest": "Τεστ Εισόδου",
+        "quizzes": "Τελική Αξιολόγηση",
         "eurobotAI": "Eurobot AI",
         "enter3DWorld": "Είσοδος στον 3D Κόσμο",
         "immersiveEnv": "Καθηλωτικό περιβάλλον",
@@ -352,7 +353,10 @@
         "pdfs": "PDF",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Εικόνες"
+        "images": "Εικόνες",
+        "entryTestDesc": "Ξεκινήστε την ενότητα κάνοντας το τεστ εισόδου",
+        "noEntryTest": "Δεν υπάρχει ακόμα τεστ εισόδου.",
+        "completEntryTestFirst": "Ολοκληρώστε πρώτα το Τεστ Εισόδου για ξεκλείδωμα"
     },
     "students": {
         "dashboard": "Πίνακας Ελέγχου",

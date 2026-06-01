@@ -326,7 +326,8 @@
         "overview": "Обзор",
         "videos": "Видео",
         "documents": "Документы",
-        "quizzes": "Викторины",
+        "entryTest": "Вступительный Тест",
+        "quizzes": "ФИНАЛЬНАЯ ОЦЕНКА",
         "eurobotAI": "Eurobot ИИ",
         "enter3DWorld": "Войти в 3D Мир",
         "immersiveEnv": "Иммерсивная среда",
@@ -352,7 +353,10 @@
         "pdfs": "PDF",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Изображения"
+        "images": "Изображения",
+        "entryTestDesc": "Начните модуль с прохождения вступительного теста",
+        "noEntryTest": "Вступительный тест пока недоступен.",
+        "completEntryTestFirst": "Сначала пройдите вступительный тест для разблокировки"
     },
     "students": {
         "dashboard": "Панель",

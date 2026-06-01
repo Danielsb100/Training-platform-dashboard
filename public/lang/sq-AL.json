@@ -326,7 +326,8 @@
         "overview": "Përmbledhje",
         "videos": "Video",
         "documents": "Dokumente",
-        "quizzes": "Kuoce",
+        "entryTest": "Test Hyrës",
+        "quizzes": "vlerësimi",
         "eurobotAI": "Eurobot AI",
         "enter3DWorld": "Hyr në Botën 3D",
         "immersiveEnv": "Mjedis imersiv",
@@ -352,7 +353,10 @@
         "pdfs": "PDF-të",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Imazhe"
+        "images": "Imazhe",
+        "entryTestDesc": "Filloni modulin duke marrë testin hyrës",
+        "noEntryTest": "Asnjë test hyrës nuk është ende i disponueshëm.",
+        "completEntryTestFirst": "Përfundoni Testin Hyrës për të zhbllokuar"
     },
     "students": {
         "dashboard": "Paneli",

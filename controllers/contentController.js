@@ -217,7 +217,7 @@ const deleteDocument = async (req, res) => {
 const createQuiz = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, order, languageSessionId } = req.body;
+        const { title, order, languageSessionId, type } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -233,7 +233,8 @@ const createQuiz = async (req, res) => {
                 moduleId: parseInt(req.params.id),
                 title,
                 order: parseInt(order) || 0,
-                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null
+                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null,
+                type: type === 'ENTRY_TEST' ? 'ENTRY_TEST' : 'FINAL_EVALUATION'
             }
         });
         console.log(`[DEBUG] Quiz created:`, quiz.id);
@@ -278,7 +279,7 @@ const updateQuiz = async (req, res) => {
     try {
         const moduleId = parseInt(req.params.id, 10);
         const quizId = parseInt(req.params.quizId, 10);
-        const { title, order } = req.body || {};
+        const { title, order, type } = req.body || {};
 
         const quiz = await prisma.quiz.findUnique({
             where: { id: quizId }
@@ -302,6 +303,12 @@ const updateQuiz = async (req, res) => {
             const parsedOrder = parseInt(order, 10);
             if (!Number.isFinite(parsedOrder)) return res.status(400).json({ error: 'Quiz order must be a number' });
             data.order = parsedOrder;
+        }
+        if (type !== undefined) {
+            if (type !== 'ENTRY_TEST' && type !== 'FINAL_EVALUATION') {
+                return res.status(400).json({ error: 'Quiz type must be ENTRY_TEST or FINAL_EVALUATION' });
+            }
+            data.type = type;
         }
 
         const updated = await prisma.quiz.update({
@@ -527,7 +534,7 @@ const deleteQuizQuestion = async (req, res) => {
 const submitQuiz = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { answers, courseId } = req.body; // array of { questionId, optionId }
+        const { answers, courseId, quizId: submittedQuizId } = req.body; // array of { questionId, optionId }
         const userId = req.user.id;
         const moduleId = parseInt(req.params.id);
         const parsedCourseId = courseId ? parseInt(courseId) : null;
@@ -539,15 +546,19 @@ const submitQuiz = async (req, res) => {
 
         if (!module) return res.status(404).json({ error: 'Module not found' });
 
-        // Flat list of all questions in the module for easy lookup
-        const allQuestions = module.quizzes.flatMap(qz => qz.questions);
+        // Find the specific quiz being submitted
+        const resolvedQuizId = submittedQuizId ? parseInt(submittedQuizId) : null;
+        const targetQuiz = resolvedQuizId ? module.quizzes.find(qz => qz.id === resolvedQuizId) : null;
+        
+        // Use only the questions from the target quiz for scoring (fallback to all if quiz not found)
+        const quizQuestions = targetQuiz ? targetQuiz.questions : module.quizzes.flatMap(qz => qz.questions);
 
         // Calculate score
         let correctCount = 0;
         const resultAnswers = [];
 
         for (const answer of answers) {
-            const question = allQuestions.find(q => q.id === answer.questionId);
+            const question = quizQuestions.find(q => q.id === answer.questionId);
             if (!question) continue;
 
             const selectedOption = question.options.find(o => o.id === answer.optionId);
@@ -560,7 +571,7 @@ const submitQuiz = async (req, res) => {
             });
         }
 
-        const totalQuestions = allQuestions.length || 1;
+        const totalQuestions = quizQuestions.length || 1;
         const score = (correctCount / totalQuestions) * 100;
 
         // Get attempt number
@@ -575,6 +586,7 @@ const submitQuiz = async (req, res) => {
                 data: {
                     moduleId,
                     userId,
+                    quizId: resolvedQuizId,
                     score,
                     attemptNumber,
                     answers: {
@@ -609,8 +621,14 @@ const getQuizzesSubmissions = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
         const submissions = await prisma.quizSubmission.findMany({
-            where: { moduleId: parseInt(req.params.id) },
-            include: { user: { select: { id: true, username: true } } },
+            where: { 
+                moduleId: parseInt(req.params.id),
+                userId: req.user.id
+            },
+            include: { 
+                user: { select: { id: true, username: true } },
+                quiz: { select: { id: true, type: true } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         res.json(submissions);

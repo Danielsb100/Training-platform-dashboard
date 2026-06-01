@@ -1681,6 +1681,12 @@ function hideManualQuizForm() {
     if (form) form.style.display = 'none';
 }
 
+function changeQuizType(quizId, newType) {
+    apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'PUT', { type: newType })
+        .then(() => loadModuleData(editingModuleId))
+        .catch(err => alert('Error changing quiz type: ' + err.message));
+}
+
 function editQuizTitle(quizId) {
     const quiz = window.currentQuizDataList.find(q => q.id === quizId);
     if (!quiz) return;
@@ -1902,15 +1908,22 @@ function renderQuizzes(quizzes) {
 
     list.innerHTML = quizzes.map(quiz => {
         const questions = quiz.questions || [];
+        const currentType = quiz.type || 'FINAL_EVALUATION';
         return `
             <div id="quiz-inner-container-${quiz.id}" style="background: #f1f5f9; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-wrap:wrap; gap:10px;">
                     <div>
                         <h4 style="margin: 0; font-size: 1.2rem; display:flex; align-items:center; gap:8px; color: #1e293b;">
                             <i class="fas fa-list-ul" style="color: #497aa7;"></i> ${quiz.title || 'Module Quiz'}
                             <button onclick="editQuizTitle(${quiz.id})" style="background:transparent; border:none; color:#497aa7; cursor:pointer; font-size:1rem;" title="Edit Quiz Title"><i class="fas fa-edit"></i></button>
                         </h4>
-                        <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; margin-top:5px; font-weight:bold;">${questions.length} questions</span>
+                        <div style="display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                            <span style="font-size:0.8rem; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; display:inline-block; font-weight:bold;">${questions.length} questions</span>
+                            <select onchange="changeQuizType(${quiz.id}, this.value)" style="font-size:0.8rem; padding:4px 8px; border-radius:6px; border:1px solid ${currentType === 'ENTRY_TEST' ? '#f59e0b' : '#44749f'}; background:${currentType === 'ENTRY_TEST' ? '#fef3c7' : '#f0f9ff'}; color:${currentType === 'ENTRY_TEST' ? '#92400e' : '#1e40af'}; font-weight:600; cursor:pointer;">
+                                <option value="ENTRY_TEST" ${currentType === 'ENTRY_TEST' ? 'selected' : ''}>🧪 Entry Test</option>
+                                <option value="FINAL_EVALUATION" ${currentType === 'FINAL_EVALUATION' ? 'selected' : ''}>📝 Final Evaluation</option>
+                            </select>
+                        </div>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Question</button>

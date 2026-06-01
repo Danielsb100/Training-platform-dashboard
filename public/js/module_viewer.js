@@ -21,9 +21,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnBack.innerHTML = '<i class="fas fa-arrow-left"></i> ' + (window.t ? window.t('moduleViewer.back', 'Back') : 'Back');
         btnBack.title = window.t ? window.t('moduleViewer.backToCourse', 'Back to Course') : 'Back to Course';
         
-        // Reset tabs to overview if coming from world mode
+        // Reset tabs to entry-test if coming from world mode
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('[data-tab="overview"]').classList.add('active');
+        const defaultTab = document.querySelector('[data-tab="entry-test"]') || document.querySelector('[data-tab="overview"]');
+        if (defaultTab) defaultTab.classList.add('active');
     }
 
     btnBack.onclick = () => {
@@ -84,6 +85,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let videos = [];
     let documents = [];
     let quizzes = [];
+    let entryTests = [];
+    let finalEvaluations = [];
+    let entryTestPassed = false;
     
     // UI Elements
     const navTabs = document.querySelectorAll('.nav-tab');
@@ -110,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         moduleData = await response.json();
         
-        document.getElementById('module-name').textContent = moduleData.title || window.t ? window.t('moduleViewer.unnamedModule', 'Unnamed Module') : 'Unnamed Module';
+        document.getElementById('module-name').textContent = moduleData.title || (window.t ? window.t('moduleViewer.unnamedModule', 'Unnamed Module') : 'Unnamed Module');
         document.getElementById('course-title').textContent = window.t ? window.t('moduleViewer.courseContent', 'Course Content') : 'Course Content';
         
         // --- Language Session Auto-detect ---
@@ -161,18 +165,64 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         videos = filterBySession(moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
         documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order); // Documents are shared globally — no session filter
-        quizzes = filterBySession(moduleData.quizzes || []).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
+        let quizzesRaw = moduleData.quizzes || [];
+        quizzes = filterBySession(quizzesRaw).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
+        
+        // Split quizzes by type
+        entryTests = quizzes.filter(q => q.type === 'ENTRY_TEST');
+        
+        // Fallback: If no entry test in current language session, use the base module's entry test
+        if (entryTests.length === 0 && activeSessionId !== null) {
+            const baseEntryTests = quizzesRaw
+                .filter(q => !q.languageSessionId && q.type === 'ENTRY_TEST')
+                .map(q => ({ ...q, contentType: 'quiz' }));
+                
+            if (baseEntryTests.length > 0) {
+                entryTests = baseEntryTests;
+                // Add the base entry tests to the rendering list
+                quizzes = [...baseEntryTests, ...quizzes].sort((a,b) => a.order - b.order);
+            }
+        }
+        
+        finalEvaluations = quizzes.filter(q => q.type !== 'ENTRY_TEST');
+        
+        // Check if entry test has been passed (check submissions)
+        if (entryTests.length > 0) {
+            try {
+                const subsRes = await fetch(`/modules/${moduleId}/quiz/submissions?t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+                });
+                if (subsRes.ok) {
+                    const submissions = await subsRes.json();
+                    const entryTestQuizIds = entryTests.map(et => et.id);
+                    // Check both: submission quizId matches known entry tests, OR submission's quiz.type is ENTRY_TEST
+                    entryTestPassed = submissions.some(s => 
+                        entryTestQuizIds.includes(s.quizId) || 
+                        (s.quiz && s.quiz.type === 'ENTRY_TEST')
+                    );
+                }
+            } catch (e) {
+                console.warn('Could not check entry test submissions:', e);
+            }
+        } else {
+            // No entry test exists, so final evaluation is unlocked
+            entryTestPassed = true;
+        }
         
         // Update Badges
         document.getElementById('badge-videos').textContent = videos.length;
         document.getElementById('badge-documents').textContent = documents.length;
-        document.getElementById('badge-quizzes').textContent = quizzes.length;
+        document.getElementById('badge-quizzes').textContent = finalEvaluations.length;
+        const badgeEntryTest = document.getElementById('badge-entry-test');
+        if (badgeEntryTest) badgeEntryTest.textContent = entryTests.length;
         
         renderHubs();
+        updateFinalEvaluationLock();
         
     } catch (error) {
         console.error(error);
-        document.getElementById('overview-grid').innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">${window.t ? window.t('moduleViewer.errorLoadContent', 'Erro ao carregar o conteúdo do módulo.') : 'Erro ao carregar o conteúdo do módulo.'}</div>`;
+        const errorContainer = document.getElementById('entry-test-list') || document.getElementById('overview-grid');
+        if (errorContainer) errorContainer.innerHTML = `<div style="color: #ef4444; width:100%; text-align:center; padding:20px;">${window.t ? window.t('moduleViewer.errorLoadContent', 'Erro ao carregar o conteúdo do módulo.') : 'Erro ao carregar o conteúdo do módulo.'}</div>`;
     }
     
     function escapeHtml(value) {
@@ -260,75 +310,128 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- Documents ---
         renderDocuments('all');
         
-        // --- Quizzes List ---
+        // --- Entry Tests List ---
+        const entryTestList = document.getElementById('entry-test-list');
+        if (entryTestList) {
+            entryTestList.innerHTML = entryTests.length ? entryTests.map((q) => {
+                const globalIdx = quizzes.indexOf(q);
+                return `
+                <div class="list-item" onclick="openPlayer('quiz', ${globalIdx})">
+                    <div class="list-icon" style="color:#f59e0b; background:rgba(245, 158, 11, 0.15);"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">${q.title}</div>
+                        <p class="list-desc">${q.questions ? q.questions.length : 0} ${window.t ? window.t('moduleViewer.questionsAssessment', 'Questions') : 'Questions'} • ${window.t ? window.t('moduleViewer.entryTest', 'Entry Test') : 'Entry Test'}</p>
+                    </div>
+                    <div class="list-action"><i class="fas fa-pencil-alt"></i>${window.t ? window.t('moduleViewer.start', 'Start') : 'Start'}</div>
+                </div>`;
+            }).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noEntryTest', 'No entry test available yet.') : 'No entry test available yet.') + '</p>';
+        }
+        
+        // --- Final Evaluation Quizzes List ---
         const quizzesList = document.getElementById('quizzes-list');
-        quizzesList.innerHTML = quizzes.length ? quizzes.map((q, i) => `
-            <div class="list-item" onclick="openPlayer('quiz', ${i})">
+        quizzesList.innerHTML = finalEvaluations.length ? finalEvaluations.map((q) => {
+            const globalIdx = quizzes.indexOf(q);
+            return `
+            <div class="list-item" onclick="openPlayer('quiz', ${globalIdx})">
                 <div class="list-icon" style="color:#cf9c33; background:rgba(207, 156, 51, 0.2);"><i class="fas fa-question-circle"></i></div>
                 <div class="list-content">
                     <div class="list-title">${q.title}</div>
                     <p class="list-desc">${q.questions ? q.questions.length : 0} ${window.t ? window.t('moduleViewer.questionsAssessment', 'Questions') : 'Questions'} • ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</p>
                 </div>
                 <div class="list-action"><i class="fas fa-pencil-alt"></i>${window.t ? window.t('moduleViewer.start', 'Start') : 'Start'}</div>
-            </div>
-        `).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noQuizzes', 'No quizzes available in this module.') : 'No quizzes available in this module.') + '</p>';
+            </div>`;
+        }).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noQuizzes', 'No quizzes available in this module.') : 'No quizzes available in this module.') + '</p>';
         
         // --- Overview Grid (Combines everything for the home page of the module) ---
         const overviewGrid = document.getElementById('overview-grid');
-        const allItems = [...videos, ...documents, ...quizzes].sort((a,b) => a.order - b.order);
-        overviewGrid.innerHTML = allItems.map(item => {
-            if (item.contentType === 'video') {
-                const i = videos.indexOf(item);
-                const thumbHtml = getVideoThumbnailHtml(item);
-                return `
-                <div class="card" onclick="openPlayer('video', ${i})">
-                    <div class="card-thumb">
-                        ${thumbHtml}
-                        <i class="fas fa-play-circle play-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</div>
-                    </div>
-                </div>`;
-            } else if (item.contentType === 'quiz') {
-                const i = quizzes.indexOf(item);
-                return `
-                <div class="card" onclick="openPlayer('quiz', ${i})">
-                    <div class="card-thumb" style="background:#1e293b;">
-                        <i class="fas fa-question-circle" style="font-size: 5rem; color:#cf9c33; opacity:0.8;"></i>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-title">${item.title}</div>
-                        <div class="card-meta"><i class="fas fa-pencil-alt"></i> ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</div>
-                    </div>
-                </div>`;
-            } else if (item.contentType === 'document') {
-                const docType = getDocType(item.title);
-                const i = documents.indexOf(item);
-                let icon = 'fa-file-alt';
-                let color = '#64748b';
-                
-                if (docType === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; }
-                else if (docType === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; }
-                else if (docType === 'ppt') { icon = 'fa-file-powerpoint'; color = '#f97316'; }
-                else if (docType === 'image') { icon = 'fa-image'; color = '#10b981'; }
-                
-                return `
-                <div class="card" onclick="openPlayer('document', ${i})">
-                    <div class="card-thumb" style="background:#f1f5f9;">
-                        <i class="fas ${icon}" style="font-size: 5rem; color:${color}; opacity:0.8;"></i>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta"><i class="fas ${icon}"></i> ${window.t ? window.t('moduleViewer.document', 'Document') : 'Document'}</div>
-                    </div>
-                </div>`;
+        if (overviewGrid) {
+            const allItems = [...videos, ...documents, ...quizzes].sort((a,b) => a.order - b.order);
+            overviewGrid.innerHTML = allItems.map(item => {
+                if (item.contentType === 'video') {
+                    const i = videos.indexOf(item);
+                    const thumbHtml = getVideoThumbnailHtml(item);
+                    return `
+                    <div class="card" onclick="openPlayer('video', ${i})">
+                        <div class="card-thumb">
+                            ${thumbHtml}
+                            <i class="fas fa-play-circle play-icon"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title">${escapeHtml(item.title)}</div>
+                            <div class="card-meta"><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</div>
+                        </div>
+                    </div>`;
+                } else if (item.contentType === 'quiz') {
+                    const i = quizzes.indexOf(item);
+                    return `
+                    <div class="card" onclick="openPlayer('quiz', ${i})">
+                        <div class="card-thumb" style="background:#1e293b;">
+                            <i class="fas fa-question-circle" style="font-size: 5rem; color:#cf9c33; opacity:0.8;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title">${item.title}</div>
+                            <div class="card-meta"><i class="fas fa-pencil-alt"></i> ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</div>
+                        </div>
+                    </div>`;
+                } else if (item.contentType === 'document') {
+                    const docType = getDocType(item.title);
+                    const i = documents.indexOf(item);
+                    let icon = 'fa-file-alt';
+                    let color = '#64748b';
+                    
+                    if (docType === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; }
+                    else if (docType === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; }
+                    else if (docType === 'ppt') { icon = 'fa-file-powerpoint'; color = '#f97316'; }
+                    else if (docType === 'image') { icon = 'fa-image'; color = '#10b981'; }
+                    
+                    return `
+                    <div class="card" onclick="openPlayer('document', ${i})">
+                        <div class="card-thumb" style="background:#f1f5f9;">
+                            <i class="fas ${icon}" style="font-size: 5rem; color:${color}; opacity:0.8;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title">${escapeHtml(item.title)}</div>
+                            <div class="card-meta"><i class="fas ${icon}"></i> ${window.t ? window.t('moduleViewer.document', 'Document') : 'Document'}</div>
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+            
+            if (allItems.length === 0) {
+                overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">' + (window.t ? window.t('moduleViewer.noInteractiveContent', 'This module does not have interactive content yet.') : 'This module does not have interactive content yet.') + '</p>';
             }
-        }).join('');
+        }
+    }
+    
+    function updateFinalEvaluationLock() {
+        const quizzesTab = document.querySelector('.nav-tab[data-tab="quizzes"]');
+        if (!quizzesTab) return;
         
-        if (allItems.length === 0) {
-            overviewGrid.innerHTML = '<p style="color:#94a3b8; width:100%; text-align:center;">' + (window.t ? window.t('moduleViewer.noInteractiveContent', 'This module does not have interactive content yet.') : 'This module does not have interactive content yet.') + '</p>';
+        if (!entryTestPassed && entryTests.length > 0) {
+            // Lock the final evaluation tab
+            quizzesTab.style.opacity = '0.45';
+            quizzesTab.style.pointerEvents = 'none';
+            quizzesTab.style.cursor = 'not-allowed';
+            quizzesTab.title = window.t ? window.t('moduleViewer.completEntryTestFirst', 'Complete the Entry Test first to unlock') : 'Complete the Entry Test first to unlock';
+            
+            // Add lock icon to badge
+            const badge = quizzesTab.querySelector('.badge');
+            if (badge) {
+                badge.innerHTML = '<i class="fas fa-lock" style="font-size:0.7rem;"></i>';
+                badge.style.background = '#94a3b8';
+            }
+        } else {
+            // Unlock the final evaluation tab
+            quizzesTab.style.opacity = '';
+            quizzesTab.style.pointerEvents = '';
+            quizzesTab.style.cursor = '';
+            quizzesTab.title = '';
+            
+            const badge = quizzesTab.querySelector('.badge');
+            if (badge) {
+                badge.textContent = finalEvaluations.length;
+                badge.style.background = '';
+            }
         }
     }
     
@@ -482,9 +585,11 @@ btnBackHub.addEventListener('click', () => {
     // Reactivate the currently selected tab's section
     const activeTab = document.querySelector('.nav-tab.active');
     if (activeTab && activeTab.dataset.tab) {
-        document.getElementById('section-' + activeTab.dataset.tab).classList.add('active');
+        const section = document.getElementById('section-' + activeTab.dataset.tab);
+        if (section) section.classList.add('active');
     } else {
-        document.getElementById('section-overview').classList.add('active');
+        const fallback = document.getElementById('section-entry-test') || document.getElementById('section-overview');
+        if (fallback) fallback.classList.add('active');
     }
 });
     
@@ -772,7 +877,7 @@ btnBackHub.addEventListener('click', () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}` 
                 },
-                body: JSON.stringify({ answers, courseId })
+                body: JSON.stringify({ answers, courseId, quizId: parseInt(quizId) })
             });
             
             if (!res.ok) throw new Error(window.t ? window.t('moduleViewer.failedSubmitAnswers', 'Falha ao enviar respostas') : 'Falha ao enviar respostas');
@@ -805,6 +910,12 @@ btnBackHub.addEventListener('click', () => {
             
             btn.innerHTML = window.t ? window.t('moduleViewer.retakeQuiz', 'Refazer Quiz') : 'Refazer Quiz';
             btn.disabled = false;
+
+            // Automatically unlock final evaluation if this was an entry test
+            if (item.type === 'ENTRY_TEST') {
+                entryTestPassed = true;
+                updateFinalEvaluationLock();
+            }
             
         } catch (error) {
             console.error(error);

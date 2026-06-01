@@ -326,7 +326,8 @@
         "overview": "Visão Geral",
         "videos": "Vídeos",
         "documents": "Documentos",
-        "quizzes": "Quizzes",
+        "entryTest": "Teste de Entrada",
+        "quizzes": "Avaliação Final",
         "eurobotAI": "Eurobot IA",
         "enter3DWorld": "Entrar no Mundo 3D do Curso",
         "immersiveEnv": "Ambiente imersivo",
@@ -352,7 +353,10 @@
         "pdfs": "PDFs",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Imagens"
+        "images": "Imagens",
+        "entryTestDesc": "Comece o módulo realizando o teste de entrada",
+        "noEntryTest": "Nenhum teste de entrada disponível ainda.",
+        "completEntryTestFirst": "Complete o Teste de Entrada primeiro para desbloquear"
     },
     "students": {
         "dashboard": "Painel",

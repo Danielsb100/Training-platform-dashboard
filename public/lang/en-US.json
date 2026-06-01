@@ -326,7 +326,8 @@
         "overview": "Overview",
         "videos": "Videos",
         "documents": "Documents",
-        "quizzes": "Quizzes",
+        "entryTest": "Entry Test",
+        "quizzes": "Final Evaluation",
         "eurobotAI": "Eurobot AI",
         "enter3DWorld": "Enter 3D Course World",
         "immersiveEnv": "Immersive environment",
@@ -352,7 +353,10 @@
         "pdfs": "PDFs",
         "word": "Word",
         "powerPoint": "PowerPoint",
-        "images": "Images"
+        "images": "Images",
+        "entryTestDesc": "Start the module by taking the entry test",
+        "noEntryTest": "No entry test available yet.",
+        "completEntryTestFirst": "Complete the Entry Test first to unlock"
     },
     "students": {
         "dashboard": "Dashboard",
