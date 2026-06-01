@@ -2,6 +2,12 @@ const env = require('../config/env');
 
 const DEFAULT_QUESTION_COUNT = 5;
 const DEFAULT_OPTIONS_PER_QUESTION = 4;
+const DEFAULT_QUIZ_DIFFICULTY = 'medium';
+const QUIZ_DIFFICULTY_INSTRUCTIONS = {
+  easy: 'Difficulty: easy. Focus on foundational recall and comprehension. Use clear wording, avoid trick questions, avoid subtle distractors, and make the correct answer recognizable for beginners who studied the module.',
+  medium: 'Difficulty: medium. Balance recall, comprehension, and practical application. Include plausible distractors, but keep questions fair and directly grounded in the module materials.',
+  hard: 'Difficulty: hard. Emphasize application, analysis, edge cases, and nuanced distinctions from the module materials. Use stronger plausible distractors while keeping exactly one clearly correct answer.'
+};
 // Quiz generation sends files directly in the Responses request. Even with a short
 // prompt, OpenAI parses supplied files into the model context, so raw upload byte
 // limits must be far below generic API upload limits to avoid context-window errors.
@@ -59,6 +65,15 @@ const clampInt = (value, fallback, min, max) => {
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(Math.max(parsed, min), max);
 };
+
+const normalizeQuizDifficulty = (difficulty) => {
+  const normalized = String(difficulty || DEFAULT_QUIZ_DIFFICULTY).trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(QUIZ_DIFFICULTY_INSTRUCTIONS, normalized)
+    ? normalized
+    : DEFAULT_QUIZ_DIFFICULTY;
+};
+
+const getQuizDifficultyInstruction = (difficulty) => QUIZ_DIFFICULTY_INSTRUCTIONS[normalizeQuizDifficulty(difficulty)];
 
 const getModuleAssetUrl = (url = '') => {
   const match = String(url).match(/\/api\/documents\/download\/(\d+)/);
@@ -285,10 +300,12 @@ const buildModuleContextContent = (module, options = {}) => {
 const buildModuleInputContent = (module, options = {}) => {
   const questionCount = clampInt(options.questionCount, DEFAULT_QUESTION_COUNT, 1, 30);
   const optionsPerQuestion = clampInt(options.optionsPerQuestion, DEFAULT_OPTIONS_PER_QUESTION, 2, 8);
+  const difficulty = normalizeQuizDifficulty(options.difficulty);
   const content = buildModuleContextContent(module, {
     includeFiles: options.includeFiles,
     instructionLines: [
       `Create a ${questionCount}-question test/quiz for this training module.`,
+      getQuizDifficultyInstruction(difficulty),
       'Write the quiz title, questions, and answer options in English.',
       `Each question must have exactly ${optionsPerQuestion} options and exactly one correct option.`,
       'Use the module title, description, videos, linked documents/files, and any supplied file contents as source material.',
@@ -296,7 +313,7 @@ const buildModuleInputContent = (module, options = {}) => {
     ]
   });
 
-  return { content, questionCount, optionsPerQuestion };
+  return { content, questionCount, optionsPerQuestion, difficulty };
 };
 
 const isContextWindowError = (message = '') => /context window|context length|maximum context|too many tokens|input exceeds/i.test(String(message || ''));
@@ -503,6 +520,8 @@ const translateQuiz = async (quiz, targetLocale) => {
 module.exports = {
   DEFAULT_QUESTION_COUNT,
   DEFAULT_OPTIONS_PER_QUESTION,
+  DEFAULT_QUIZ_DIFFICULTY,
+  QUIZ_DIFFICULTY_INSTRUCTIONS,
   buildModuleContextContent,
   buildModuleInputContent,
   buildQuizJsonSchema,
@@ -510,8 +529,10 @@ module.exports = {
   createSeededRandom,
   generateQuizFromModule,
   getModuleAssetUrl,
+  getQuizDifficultyInstruction,
   isSupportedOpenAiFile,
   normalizeGeneratedQuiz,
+  normalizeQuizDifficulty,
   shuffleArray,
   translateQuiz,
   LOCALE_NAMES

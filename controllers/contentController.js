@@ -327,7 +327,7 @@ const updateQuiz = async (req, res) => {
 const createAiGeneratedQuiz = async (req, res) => {
     try {
         const moduleId = parseInt(req.params.id, 10);
-        const { questionCount, optionsPerQuestion, title, languageSessionId } = req.body || {};
+        const { questionCount, optionsPerQuestion, title, languageSessionId, difficulty } = req.body || {};
         const targetLanguageSessionId = languageSessionId ? parseInt(languageSessionId, 10) : null;
 
         if (languageSessionId && !Number.isFinite(targetLanguageSessionId)) {
@@ -369,7 +369,8 @@ const createAiGeneratedQuiz = async (req, res) => {
 
         const generated = await generateQuizFromModule({ ...module, videoAssetDocuments }, {
             questionCount,
-            optionsPerQuestion
+            optionsPerQuestion,
+            difficulty
         });
 
         if (!generated.questions.length) {
