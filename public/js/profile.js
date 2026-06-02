@@ -1148,26 +1148,15 @@ window.saveExternalLink = async function() {
     try {
         const token = localStorage.getItem('token');
         
-        // If user selected a new file, upload it first
+        // Convert file to Base64 to match standard course thumbnail behavior and ensure public visibility
         if (fileInput.files.length > 0) {
-            const formData = new FormData();
-            formData.append('document', fileInput.files[0]);
-            
-            // Upload the file directly to the Database via our existing document endpoint
-            const uploadRes = await fetch('/api/documents/upload', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
+            const file = fileInput.files[0];
+            coverImage = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
-            
-            if (uploadRes.ok) {
-                const uploadData = await uploadRes.json();
-                coverImage = uploadData.downloadUrl; // Keep the URL serving from DB
-            } else {
-                const errorData = await uploadRes.json();
-                alert('Falha ao fazer upload da imagem de capa: ' + (errorData.error || 'Erro desconhecido'));
-                return;
-            }
         }
 
         let res;

@@ -36,3 +36,35 @@ exports.updateSettings = async (req, res) => {
     res.status(500).json({ error: 'Failed to update settings' });
   }
 };
+
+const fs = require('fs');
+const path = require('path');
+
+exports.uploadPublicImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    const publicDir = path.join(__dirname, '../public/image/uploads');
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+
+    const fileExt = path.extname(req.file.originalname) || '.png';
+    const fileName = `carousel_${Date.now()}${fileExt}`;
+    const targetPath = path.join(publicDir, fileName);
+
+    fs.renameSync(req.file.path, targetPath);
+
+    const publicUrl = `/image/uploads/${fileName}`;
+
+    res.json({ url: publicUrl });
+  } catch (err) {
+    console.error('Error uploading public image:', err);
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
+    res.status(500).json({ error: 'Failed to upload public image' });
+  }
+};

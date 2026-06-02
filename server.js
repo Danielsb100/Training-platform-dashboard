@@ -408,6 +408,7 @@ app.delete('/api/documents/:id', authenticateToken, documentController.deleteDoc
 // --- System Settings API ---
 app.get('/api/system/settings/:key', authenticateToken, systemController.getSettings);
 app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
+app.post('/api/system/settings/upload-public-image', authenticateToken, roleMiddleware(['MASTER']), handleUploadToDiskError('image'), systemController.uploadPublicImage);
 
 app.get('/', (req, res) => {
   return sendSuccess(res, { message: 'Authentication API is running.' });
