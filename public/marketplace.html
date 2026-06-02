@@ -287,9 +287,8 @@
     // --- Backend Sync Functions ---
     async function fetchHomepageConfig() {
         try {
-            const token = localStorage.getItem('token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const res = await fetch('/api/system/settings/homepage_config', { headers });
+            // Public route — no auth needed, carousel must be visible to all visitors
+            const res = await fetch('/api/system/settings/homepage_config');
             const data = await res.json();
             if (data.data) {
                 heroImages = data.data.heroImages || [];
@@ -616,29 +615,37 @@
         const file = e.target.files[0];
         if(!file) return;
 
-        const formData = new FormData();
-        formData.append('image', file);
+        // Validate file type on client side
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
+            cmFileInput.value = '';
+            return;
+        }
+
+        // Warn if file is very large (> 2MB) since it will be stored as Base64 in the database
+        if (file.size > 2 * 1024 * 1024) {
+            if (!confirm(`This image is ${(file.size / 1024 / 1024).toFixed(1)}MB. Large images may slow down page loading. Continue?`)) {
+                cmFileInput.value = '';
+                return;
+            }
+        }
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/system/settings/upload-public-image', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
+            // Convert to Base64 — stored directly in the database, survives redeploys
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = ev => resolve(ev.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                activeEditingImages.push(data.url);
-                modalSlideIndex = activeEditingImages.length - 1;
-                renderModalCarousel();
-            } else {
-                const err = await res.json();
-                alert('Upload failed: ' + (err.error || 'Unknown error'));
-            }
+            activeEditingImages.push(base64);
+            modalSlideIndex = activeEditingImages.length - 1;
+            renderModalCarousel();
         } catch (err) {
-            console.error('Error uploading image:', err);
-            alert('Upload failed due to a network error.');
+            console.error('Error reading image:', err);
+            alert('Failed to read the image file.');
         }
         
         // Reset input value to allow selecting the same file again if needed

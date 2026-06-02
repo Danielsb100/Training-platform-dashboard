@@ -415,6 +415,9 @@ app.get('/api/documents/download/:id', authenticateToken, documentController.dow
 app.delete('/api/documents/:id', authenticateToken, documentController.deleteDocument);
 
 // --- System Settings API ---
+// Public route: homepage_config must be readable without login (carousel, news banners)
+app.get('/api/system/settings/homepage_config', systemController.getSettings);
+// All other settings require authentication
 app.get('/api/system/settings/:key', authenticateToken, systemController.getSettings);
 app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
 app.post('/api/system/settings/upload-public-image', authenticateToken, roleMiddleware(['MASTER']), handleUploadToDiskError('image'), systemController.uploadPublicImage);
