@@ -136,7 +136,7 @@
             <header class="top-header" style="position: sticky; top: 0; z-index: 1000;">
                 <div class="logo">
                     <i class="fas fa-graduation-cap"></i>
-                    <span data-i18n="marketplace.platformName">PLATAFORMA</span>
+                    <span data-i18n="marketplace.platformName">PLATAFORM</span>
                 </div>
                 <div
                     data-i18n="marketplace.platformSubtitle" style="flex:1; border-left:1px solid rgba(255,255,255,0.3); margin-left:20px; padding-left:20px; font-size:14px; opacity:0.8;">
@@ -287,7 +287,9 @@
     // --- Backend Sync Functions ---
     async function fetchHomepageConfig() {
         try {
-            const res = await fetch('/api/system/settings/homepage_config');
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const res = await fetch('/api/system/settings/homepage_config', { headers });
             const data = await res.json();
             if (data.data) {
                 heroImages = data.data.heroImages || [];

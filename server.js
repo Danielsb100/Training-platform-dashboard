@@ -64,11 +64,20 @@ const handleUploadError = (fieldName) => (req, res, next) => {
   });
 };
 
+const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
 const uploadToDisk = multer({
   storage: multer.diskStorage({
     destination: env.upload.tempDir
   }),
-  limits: { fileSize: env.upload.maxFileSizeBytes }
+  limits: { fileSize: env.upload.maxFileSizeBytes },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE_MIMES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.mimetype}. Only JPEG, PNG, GIF, and WebP images are allowed.`));
+    }
+  }
 });
 
 const handleUploadToDiskError = (fieldName) => (req, res, next) => {

@@ -263,7 +263,7 @@ model Course {
   ownerMasterId Int
   title         String
   description   String?
-  coverImage    String?
+  coverImage    String?                @db.Text
   status        CourseStatus           @default(DRAFT)
   sceneId       String                 @unique
   createdAt     DateTime               @default(now())

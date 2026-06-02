@@ -313,6 +313,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (pagesCount) pagesCount.innerText = publishedCourses.length;
 
+    // Map to safely store course data for the Edit Link modal (avoids injecting Base64/special chars into HTML attributes)
+    window._extLinkData = window._extLinkData || {};
+
     function renderCourseCard(course) {
         const statusColor = course.status === 'PUBLISHED' ? '#dcfce7' : '#f1f5f9';
         const statusText = course.status === 'PUBLISHED' ? (window.t ? window.t('profile.published', 'Published') : 'Published') : (window.t ? window.t('profile.draft', 'Draft') : 'Draft');
@@ -328,15 +331,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const editLabel = window.t ? window.t('profile.edit', 'Edit') : 'Edit';
         const viewContentLabel = window.t ? window.t('profile.viewContent', 'View Content') : 'View Content';
 
-        const buttonsHtml = course.externalUrl
-            ? `
-                <button onclick="openExternalLinkModal(${course.id}, '${(course.title || '').replace(/'/g, "\\'")}', '${(course.description || '').replace(/'/g, "\\'")}', '${(course.externalUrl || '').replace(/'/g, "\\'")}', '${(course.coverImage || '').replace(/'/g, "\\'")}', '${course.status}')" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${editLinkLabel}</button>
-                <button onclick="window.open('${course.externalUrl}', '_blank')" style="flex:1; padding:8px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${openLinkLabel}</button>
-            `
-            : `
+        let buttonsHtml;
+        if (course.externalUrl) {
+            // Store course data safely in JS — never inject Base64 or special chars into HTML attributes
+            window._extLinkData[course.id] = {
+                title: course.title || '',
+                description: course.description || '',
+                externalUrl: course.externalUrl || '',
+                coverImage: course.coverImage || '',
+                status: course.status || 'DRAFT'
+            };
+            buttonsHtml = `
+                <button onclick="(function(){ var d = window._extLinkData[${course.id}]; openExternalLinkModal(${course.id}, d.title, d.description, d.externalUrl, d.coverImage, d.status); })()" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${editLinkLabel}</button>
+                <button onclick="window.open('${(course.externalUrl || '').replace(/'/g, "\\'")}', '_blank')" style="flex:1; padding:8px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${openLinkLabel}</button>
+            `;
+        } else {
+            buttonsHtml = `
                 <button onclick="window.location.href='course_builder.html?id=${course.id}'" style="flex:1; padding:8px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${editLabel}</button>
                 <button onclick="window.location.href='course_content.html?id=${course.id}'" style="flex:1; padding:8px; background:#497aa7; color:white; border:none; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer;">${viewContentLabel}</button>
             `;
+        }
 
         return `
             <div class="course-card" style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display:flex; flex-direction:column;">
@@ -373,6 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userPagesGrid.innerHTML = html;
         }
     }
+
 
     // --- 2. Load Operational Agenda / Notifications ---
     await loadNotificationsSummary();
