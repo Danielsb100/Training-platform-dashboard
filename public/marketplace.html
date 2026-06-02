@@ -325,7 +325,7 @@
         const token = localStorage.getItem('token');
         if (!token) return;
         try {
-            await fetch('/api/system/settings/homepage_config', {
+            const res = await fetch('/api/system/settings/homepage_config', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -335,8 +335,14 @@
                     value: { heroImages, newsItems }
                 })
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                console.error('Save failed:', res.status, err);
+                alert('Failed to save carousel config: ' + (err.error || res.statusText));
+            }
         } catch(err) {
             console.error('Failed to save homepage config:', err);
+            alert('Network error saving carousel config.');
         }
     }
     let marqueeTranslate = 0;
@@ -604,6 +610,7 @@
             activeEditingImages.push(newUrl);
             modalSlideIndex = activeEditingImages.length - 1; 
             renderModalCarousel();
+            saveHomepageConfig();
         }
     });
 
@@ -643,6 +650,7 @@
             activeEditingImages.push(base64);
             modalSlideIndex = activeEditingImages.length - 1;
             renderModalCarousel();
+            saveHomepageConfig();
         } catch (err) {
             console.error('Error reading image:', err);
             alert('Failed to read the image file.');
@@ -658,6 +666,7 @@
         if(newUrl) {
             activeEditingImages[modalSlideIndex] = newUrl;
             renderModalCarousel();
+            saveHomepageConfig();
         }
     });
 
@@ -667,6 +676,7 @@
             activeEditingImages.splice(modalSlideIndex, 1);
             if(modalSlideIndex >= activeEditingImages.length) modalSlideIndex = activeEditingImages.length - 1;
             renderModalCarousel();
+            saveHomepageConfig();
         }
     });
 

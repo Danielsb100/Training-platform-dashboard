@@ -416,7 +416,10 @@ app.delete('/api/documents/:id', authenticateToken, documentController.deleteDoc
 
 // --- System Settings API ---
 // Public route: homepage_config must be readable without login (carousel, news banners)
-app.get('/api/system/settings/homepage_config', systemController.getSettings);
+app.get('/api/system/settings/homepage_config', (req, res) => {
+  req.params.key = 'homepage_config';
+  systemController.getSettings(req, res);
+});
 // All other settings require authentication
 app.get('/api/system/settings/:key', authenticateToken, systemController.getSettings);
 app.put('/api/system/settings/:key', authenticateToken, roleMiddleware(['MASTER']), systemController.updateSettings);
