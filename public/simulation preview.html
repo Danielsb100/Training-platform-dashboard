@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download & Project Introduction</title>
+  <style>
+    :root {
+      --ink: #101827;
+      --muted: #586174;
+      --line: rgba(13, 34, 48, .12);
+      --surface: #ffffff;
+      --surface-soft: #f3f5f7;
+      --deep: #061b2a;
+      --deep-2: #0b3448;
+      --cyan: #1fc6d8;
+      --gold: #b5a95d;
+      --yellow: #f1d85b;
+      --green: #57ff3f;
+      --shadow: 0 22px 55px rgba(3, 18, 31, .16);
+      --shadow-soft: 0 14px 34px rgba(3, 18, 31, .10);
+      --radius: 18px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(31, 198, 216, .12), transparent 30%),
+        linear-gradient(180deg, #f7f8fa 0%, #eef1f4 100%);
+      line-height: 1.5;
+    }
+
+    a { color: inherit; }
+
+    .page-shell { overflow: hidden; }
+
+    .hero {
+      position: relative;
+      min-height: 510px;
+      padding: 72px 24px 96px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(2, 17, 28, .98) 0%, rgba(3, 38, 56, .92) 47%, rgba(171, 177, 167, .20) 100%),
+        radial-gradient(circle at 65% 30%, rgba(31, 198, 216, .22), transparent 34%),
+        linear-gradient(135deg, #031321 0%, #0a3144 56%, #c5c9c6 100%);
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      opacity: .18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(90deg, #000, transparent 88%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -14%;
+      width: 58%;
+      height: 100%;
+      background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,255,255,.18));
+      clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+      opacity: .22;
+      z-index: -1;
+    }
+
+    .container {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, .75fr);
+      gap: 56px;
+      align-items: center;
+    }
+
+    .hero-title {
+      margin: 0;
+      max-width: 650px;
+      font-size: clamp(48px, 7.2vw, 86px);
+      line-height: .94;
+      letter-spacing: -.06em;
+      font-weight: 850;
+    }
+
+    .hero-title span { display: block; }
+
+    .hero-copy {
+      margin: 28px 0 0;
+      max-width: 620px;
+      color: rgba(255, 255, 255, .84);
+      font-size: clamp(17px, 1.7vw, 22px);
+      line-height: 1.45;
+      letter-spacing: .02em;
+    }
+
+    .hero-panel {
+      position: relative;
+      padding: 28px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .08);
+      box-shadow: 0 32px 90px rgba(0,0,0,.24);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      pointer-events: none;
+    }
+
+    .hero-panel p {
+      position: relative;
+      margin: 0;
+      color: rgba(255,255,255,.90);
+      font-size: 17px;
+      line-height: 1.68;
+    }
+
+    .intro {
+      position: relative;
+      margin-top: -62px;
+      padding: 0 24px 78px;
+    }
+
+    .intro-card {
+      padding: clamp(28px, 4vw, 46px);
+      border-radius: 26px;
+      background: rgba(255,255,255,.96);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.8);
+    }
+
+    .intro-card p {
+      margin: 0;
+      max-width: 1020px;
+      color: #323b49;
+      font-size: clamp(16px, 1.45vw, 20px);
+    }
+
+    .intro-card ul {
+      margin: 8px 0 0 28px;
+      padding: 0;
+      color: #323b49;
+      font-size: clamp(16px, 1.45vw, 20px);
+    }
+
+    .intro-card li { margin: 5px 0; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .step-card {
+      min-height: 235px;
+      padding: 28px;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--cyan);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .step-card h3 {
+      margin: 0 0 8px;
+      color: #192131;
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 850;
+      letter-spacing: -.02em;
+    }
+
+    .step-card p,
+    .step-card ul {
+      margin: 0;
+      color: #465166;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .step-card ul {
+      margin-top: 8px;
+      padding-left: 22px;
+    }
+
+    .download-section {
+      position: relative;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(7, 25, 36, .96), rgba(8, 33, 45, .92)),
+        radial-gradient(circle at 15% 10%, rgba(31, 198, 216, .22), transparent 32%),
+        linear-gradient(135deg, #051722, #52605f);
+      padding: 86px 24px 104px;
+    }
+
+    .download-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0 70%, rgba(255,255,255,.10) 70% 100%),
+        linear-gradient(90deg, rgba(181, 169, 93, .0), rgba(181, 169, 93, .12));
+      pointer-events: none;
+    }
+
+    .download-head {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(320px, .72fr);
+      gap: 48px;
+      align-items: end;
+    }
+
+    .download-title {
+      margin: 0;
+      font-size: clamp(48px, 6vw, 76px);
+      line-height: .94;
+      letter-spacing: -.06em;
+      font-weight: 850;
+    }
+
+    .download-subtitle {
+      margin: 12px 0 0;
+      color: rgba(255,255,255,.94);
+      font-size: clamp(25px, 3vw, 40px);
+      line-height: 1.05;
+      font-weight: 840;
+      letter-spacing: -.05em;
+    }
+
+    .summary-box {
+      padding: 28px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.34);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 20px 55px rgba(0,0,0,.22);
+    }
+
+    .summary-box p {
+      margin: 0;
+      color: rgba(255,255,255,.88);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .notice-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      margin-top: 46px;
+    }
+
+    .notice {
+      min-height: 170px;
+      padding: 26px;
+      border-left: 2px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.045);
+      border-radius: 18px;
+    }
+
+    .notice h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: .02em;
+      font-weight: 500;
+      color: rgba(255,255,255,.90);
+    }
+
+    .notice p {
+      margin: 0;
+      color: rgba(255,255,255,.78);
+      font-size: 18px;
+      line-height: 1.62;
+      letter-spacing: .035em;
+    }
+
+    .requirements {
+      position: relative;
+      margin-top: 74px;
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(300px, .55fr);
+      gap: 46px;
+      align-items: end;
+    }
+
+    .requirements-card {
+      padding: clamp(28px, 4vw, 44px);
+      border-radius: 26px;
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.72);
+    }
+
+    .requirements-card h2 {
+      margin: 0 0 18px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      font-weight: 850;
+    }
+
+    .requirements-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 14px;
+      font-size: clamp(21px, 2.6vw, 34px);
+      line-height: 1.12;
+      color: #242b35;
+    }
+
+    .requirements-list strong {
+      font-weight: 850;
+      color: #151b23;
+    }
+
+    .highlight-line {
+      width: min(520px, 100%);
+      height: 12px;
+      margin-top: 30px;
+      background: var(--yellow);
+      border-radius: 999px;
+    }
+
+    .download-cta {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 24px;
+      padding-bottom: 8px;
+    }
+
+    .download-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 74px;
+      padding: 0 56px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #082315;
+      background: var(--green);
+      box-shadow: 0 0 0 8px rgba(87, 255, 63, .20), 0 24px 64px rgba(0,0,0,.34);
+      font-size: clamp(24px, 2.4vw, 32px);
+      line-height: 1;
+      font-weight: 850;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .download-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 8px rgba(87, 255, 63, .25), 0 30px 72px rgba(0,0,0,.38);
+    }
+
+    .download-note {
+      margin: 0;
+      color: rgba(255,255,255,.76);
+      font-size: 17px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .download-head,
+      .requirements {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-panel { max-width: 640px; }
+      .steps,
+      .notice-grid { grid-template-columns: 1fr; }
+      .download-cta { align-items: flex-start; }
+      .download-note { text-align: left; }
+    }
+
+    @media (max-width: 620px) {
+      .hero { padding: 54px 18px 82px; }
+      .intro,
+      .download-section { padding-left: 18px; padding-right: 18px; }
+      .hero-title { font-size: 48px; }
+      .hero-copy br,
+      .summary-box br,
+      .download-note br { display: none; }
+      .requirements-list { font-size: 22px; }
+      .download-button { width: 100%; padding: 0 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <h1 class="hero-title"><span>Download &amp; Project</span><span>Introduction</span></h1>
+        </div>
+        <div class="hero-panel">
+          <p>Download the full City of Justice project to explore the<br>JustAcademy, interact with AI-powered avatars, and<br>use the new OSINT module for training.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="intro">
+      <div class="container intro-card">
+        <p>This 3D project was developed to provide an immersive experience inside the JustAcademy,<br>a virtual environment designed for professional training in the judicial sector.<br>By downloading the project, you will be able to:</p>
+        <ul>
+          <li>Explore the City of Justice in 3D</li>
+          <li>Interact with intelligent avatars capable of real-time dialogue</li>
+          <li>Access the OSINT module for investigative simulations</li>
+          <li>Use integrated training materials inside a modern virtual environment</li>
+        </ul>
+        <p>To ensure proper operation of the project, please follow the instructions below carefully.</p>
+
+        <div class="steps">
+          <article class="step-card">
+            <h3>1. Extract the file</h3>
+            <p>After completing the download, you will<br>find a ZIP compressed folder.</p>
+            <ul>
+              <li>Right-click the file</li>
+              <li>Select “Extract All”</li>
+              <li>Wait for the extraction to complete</li>
+            </ul>
+          </article>
+
+          <article class="step-card">
+            <h3>2. Launch the project through Unreal Engine</h3>
+            <p>Inside the extracted folder, you will find an<br>executable file linked to Unreal Engine.<br>Procedure:<br>1.Open the extracted folder<br>2.Locate the project’s .exe file<br>3.Double-click it to start the application<br>4.Wait for the engine to load</p>
+          </article>
+
+          <article class="step-card">
+            <h3>3. Installation of complementary<br>programs (IMPORTANT)</h3>
+            <p>On first launch, the system may request<br>the installation of additional components<br>required for the project to function (e.g.,<br>Visual C++ Redistributables, DirectX, or<br>other dependencies).</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="download-section">
+      <div class="container">
+        <div class="download-head">
+          <div>
+            <h2 class="download-title">Download</h2>
+            <p class="download-subtitle">3D Environment + AI Avatars + OSINT Module</p>
+          </div>
+          <div class="summary-box">
+            <p>Download the full City of Justice project to explore the<br>JustAcademy, interact with AI-powered avatars, and use the new<br>OSINT module for training</p>
+          </div>
+        </div>
+
+        <div class="notice-grid">
+          <article class="notice">
+            <p>You must accept and confirm all installation<br>prompts.<br>If any of these installations are skipped, the<br>project may fail to start.</p>
+          </article>
+          <article class="notice">
+            <h3>Functionality</h3>
+            <p>To speak with the intelligent avatars, use<br>the voice functions, and access dynamic<br>content:</p>
+          </article>
+          <article class="notice">
+            <p>An active Internet connection is required at<br>all times.<br>Without an active connection, the AI<br>components will not work.</p>
+          </article>
+        </div>
+
+        <div class="requirements">
+          <div class="requirements-card">
+            <h2>Minimum Requirements</h2>
+            <ul class="requirements-list">
+              <li>*<strong>Graphics Card</strong> NVIDIA GTX 1080</li>
+              <li>*<strong>Processor</strong> Intel i5 (or AMD equivalent)</li>
+              <li>*<strong>RAM:</strong> 16 GB</li>
+              <li>*<strong>VRAM:</strong> Minimum 6 GB</li>
+              <li>*<strong>Operating System:</strong> Windows 10 or higher</li>
+              <li>*<strong>Internet Connection:</strong> Required for AI avatar functionality</li>
+            </ul>
+            <div class="highlight-line" aria-hidden="true"></div>
+          </div>
+
+          <div class="download-cta">
+            <!-- Replace the href value below with the real .zip file URL. -->
+            <a class="download-button" href="./City-of-Justice-project.zip" download>Download Project</a>
+            <p class="download-note">The file will be downloaded in .zip format. Please<br>ensure you have sufficient storage space on your<br>computer.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

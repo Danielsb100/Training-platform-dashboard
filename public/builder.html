@@ -495,7 +495,20 @@
         </div>
     </div>
 
-    <script src="js/templates.js?v=3"></script>
+    <script>
+        // Dynamic template loading based on mode
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const mode = params.get('mode');
+            const script = document.createElement('script');
+            if (mode === 'simulation') {
+                script.src = 'js/simulation_templates.js?v=1';
+            } else {
+                script.src = 'js/templates.js?v=3';
+            }
+            document.head.appendChild(script);
+        })();
+    </script>
     <script src="js/script.js?v=2.1"></script>
 </body>
 

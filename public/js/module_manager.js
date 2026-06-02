@@ -79,6 +79,7 @@ function openModuleManager() {
     document.getElementById('active-module-editor').style.display = 'none'; // hide detail panel initially
     window.scrollTo({ top: 0, behavior: 'instant' });
     renderAttachedModules();
+    updateSimulationButton();
 }
 
 function closeModuleEditor() {
@@ -2040,4 +2041,73 @@ async function translateQuizToSession(quizId) {
     } catch (error) {
         alert('Error translating quiz: ' + error.message);
     }
+}
+
+// ==========================================
+// SIMULATION BUILDER FUNCTIONS
+// ==========================================
+
+function updateSimulationButton() {
+    const btn = document.getElementById('btn-create-simulation');
+    const label = document.getElementById('btn-simulation-label');
+    if (!btn || !label) return;
+
+    const courseData = window.currentCourseData || window.apiCourseData;
+
+    if (courseData && courseData.simulationHtml && courseData.simulationHtml.length > 50) {
+        label.innerHTML = '<i class="fas fa-edit" style="margin-right:5px;"></i> Edit Simulation';
+        btn.style.background = '#4f46e5';
+        
+        // Add delete button if it doesn't exist
+        if (!document.getElementById('btn-delete-simulation')) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.id = 'btn-delete-simulation';
+            deleteBtn.innerHTML = '<i class="fas fa-times" style="color:#ef4444;"></i>';
+            deleteBtn.style.cssText = 'background:transparent; border:1px solid #ef4444; border-radius:6px; padding:8px 12px; cursor:pointer; margin-right:5px; transition:0.2s;';
+            deleteBtn.title = 'Delete Simulation';
+            deleteBtn.onmouseover = () => { deleteBtn.style.background = '#fee2e2'; };
+            deleteBtn.onmouseout = () => { deleteBtn.style.background = 'transparent'; };
+            deleteBtn.onclick = async () => {
+                if (!confirm('Are you sure you want to delete the simulation page? This cannot be undone.')) return;
+                try {
+                    const token = localStorage.getItem('token');
+                    const res = await fetch(`/courses/${window.editingCourseId}/simulation`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ simulationHtml: '' })
+                    });
+                    if (res.ok) {
+                        if (window.apiCourseData) window.apiCourseData.simulationHtml = null;
+                        if (window.currentCourseData) window.currentCourseData.simulationHtml = null;
+                        updateSimulationButton();
+                    } else {
+                        const err = await res.json().catch(()=>({}));
+                        alert('Failed to delete simulation: ' + (err.error || 'Unknown error'));
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Error deleting simulation.');
+                }
+            };
+            btn.parentNode.insertBefore(deleteBtn, btn);
+        }
+    } else {
+        label.innerHTML = '+ Create Simulation';
+        btn.style.background = '#6366f1';
+        
+        const deleteBtn = document.getElementById('btn-delete-simulation');
+        if (deleteBtn) deleteBtn.remove();
+    }
+}
+
+function goToSimulationBuilder() {
+    const courseId = window.editingCourseId || '';
+    if (!courseId) {
+        alert('Please select or create a course first.');
+        return;
+    }
+    window.location.href = `builder.html?mode=simulation&courseId=${courseId}`;
 }

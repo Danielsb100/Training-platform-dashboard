@@ -117,6 +117,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('module-name').textContent = moduleData.title || (window.t ? window.t('moduleViewer.unnamedModule', 'Unnamed Module') : 'Unnamed Module');
         document.getElementById('course-title').textContent = window.t ? window.t('moduleViewer.courseContent', 'Course Content') : 'Course Content';
         
+        if (courseId) {
+            try {
+                const btnPrev = document.getElementById('btn-prev-module');
+                const btnNext = document.getElementById('btn-next-module');
+                
+                // Initially disable both
+                if(btnPrev) { btnPrev.disabled = true; btnPrev.style.opacity = '0.3'; btnPrev.style.cursor = 'not-allowed'; }
+                if(btnNext) { btnNext.disabled = true; btnNext.style.opacity = '0.3'; btnNext.style.cursor = 'not-allowed'; }
+
+                const courseRes = await fetch(`/courses/${courseId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (courseRes.ok) {
+                    const resJson = await courseRes.json();
+                    const course = resJson.data || resJson;
+                    window.currentCourseData = course;
+                    const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
+                    
+                    if (rawModules && rawModules.length > 0) {
+                        // Use order if available, else maintain index or handle missing orders safely
+                        const sortedModules = rawModules.sort((a, b) => (a.order || 0) - (b.order || 0));
+                        const currentIndex = sortedModules.findIndex(m => m.id == moduleId || (m.moduleId && m.moduleId == moduleId));
+                        
+                        if (currentIndex > 0 && btnPrev) {
+                            btnPrev.disabled = false;
+                            btnPrev.style.opacity = '1';
+                            btnPrev.style.cursor = 'pointer';
+                            btnPrev.onclick = () => {
+                                const prevId = sortedModules[currentIndex - 1].id || sortedModules[currentIndex - 1].moduleId;
+                                window.location.href = `module_viewer.html?courseId=${courseId}&moduleId=${prevId}`;
+                            };
+                        }
+                        
+                        if (currentIndex !== -1 && currentIndex < sortedModules.length - 1 && btnNext) {
+                            btnNext.disabled = false;
+                            btnNext.style.opacity = '1';
+                            btnNext.style.cursor = 'pointer';
+                            btnNext.onclick = () => {
+                                const nextId = sortedModules[currentIndex + 1].id || sortedModules[currentIndex + 1].moduleId;
+                                window.location.href = `module_viewer.html?courseId=${courseId}&moduleId=${nextId}`;
+                            };
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not fetch course modules for navigation:', e);
+            }
+        }
+
         // --- Language Session Auto-detect ---
         const languageSessions = moduleData.languageSessions || [];
         let activeSessionId = null;
@@ -218,6 +267,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         renderHubs();
         updateFinalEvaluationLock();
+        
+        // --- Simulation Tab ---
+        const simTab = document.getElementById('nav-simulation-tab');
+        const simSection = document.getElementById('section-simulation');
+        const simIframe = document.getElementById('simulation-iframe');
+        
+        if (window.currentCourseData && window.currentCourseData.simulationHtml && window.currentCourseData.simulationHtml.length > 50) {
+            if (simTab) simTab.style.display = '';
+            if (simSection) simSection.style.display = '';
+            
+            if (simIframe) {
+                // Strip out builder UI elements
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(window.currentCourseData.simulationHtml, 'text/html');
+                
+                doc.querySelectorAll('.bg-edit-btn, .add-block-btn, .delete-btn, .drag-handle, .block-controls').forEach(el => el.remove());
+                doc.querySelectorAll('.editable-text').forEach(el => {
+                    el.removeAttribute('contenteditable');
+                    el.classList.remove('editable-text');
+                    el.removeAttribute('data-events-bound');
+                    if (el.className === '') el.removeAttribute('class');
+                });
+                doc.querySelectorAll('.editable-image-wrapper').forEach(wrapper => {
+                    wrapper.classList.remove('editable-image-wrapper');
+                    wrapper.removeAttribute('onclick');
+                    wrapper.removeAttribute('data-events-bound');
+                    if (wrapper.className === '') wrapper.removeAttribute('class');
+                });
+                doc.querySelectorAll('.module-section').forEach(section => {
+                    section.removeAttribute('data-events-bound');
+                    section.removeAttribute('data-events-bound-bg-main');
+                });
+                
+                const cleanedHeadHtml = doc.head.innerHTML;
+                const cleanedBodyHtml = doc.body.innerHTML;
+
+                const simHtmlDoc = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; }
+        img { max-width: 100%; height: auto; }
+    </style>
+    ${cleanedHeadHtml}
+</head>
+<body>${cleanedBodyHtml}</body>
+</html>`;
+                simIframe.srcdoc = simHtmlDoc;
+                
+                // Let iframe handle scrolling internally
+                simIframe.style.height = '100%';
+            }
+        } else {
+            if (simTab) simTab.style.display = 'none';
+            if (simSection) simSection.style.display = 'none';
+        }
         
     } catch (error) {
         console.error(error);
@@ -573,6 +682,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         hubSections.forEach(s => s.classList.remove('active'));
         document.getElementById('section-' + tab.dataset.tab).classList.add('active');
+
+        if (tab.dataset.tab === 'simulation') {
+            document.querySelector('.viewer-main').classList.add('no-padding');
+        }
     });
 });
 

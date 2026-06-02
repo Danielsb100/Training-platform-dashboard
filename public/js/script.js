@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pageIdParam = urlParams.get('id');
     const courseIdParam = urlParams.get('courseId');
     const channelIdParam = urlParams.get('channelId');
+    const simulationMode = urlParams.get('mode') === 'simulation';
+    const moduleIdParam = urlParams.get('moduleId');
 
     if (channelIdParam) {
         const addViewModulesBtn = document.getElementById('add-view-modules-btn');
@@ -161,6 +163,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tModal = document.getElementById('template-modal');
             if (tModal) tModal.style.display = 'none';
             setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+        }
+    } else if (simulationMode && courseIdParam) {
+        // SIMULATION MODE: Load existing simulation HTML from course
+        editingPageId = 'simulation';
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/courses/${courseIdParam}/simulation`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                
+                const navNameInput = document.getElementById('page-name-input');
+                window.loadedLandingPageTitle = 'Interactive Simulation';
+                if (navNameInput) navNameInput.value = window.loadedLandingPageTitle;
+                
+                if (data.simulationHtml && data.simulationHtml.length > 50) {
+                    const container = document.getElementById('template-container');
+                    if (container) {
+                        container.innerHTML = data.simulationHtml;
+                        container.querySelectorAll('[data-events-bound]').forEach(el => el.removeAttribute('data-events-bound'));
+                        container.querySelectorAll('[data-events-bound-bg-main]').forEach(el => el.removeAttribute('data-events-bound-bg-main'));
+                        container.querySelectorAll('[data-events-bound-container]').forEach(el => el.removeAttribute('data-events-bound-container'));
+                    }
+                    const tModal = document.getElementById('template-modal');
+                    if (tModal) tModal.style.display = 'none';
+                    setTimeout(() => { if (typeof initDynamicEvents === 'function') initDynamicEvents(); }, 50);
+                }
+                // If no simulationHtml, the template modal will show with the simulation template
+            }
+        } catch (err) {
+            console.error('Failed to load simulation for course:', err);
         }
     } else if (courseIdParam) {
         try {
@@ -498,8 +532,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let customThumbBase64 = null;
 
     if (publishBtn) {
-        // Change publish button text if we are editing a course
-        if (courseIdParam) {
+        // Change publish button text depending on mode
+        if (simulationMode) {
+            publishBtn.innerHTML = '<i class="fas fa-flask"></i> Save Simulation';
+        } else if (courseIdParam) {
             publishBtn.innerHTML = '<i class="fas fa-save"></i> Save to Course';
         } else if (channelIdParam) {
             publishBtn.innerHTML = '<i class="fas fa-save"></i> Save to Channel';
@@ -656,6 +692,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    async function saveSimulationToCourse(modularContent, compiledContent) {
+        publishModal.classList.add('hidden');
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Not authenticated');
+
+            const res = await fetch(`/courses/${courseIdParam}/simulation`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ simulationHtml: modularContent })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || 'Failed to save simulation');
+            }
+
+            alert('Simulation saved successfully!');
+            // Navigate back to course builder
+            if (courseIdParam) {
+                window.location.href = 'course_builder.html?id=' + courseIdParam;
+            } else {
+                window.history.back();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error saving simulation: ' + error.message);
+        }
+    }
+
     if (publishCancelBtn) {
         publishCancelBtn.addEventListener('click', () => {
             publishModal.classList.add('hidden');
@@ -727,8 +797,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const title = publishTitleInput.value || (navNameInput ? navNameInput.value : 'My Landing Page');
             const thumbUrl = customThumbBase64 || publishThumbUrlInput.value || '';
-            
-            if (courseIdParam) {
+
+            if (simulationMode && courseIdParam) {
+                saveSimulationToCourse(modularContent, compiledContent);
+                return;
+            } else if (courseIdParam) {
                 saveDirectToCourse(thumbUrl, modularContent, compiledContent);
             } else if (channelIdParam) {
                 saveDirectToChannel(thumbUrl, modularContent, compiledContent);

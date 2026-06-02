@@ -485,6 +485,7 @@ async function getCourseDetail(req, res) {
       contentCss: course.contentCss,
       status: course.status,
       sceneId: course.sceneId,
+      simulationHtml: course.simulationHtml,
       canManage: managerView,
       enrollment,
       progressPercent: progress.progressPercent,
@@ -816,6 +817,7 @@ async function getCourseRuntime(req, res) {
       coverImage: course.coverImage,
       status: course.status,
       sceneId: course.sceneId,
+      simulationHtml: course.simulationHtml,
       canManage: managerView,
       enrollment,
       progressPercent: progress.progressPercent,
@@ -1479,6 +1481,57 @@ async function removeStudent(req, res) {
   }
 }
 
+// --- Course Simulation ---
+async function getSimulation(req, res) {
+  try {
+    const { id } = req.params;
+    const course = await prisma.course.findUnique({
+      where: { id: parseInt(id) },
+      select: { id: true, simulationHtml: true }
+    });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    res.json({ simulationHtml: course.simulationHtml || null });
+  } catch (error) {
+    console.error('Error fetching simulation:', error);
+    res.status(500).json({ error: 'Failed to fetch simulation' });
+  }
+}
+
+async function saveSimulation(req, res) {
+  try {
+    const { id } = req.params;
+    const courseId = parseInt(id);
+
+    const existing = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { editors: true }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (!isCourseManager(req.user, existing)) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const { simulationHtml } = req.body;
+    if (typeof simulationHtml !== 'string') {
+      return res.status(400).json({ error: 'simulationHtml must be a string' });
+    }
+
+    const updated = await prisma.course.update({
+      where: { id: courseId },
+      data: { simulationHtml }
+    });
+
+    res.json({ message: 'Simulation saved successfully', id: updated.id });
+  } catch (error) {
+    console.error('Error saving simulation:', error);
+    res.status(500).json({ error: 'Failed to save simulation' });
+  }
+}
+
 module.exports = {
   getCourseStudents,
   removeStudent,
@@ -1510,5 +1563,7 @@ module.exports = {
   getEnrolledCourses,
   getCourseRuntime,
   completeCourseModule,
+  getSimulation,
+  saveSimulation,
   syncCoursePlacements
 };

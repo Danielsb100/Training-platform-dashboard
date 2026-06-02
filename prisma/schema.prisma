@@ -228,6 +228,7 @@ model TrainingModule {
   updatedAt        DateTime                 @updatedAt
   titleFont        String?
   textColor        String?
+  buttonColor      String?
   AiTip            AiTip[]
   courseModules    CourseModule[]
   threads          ForumThread[]
@@ -269,6 +270,7 @@ model Course {
   updatedAt     DateTime               @updatedAt
   contentHtml   String?
   contentCss    String?
+  simulationHtml String?               @db.Text
   externalUrl   String?
   AiTip         AiTip[]
   owner         User                   @relation("CourseOwner", fields: [ownerMasterId], references: [id], onDelete: Cascade)

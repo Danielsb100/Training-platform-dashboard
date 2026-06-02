@@ -18,6 +18,7 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
         coverImage: module.coverImage,
         titleFont: module.titleFont,
         textColor: module.textColor,
+        simulationHtml: module.simulationHtml || null,
         status: module.status,
         createdAt: module.createdAt,
         updatedAt: module.updatedAt,

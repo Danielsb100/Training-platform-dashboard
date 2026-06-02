@@ -233,6 +233,7 @@
                     <p style="margin: 5px 0 0 0; color: #64748b; font-size: 1rem;"><span id="modules-count-header">0</span> <span data-i18n="courseBuilder.modulesCreated">modules created</span></p>
                 </div>
                 <div style="display:flex; gap:10px;">
+                    <button id="btn-create-simulation" onclick="goToSimulationBuilder()" style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fas fa-flask"></i> <span id="btn-simulation-label">+ Create Simulation Field</span></button>
                     <button id="btn-create-module" onclick="openModuleEditor(null)" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;" data-i18n="courseBuilder.createModule"> <span data-i18n="courseBuilder.createModuleBtn">+ Create Module</span> </button>
                     <button onclick="closeModuleEditor()" style="padding: 10px 20px; background: white; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer;" data-i18n="courseBuilder.backToCourse"> <span data-i18n="courseBuilder.backToCourse">Back to Course</span> </button>
                 </div>
@@ -581,6 +582,10 @@
                             } else if (data && data.data) {
                                 course = data.data;
                                 window.apiCourseData = data.data;
+                            }
+                            
+                            if (typeof updateSimulationButton === 'function') {
+                                updateSimulationButton();
                             }
                             
                             // Load editors if saved course

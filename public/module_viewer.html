@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,36 +8,152 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow: hidden !important; width: 100vw; height: 100vh; }
-        .viewer-container { display: flex; height: 100vh; flex-direction: column; }
-        .viewer-header { 
-            height: 60px; background: linear-gradient(to right, #cf9c33 0%, #878c8c 50%, #44749f 100%); 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            overflow: hidden !important;
+            width: 100vw;
+            height: 100vh;
         }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .back-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; border-radius: 30px; padding: 8px 15px; display: flex; align-items: center; gap: 8px; }
-        .back-btn:hover { background: rgba(255,255,255,0.3); }
-        .header-title { font-weight: 600; font-size: 1.1rem; color: #fff; }
-        
-        .viewer-body { display: flex; flex: 1; overflow: hidden; position: relative; }
-        
+
+        .viewer-container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            height: 60px;
+            background: linear-gradient(to right, #cf9c33 0%, #878c8c 50%, #44749f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 30px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .viewer-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
         .viewer-sidebar {
-            width: 260px; background: #ffffff; border-right: 1px solid #e2e8f0;
-            display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 5;
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 5;
         }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #e2e8f0; }
-        .sidebar-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 5px; }
-        .module-name { font-size: 1.2rem; font-weight: 700; color: #cf9c33; }
-        
-        .nav-tabs { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; padding-top: 10px; }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-title {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .module-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #cf9c33;
+        }
+
+        .nav-tabs {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+        }
+
         .nav-tab {
-            padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-left: 4px solid transparent;
-            cursor: pointer; transition: 0.2s; color: #475569; font-weight: 500;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #475569;
+            font-weight: 500;
         }
-        .nav-tab:hover { background: #f1f5f9; color: #1e293b; }
-        .nav-tab.active { background: #f0f9ff; border-left: 4px solid #44749f; color: #0f172a; }
-        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
-        .nav-badge { background: #e2e8f0; color: #475569; border-radius: 12px; padding: 2px 8px; font-size: 0.8rem; margin-left: auto; font-weight: 600; }
+
+        .nav-tab:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .nav-tab.active {
+            background: #f0f9ff;
+            border-left: 4px solid #44749f;
+            color: #0f172a;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            background: #e2e8f0;
+            color: #475569;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
         .nav-world-tab {
             margin: 18px 14px 0;
             padding: 16px 14px;
@@ -44,132 +161,721 @@
             border-radius: 14px;
             background: linear-gradient(135deg, rgba(207, 156, 51, 0.1), rgba(73, 122, 167, 0.1));
             color: #1e293b;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
-        .nav-world-tab:hover { background: linear-gradient(135deg, rgba(207, 156, 51, 0.2), rgba(73, 122, 167, 0.15)); transform: translateX(3px); }
-        .nav-world-copy { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
-        .nav-world-copy strong { font-size: 0.98rem; }
-        .nav-world-copy span { color: #f59e0b; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-        .nav-world-tab.is-disabled { opacity: 0.55; filter: grayscale(0.25); cursor: not-allowed; }
-        .nav-world-tab.is-disabled:hover { transform: none; }
-        
-        .viewer-main { flex: 1; position: relative; background: #f4f6f8; display: flex; flex-direction: column; overflow-y: auto; padding: 30px; transition: 0.3s; }
-        .viewer-main.no-padding { padding: 0 !important; overflow: hidden !important; }
-        
-        /* Hub Layouts */
-        .hub-section { display: none; width: 100%; max-width: 1200px; margin: 0 auto; }
-        .hub-section.active { display: block; animation: fadeIn 0.4s ease forwards; }
-        .hub-header { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #cbd5e1; }
-        .hub-header h2 { margin: 0 0 10px 0; font-size: 1.8rem; color: #0f172a; }
-        .hub-header p { margin: 0; color: #64748b; }
-        
-        .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .list-layout { display: flex; flex-direction: column; gap: 15px; }
-        
-        /* Grid Card (Videos) */
-        .card { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; }
-        .card:hover { transform: translateY(-5px); border-color: #cf9c33; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .card-thumb { height: 160px; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
-        .card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: 0.3s; }
-        .card:hover .card-thumb img { opacity: 1; transform: scale(1.05); }
-        .card-thumb .play-icon { position: absolute; font-size: 3rem; color: rgba(255,255,255,0.9); transition: 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .card:hover .card-thumb .play-icon { color: #cf9c33; transform: scale(1.1); }
-        .card-body { padding: 15px; display: flex; flex-direction: column; flex: 1; }
-        .card-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 8px; line-height: 1.4; color: #1e293b; }
-        .card-meta { display: flex; align-items: center; gap: 10px; color: #64748b; font-size: 0.85rem; margin-top: auto; }
-        
-        /* List Item (Docs/Quizzes) */
-        .list-item { background: #ffffff; border-radius: 10px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 20px; }
-        .list-item:hover { transform: translateX(5px); border-color: #44749f; background: #f8fafc; }
-        .list-icon { width: 50px; height: 50px; background: #f0f9ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #44749f; }
-        .list-content { flex: 1; }
-        .list-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; color: #1e293b; }
-        .list-desc { color: #64748b; font-size: 0.9rem; margin: 0; }
-        .list-action { display: flex; gap: 8px; }
-        
-        /* Buttons for List */
-        .btn-action-icon { background: #f1f5f9; color: #475569; width: 36px; height: 36px; border-radius: 8px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; transition: 0.2s; }
-        .btn-action-icon:hover { background: #44749f; color: white; border-color: #44749f; }
-        .btn-action-icon.download { hover-background: #cf9c33; }
-        .btn-action-icon.download:hover { background: #cf9c33; border-color: #cf9c33; }
-        
-        /* Full Screen Player View */
-        .player-view { display: none; background: #f8fafc; flex-direction: column; width: 100%; height: 100%; flex: 1; }
-        .player-view.active { display: flex; animation: fadeIn 0.3s ease forwards; }
-        .player-header { height: 60px; min-height: 60px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 10; }
-        .btn-back-hub { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.2s; }
-        .btn-back-hub:hover { background: #44749f; color: white; border-color: #44749f; }
-        .player-title { font-weight: 600; font-size: 1.1rem; color: #0f172a; }
-        .player-content { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        
-        .video-container { width: 100%; height: 100%; max-width: 1200px; display: flex; flex-direction: column; }
-        .video-wrapper { flex: 1; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .video-wrapper iframe, .video-wrapper video { width: 100%; height: 100%; border: none; }
-        .video-info { padding: 20px 0; }
-        .video-info h2 { margin: 0 0 10px 0; color: #0f172a; }
-        
-        /* Quiz Interface */
-        .quiz-container { background: #ffffff; padding: 40px; border-radius: 12px; width: 100%; max-width: 800px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 0 auto; }
-        .quiz-header { border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
-        .quiz-header h2 { margin: 0; color: #44749f; }
-        .question-block { margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; margin-top: 0; color: #1e293b; }
-        .options-list { display: flex; flex-direction: column; gap: 10px; }
-        .option-label { display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #cbd5e1; color: #334155; font-weight: 500; }
-        .option-label:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .option-label input[type="radio"] { cursor: pointer; width: 18px; height: 18px; accent-color: #44749f; }
-        .btn-submit-quiz { background: #44749f; color: white; padding: 15px 30px; border-radius: 8px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn-submit-quiz:hover { background: #2c5282; }
-        
-        .loading { display: flex; justify-content: center; align-items: center; height: 100%; font-size: 1.2rem; color: #44749f; width: 100%; }
-        
-        /* Quiz Result Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: #ffffff; padding: 40px; border-radius: 15px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: #f8fafc; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; border: 4px solid #44749f; font-size: 2rem; font-weight: bold; color: #44749f; }
-        .modal h2 { margin-top: 0; color: #0f172a; }
-        .btn-close-modal { margin-top: 20px; background: #44749f; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        
-        /* World Mode Integration */
-        .world-mode .viewer-sidebar { width: 0; min-width: 0; padding: 0; overflow: hidden; border-right: none; opacity: 0; margin: 0; }
-        .world-mode .viewer-main { padding: 0; overflow: hidden; }
-        .world-mode .hub-section, .world-mode .player-view { display: none !important; }
-        .world-mode #section-world { display: block !important; width: 100%; height: 100%; }
-        #section-world { display: none; width: 100%; height: 100%; }
-        #section-world iframe { width: 100%; height: 100%; border: none; }
-        
-        /* Document Filters & Grid */
-        .doc-filters { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .doc-filter { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-weight: 500; }
-        .doc-filter:hover { background: #f1f5f9; }
-        .doc-filter.active { background: #44749f; color: #fff; border-color: #44749f; }
-        
-        .doc-grid-item { background: #ffffff; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .doc-grid-item:hover { transform: translateY(-5px); border-color: #cf9c33; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .doc-grid-thumb { height: 140px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative; }
-        .doc-grid-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: 0.3s; }
-        .doc-grid-item:hover .doc-grid-thumb img { opacity: 1; transform: scale(1.05); }
-        .doc-grid-thumb i { font-size: 4rem; color: #94a3b8; transition: 0.3s; }
-        .doc-grid-item:hover .doc-grid-thumb i { color: #cf9c33; transform: scale(1.1); }
-        .doc-grid-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
-        .doc-grid-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 5px; line-height: 1.4; word-break: break-word; color: #1e293b; }
-        .doc-grid-meta { font-size: 0.8rem; color: #64748b; margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
-        
-        /* Document Viewer Wrapper */
-        .doc-viewer-wrapper { width: 100%; max-width: 1000px; background: white; border-radius: 8px; min-height: 80vh; overflow: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; color: #333; }
-        .doc-viewer-iframe { width: 100%; height: 85vh; border: none; background: white; border-radius: 8px; }
-        .doc-viewer-image { max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-world-tab:hover {
+            background: linear-gradient(135deg, rgba(207, 156, 51, 0.2), rgba(73, 122, 167, 0.15));
+            transform: translateX(3px);
+        }
+
+        .nav-world-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            line-height: 1.2;
+        }
+
+        .nav-world-copy strong {
+            font-size: 0.98rem;
+        }
+
+        .nav-world-copy span {
+            color: #f59e0b;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .nav-world-tab.is-disabled {
+            opacity: 0.55;
+            filter: grayscale(0.25);
+            cursor: not-allowed;
+        }
+
+        .nav-world-tab.is-disabled:hover {
+            transform: none;
+        }
+
+        .viewer-main {
+            flex: 1;
+            position: relative;
+            background: #f4f6f8;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 30px;
+            transition: 0.3s;
+        }
+
+        .viewer-main.no-padding {
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Hub Layouts */
+        .hub-section {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hub-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .hub-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .hub-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            color: #0f172a;
+        }
+
+        .hub-header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .list-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Grid Card (Videos) */
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #cf9c33;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-thumb {
+            height: 160px;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .card:hover .card-thumb img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .card-thumb .play-icon {
+            position: absolute;
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.9);
+            transition: 0.3s;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card:hover .card-thumb .play-icon {
+            color: #cf9c33;
+            transform: scale(1.1);
+        }
+
+        .card-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        /* List Item (Docs/Quizzes) */
+        .list-item {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .list-item:hover {
+            transform: translateX(5px);
+            border-color: #44749f;
+            background: #f8fafc;
+        }
+
+        .list-icon {
+            width: 50px;
+            height: 50px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #44749f;
+        }
+
+        .list-content {
+            flex: 1;
+        }
+
+        .list-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        .list-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .list-action {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Buttons for List */
+        .btn-action-icon {
+            background: #f1f5f9;
+            color: #475569;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-action-icon:hover {
+            background: #44749f;
+            color: white;
+            border-color: #44749f;
+        }
+
+        .btn-action-icon.download {
+            hover-background: #cf9c33;
+        }
+
+        .btn-action-icon.download:hover {
+            background: #cf9c33;
+            border-color: #cf9c33;
+        }
+
+        /* Full Screen Player View */
+        .player-view {
+            display: none;
+            background: #f8fafc;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+        }
+
+        .player-view.active {
+            display: flex;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .player-header {
+            height: 60px;
+            min-height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 10;
+        }
+
+        .btn-back-hub {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-back-hub:hover {
+            background: #44749f;
+            color: white;
+            border-color: #44749f;
+        }
+
+        .player-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+
+        .player-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-wrapper {
+            flex: 1;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-wrapper iframe,
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-info {
+            padding: 20px 0;
+        }
+
+        .video-info h2 {
+            margin: 0 0 10px 0;
+            color: #0f172a;
+        }
+
+        /* Quiz Interface */
+        .quiz-container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin: 0 auto;
+        }
+
+        .quiz-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-header h2 {
+            margin: 0;
+            color: #44749f;
+        }
+
+        .question-block {
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            margin-top: 0;
+            color: #1e293b;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .option-label:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .option-label input[type="radio"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #44749f;
+        }
+
+        .btn-submit-quiz {
+            background: #44749f;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .btn-submit-quiz:hover {
+            background: #2c5282;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            font-size: 1.2rem;
+            color: #44749f;
+            width: 100%;
+        }
+
+        /* Quiz Result Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f8fafc;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #44749f;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #44749f;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: #0f172a;
+        }
+
+        .btn-close-modal {
+            margin-top: 20px;
+            background: #44749f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* World Mode Integration */
+        .world-mode .viewer-sidebar {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            overflow: hidden;
+            border-right: none;
+            opacity: 0;
+            margin: 0;
+        }
+
+        .world-mode .viewer-main {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .world-mode .hub-section,
+        .world-mode .player-view {
+            display: none !important;
+        }
+
+        .world-mode #section-world {
+            display: block !important;
+            width: 100%;
+            height: 100%;
+        }
+
+        #section-world {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        #section-world iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Document Filters & Grid */
+        .doc-filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .doc-filter {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .doc-filter:hover {
+            background: #f1f5f9;
+        }
+
+        .doc-filter.active {
+            background: #44749f;
+            color: #fff;
+            border-color: #44749f;
+        }
+
+        .doc-grid-item {
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .doc-grid-item:hover {
+            transform: translateY(-5px);
+            border-color: #cf9c33;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .doc-grid-thumb {
+            height: 140px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .doc-grid-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .doc-grid-item:hover .doc-grid-thumb img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .doc-grid-thumb i {
+            font-size: 4rem;
+            color: #94a3b8;
+            transition: 0.3s;
+        }
+
+        .doc-grid-item:hover .doc-grid-thumb i {
+            color: #cf9c33;
+            transform: scale(1.1);
+        }
+
+        .doc-grid-body {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-grid-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            line-height: 1.4;
+            word-break: break-word;
+            color: #1e293b;
+        }
+
+        .doc-grid-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Document Viewer Wrapper */
+        .doc-viewer-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 8px;
+            min-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            color: #333;
+        }
+
+        .doc-viewer-iframe {
+            width: 100%;
+            height: 85vh;
+            border: none;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .doc-viewer-image {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 8px;
+            object-fit: contain;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="viewer-container" id="app">
         <div class="viewer-header">
             <div class="header-left">
-                <button class="back-btn" id="btn-back" title="Back to Course"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="back-btn" id="btn-back" title="Back to Course"><i class="fas fa-arrow-left"></i>
+                    Back</button>
                 <div class="header-title" id="course-title">Loading...</div>
             </div>
         </div>
@@ -177,20 +883,36 @@
             <div class="viewer-sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="sidebar-title" data-i18n="moduleViewer.currentModule">Current Module</div>
-                    <div class="module-name" id="module-name">Loading...</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 5px;">
+                        <button id="btn-prev-module"
+                            style="background: none; border: none; color: #cf9c33; cursor: pointer; padding: 5px; transition: transform 0.2s;"
+                            onmouseover="if(!this.disabled) this.style.transform='scale(1.2)'"
+                            onmouseout="this.style.transform='scale(1)'" title="Previous Module">
+                            <i class="fas fa-chevron-left" style="font-size: 1.2rem;"></i>
+                        </button>
+                        <div class="module-name" id="module-name"
+                            style="flex: 1; text-align: center; font-size: 1.1rem; line-height: 1.2; word-break: break-word;">
+                            Loading...</div>
+                        <button id="btn-next-module"
+                            style="background: none; border: none; color: #cf9c33; cursor: pointer; padding: 5px; transition: transform 0.2s;"
+                            onmouseover="if(!this.disabled) this.style.transform='scale(1.2)'"
+                            onmouseout="this.style.transform='scale(1)'" title="Next Module">
+                            <i class="fas fa-chevron-right" style="font-size: 1.2rem;"></i>
+                        </button>
+                    </div>
                 </div>
                 <ul class="nav-tabs" id="nav-tabs">
                     <!--<li class="nav-tab active" data-tab="overview">
                         <div class="nav-icon"><i class="fas fa-layer-group"></i></div>
                         <div data-i18n="moduleViewer.overview">Overview</div>
                     </li>-->
-                    
+
                     <li class="nav-tab active" data-tab="entry-test">
                         <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
                         <div data-i18n="moduleViewer.entryTest">Entry Test</div>
                         <div class="nav-badge" id="badge-entry-test">0</div>
                     </li>
-                    
+
                     <li class="nav-tab" data-tab="videos">
                         <div class="nav-icon"><i class="fas fa-play-circle"></i></div>
                         <div data-i18n="moduleViewer.videos">Videos</div>
@@ -201,14 +923,20 @@
                         <div data-i18n="moduleViewer.documents">Documents</div>
                         <div class="nav-badge" id="badge-documents">0</div>
                     </li>
+                    <li class="nav-tab" data-tab="simulation" id="nav-simulation-tab" style="display:none;"
+                        title="Simulation">
+                        <div class="nav-icon"><i class="fas fa-flask"></i></div>
+                        <div>Simulation</div>
+                    </li>
+                    <li class="nav-tab" onclick="window.open('https://eurobot-production.up.railway.app/', '_blank')"
+                        data-i18n-title="moduleViewer.eurobotAI" title="Access Eurobot AI">
+                        <div class="nav-icon"><i class="fas fa-robot" style="color:#0ea5e9;"></i></div>
+                        <div data-i18n="moduleViewer.eurobotAI">Eurobot AI</div>
+                    </li>
                     <li class="nav-tab" data-tab="quizzes">
                         <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
                         <div data-i18n="moduleViewer.quizzes">Final Evaluation</div>
                         <div class="nav-badge" id="badge-quizzes">0</div>
-                    </li>
-                    <li class="nav-tab" onclick="window.open('https://eurobot-production.up.railway.app/', '_blank')" data-i18n-title="moduleViewer.eurobotAI" title="Access Eurobot AI">
-                        <div class="nav-icon"><i class="fas fa-robot" style="color:#0ea5e9;"></i></div>
-                        <div data-i18n="moduleViewer.eurobotAI">Eurobot AI</div>
                     </li>
                     <!--<li class="nav-tab nav-world-tab" id="btn-enter-course-world" data-action="course-world" data-i18n-title="moduleViewer.enter3DWorld" title="Open the existing 3D course world">
                         <div class="nav-icon"><i class="fas fa-cube"></i></div>
@@ -219,15 +947,15 @@
                     </li>
                 </ul>
             </div>
-            
+
             <div class="viewer-main" id="viewer-main">
                 <!-- 3D World Section -->
                 <div id="section-world">
                     <iframe id="world-iframe" allow="camera; microphone; display-capture; autoplay"></iframe>
                 </div>
-                
+
                 <!-- Hub Sections -->
-                
+
                 <div class="hub-section active" id="section-entry-test">
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.entryTest">Entry test</h2>
@@ -248,7 +976,7 @@
                         <div class="loading" data-i18n="moduleViewer.loadingContent"><i class="fas fa-spinner fa-spin"></i> Loading content...</div>
                     </div>
                 </div>-->
-                
+
                 <div class="hub-section" id="section-videos">
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.videoGallery">Video Gallery</h2>
@@ -256,7 +984,7 @@
                     </div>
                     <div class="grid-layout" id="videos-grid"></div>
                 </div>
-                
+
                 <div class="hub-section" id="section-documents">
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.supportMaterial">Support Material</h2>
@@ -265,13 +993,20 @@
                             <button class="doc-filter active" data-type="all" data-i18n="common.all">All</button>
                             <button class="doc-filter" data-type="pdf" data-i18n="moduleViewer.pdfs">PDFs</button>
                             <button class="doc-filter" data-type="word" data-i18n="moduleViewer.word">Word</button>
-                            <button class="doc-filter" data-type="ppt" data-i18n="moduleViewer.powerPoint">PowerPoint</button>
+                            <button class="doc-filter" data-type="ppt"
+                                data-i18n="moduleViewer.powerPoint">PowerPoint</button>
                             <button class="doc-filter" data-type="image" data-i18n="moduleViewer.images">Images</button>
                         </div>
                     </div>
                     <div id="documents-container"></div>
                 </div>
-                
+
+                <div class="hub-section" id="section-simulation"
+                    style="display:none; width: 100%; height: 100%; max-width: none; margin: 0;">
+                    <iframe id="simulation-iframe" style="width:100%; height:100%; border:none; display:block;"
+                        sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-popups-to-escape-sandbox allow-presentation"></iframe>
+                </div>
+
                 <div class="hub-section" id="section-quizzes">
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.assessments">Assessments</h2>
@@ -279,12 +1014,14 @@
                     </div>
                     <div class="list-layout" id="quizzes-list"></div>
                 </div>
-                
+
                 <!-- Player View (Full Screen Content) -->
                 <div class="player-view" id="player-view">
                     <div class="player-header">
-                        <button class="btn-back-hub" id="btn-back-hub"><i class="fas fa-arrow-left"></i> <span data-i18n="moduleViewer.backToHub">Back to Hub</span></button>
-                        <div class="player-title" id="player-title" data-i18n="moduleViewer.viewingContent">Viewing Content</div>
+                        <button class="btn-back-hub" id="btn-back-hub"><i class="fas fa-arrow-left"></i> <span
+                                data-i18n="moduleViewer.backToHub">Back to Hub</span></button>
+                        <div class="player-title" id="player-title" data-i18n="moduleViewer.viewingContent">Viewing
+                            Content</div>
                         <div style="width:130px;"></div> <!-- Spacer -->
                     </div>
                     <div class="player-content" id="player-content">
@@ -294,13 +1031,14 @@
             </div>
         </div>
     </div>
-    
+
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
             <h2 data-i18n="moduleViewer.quizResult">Quiz Result</h2>
             <div class="score-circle" id="quiz-score">0%</div>
             <p id="quiz-feedback" data-i18n="moduleViewer.youCompleted">You completed the quiz!</p>
-            <button class="btn-close-modal" onclick="document.getElementById('quiz-modal').classList.remove('active')" data-i18n="common.close">Close</button>
+            <button class="btn-close-modal" onclick="document.getElementById('quiz-modal').classList.remove('active')"
+                data-i18n="common.close">Close</button>
         </div>
     </div>
 
@@ -311,4 +1049,5 @@
     <script src="js/i18n.js"></script>
     <script src="js/module_viewer.js?v=20260520_2"></script>
 </body>
+
 </html>

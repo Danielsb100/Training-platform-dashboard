@@ -117,11 +117,13 @@ const corsOptions = env.cors.origins.length
   : undefined;
 
 app.use(helmet({
-  contentSecurityPolicy: false // Disabled: frontend uses inline scripts. Re-enable with nonces later.
+  contentSecurityPolicy: false, // Disabled: frontend uses inline scripts. Re-enable with nonces later.
+  crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" }
 }));
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ limit: '2mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- Rate Limiting ---
 const authLimiter = rateLimit({
@@ -271,6 +273,10 @@ app.delete('/modules/:id', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLE
 
 app.get('/modules/:id/edit-format', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), moduleController.getEditFormat);
 app.get('/runtime/modules/:id', authenticateToken, moduleController.getRuntimeFormat);
+
+// --- Course Simulation ---
+app.get('/courses/:id/simulation', authenticateToken, courseController.getSimulation);
+app.put('/courses/:id/simulation', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseController.saveSimulation);
 
 // [SECURITY] Debug endpoint removed — CRIT-01
 
