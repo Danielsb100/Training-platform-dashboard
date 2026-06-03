@@ -286,36 +286,40 @@
 
     // --- Backend Sync Functions ---
     async function fetchHomepageConfig() {
+        // configFound = true means the user has saved a config before (even if arrays are empty).
+        // Only apply hardcoded defaults on first run, when no config exists in the DB yet.
+        let configFound = false;
         try {
             // Public route — no auth needed, carousel must be visible to all visitors
             const res = await fetch('/api/system/settings/homepage_config');
             const data = await res.json();
             if (data.data) {
+                configFound = true;
                 heroImages = data.data.heroImages || [];
                 newsItems = data.data.newsItems || [];
-            }
-            
-            // Defaults if empty
-            if (heroImages.length === 0) {
-                heroImages = [
-                    'image/abstract_bg.png', 
-                    'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80',
-                    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80',
-                    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80',
-                    'https://images.unsplash.com/photo-1614064641913-6b71a2ea51de?w=1600&q=80'
-                ];
-            }
-            if (newsItems.length === 0) {
-                newsItems = [
-                    { id: 1, images: ['https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80', 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600&q=80'] },
-                    { id: 2, images: ['https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=600&q=80', 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=600&q=80'] },
-                    { id: 3, images: ['https://images.unsplash.com/photo-1504465039710-0f49c0a47eb7?w=600&q=80', 'https://images.unsplash.com/photo-1491336477066-ce79678eb353?w=600&q=80'] },
-                    { id: 4, images: ['https://images.unsplash.com/photo-1529651737248-cb5f4481c0dc?w=600&q=80'] }
-                ];
             }
         } catch(err) {
             console.error('Failed to load homepage config:', err);
         }
+
+        // Only apply defaults on the very first run (no config saved in DB yet).
+        // If the user explicitly deleted all items, the empty arrays are respected.
+        if (!configFound) {
+            heroImages = [
+                'image/abstract_bg.png',
+                'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80',
+                'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80',
+                'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80',
+                'https://images.unsplash.com/photo-1614064641913-6b71a2ea51de?w=1600&q=80'
+            ];
+            newsItems = [
+                { id: 1, images: ['https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80', 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600&q=80'] },
+                { id: 2, images: ['https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=600&q=80', 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=600&q=80'] },
+                { id: 3, images: ['https://images.unsplash.com/photo-1504465039710-0f49c0a47eb7?w=600&q=80', 'https://images.unsplash.com/photo-1491336477066-ce79678eb353?w=600&q=80'] },
+                { id: 4, images: ['https://images.unsplash.com/photo-1529651737248-cb5f4481c0dc?w=600&q=80'] }
+            ];
+        }
+
         initHeroCarousel();
         renderNews();
     }

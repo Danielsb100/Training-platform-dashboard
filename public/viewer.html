@@ -368,7 +368,10 @@
             async function handleCourseAccess(courseId) {
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    window.location.href = '/login.html?redirect=' + encodeURIComponent('/course_content.html?id=' + courseId);
+                    // Redirect back to viewer.html (this page) after login, NOT course_content.html.
+                    // The viewer already has the enrollment modal to handle non-enrolled users.
+                    const returnUrl = '/viewer.html?id=' + courseId;
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(returnUrl);
                     return;
                 }
 
@@ -380,6 +383,14 @@
                     if (res.ok) {
                         // User has access — redirect normally
                         window.location.href = '/course_content.html?id=' + courseId;
+                        return;
+                    }
+
+                    if (res.status === 401) {
+                        // Token invalid or expired — force re-login
+                        localStorage.removeItem('token');
+                        const returnUrl = '/viewer.html?id=' + courseId;
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(returnUrl);
                         return;
                     }
 

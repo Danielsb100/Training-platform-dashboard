@@ -66,6 +66,27 @@ const handleUploadError = (fieldName) => (req, res, next) => {
 
 const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
+// Allowed MIME types for document uploads (PDF, Office formats, plain text, etc.)
+const ALLOWED_DOCUMENT_MIMES = [
+  'application/pdf',
+  // Microsoft Word
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  // Microsoft PowerPoint
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  // Microsoft Excel
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  // OpenDocument formats
+  'application/vnd.oasis.opendocument.text',
+  'application/vnd.oasis.opendocument.presentation',
+  'application/vnd.oasis.opendocument.spreadsheet',
+  // Plain text & CSV
+  'text/plain',
+  'text/csv',
+];
+
 const uploadToDisk = multer({
   storage: multer.diskStorage({
     destination: env.upload.tempDir
@@ -82,6 +103,35 @@ const uploadToDisk = multer({
 
 const handleUploadToDiskError = (fieldName) => (req, res, next) => {
   uploadToDisk.single(fieldName)(req, res, (error) => {
+    if (!error) return next();
+
+    if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        error: `File is too large. Maximum allowed size is ${env.upload.maxFileSizeMb} MB.`
+      });
+    }
+
+    return res.status(400).json({ error: error.message || 'File upload failed.' });
+  });
+};
+
+// Separate multer for document uploads — allows PDF, Word, PowerPoint, Excel, etc.
+const uploadDocumentToDisk = multer({
+  storage: multer.diskStorage({
+    destination: env.upload.tempDir
+  }),
+  limits: { fileSize: env.upload.maxFileSizeBytes },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_DOCUMENT_MIMES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.mimetype}. Allowed types: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ODT, ODP, ODS, TXT, CSV.`));
+    }
+  }
+});
+
+const handleUploadDocumentToDiskError = (fieldName) => (req, res, next) => {
+  uploadDocumentToDisk.single(fieldName)(req, res, (error) => {
     if (!error) return next();
 
     if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
@@ -403,7 +453,7 @@ app.get(
   reportController.getUserDetailedReport
 );
 
-app.post('/api/documents/upload', authenticateToken, handleUploadToDiskError('document'), documentController.uploadDocument);
+app.post('/api/documents/upload', authenticateToken, handleUploadDocumentToDiskError('document'), documentController.uploadDocument);
 app.post('/api/documents/:id/ticket', authenticateToken, documentController.generateDownloadTicket);
 app.get('/api/documents/ticket/:ticket', documentController.downloadByTicket);
 app.get('/api/documents', authenticateToken, (req, res) => {
