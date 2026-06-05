@@ -555,6 +555,9 @@ async function performJoin(token, user) {
     // Setup socket listeners
     setupSocketListeners();
 
+    // Join the course room (or lobby if no courseId)
+    socket.emit('joinRoom', COURSE_ID_FROM_URL);
+
     // Emit initial user data
     socket.emit('setName', { name: localUsername, color: localUserColor, profilePicture: localProfilePicture });
 
@@ -751,11 +754,21 @@ function setupSocketListeners() {
     });
 
     socket.on('playerUpdated', (playerInfo) => {
+        if (playerInfo.id === socket.id || playerInfo.id === localPlayerSocketId) return;
         console.log("Player updated sync:", playerInfo.id, playerInfo.name);
+        // If the player doesn't exist yet (deferred newPlayer), create them now
+        if (!remotePlayers[playerInfo.id] && playerInfo.position) {
+            addOtherPlayer(playerInfo);
+        }
         createGametag(playerInfo.id, playerInfo.name, playerInfo.color, false, playerInfo.profilePicture);
         if (remotePlayers[playerInfo.id]) {
             remotePlayers[playerInfo.id].name = playerInfo.name;
             remotePlayers[playerInfo.id].color = playerInfo.color;
+            // Also sync peerId if present in the update
+            if (playerInfo.peerId) {
+                remotePlayers[playerInfo.id].peerId = playerInfo.peerId;
+                peerIdToName[playerInfo.peerId] = playerInfo.name;
+            }
             if (remotePlayers[playerInfo.id].mainMesh) {
                 applyCharacterColor(remotePlayers[playerInfo.id].mainMesh, playerInfo.color);
             }
@@ -1280,7 +1293,7 @@ function renderCourseRoomShells(runtime) {
     const roomWidth = layoutMetrics.roomWidth;
     const roomDepth = layoutMetrics.roomDepth;
     const wallHeight = 3;
-    const wallThickness = 0.25;
+    const wallThickness = 2.5;
     const doorWidth = 3.2;
     const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.95, metalness: 0.05 });
     const accentMaterial = new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x1d4ed8, emissiveIntensity: 0.12 });
@@ -1390,7 +1403,7 @@ function renderCourseRoomShells(runtime) {
                 roomGroup,
                 center.x + roomSpacing / 2,
                 center.z,
-                Boolean(nextModule?.unlocked),
+                Boolean(true), // [WORLD-LOCK] Always open passage — was: Boolean(nextModule?.unlocked)
                 `${colliderBaseId}_to_${nextModule.moduleId}`
             ));
         }
@@ -1449,9 +1462,10 @@ function renderCourseRoomShells(runtime) {
                 }
             });
 
-            if (nextCenter && !nextModule?.unlocked) {
-                addDoorBlocker(roomGroup, center.x + roomSpacing / 2, center.z);
-            }
+            // [WORLD-LOCK] Door blocker disabled — all rooms always accessible
+            // if (nextCenter && !nextModule?.unlocked) {
+            //     addDoorBlocker(roomGroup, center.x + roomSpacing / 2, center.z);
+            // }
         }
     });
 
@@ -2539,10 +2553,11 @@ function handlePrimaryWorldClick(event) {
         let root = hit.object;
         while (root && root !== scene) {
             if (root.userData && root.userData.isPlacement) {
-                if (root.userData.isLocked) {
-                    alert('This module is still locked by the course path.');
-                    return;
-                }
+                // [WORLD-LOCK] Lock click guard disabled — all placements are always clickable
+                // if (root.userData.isLocked) {
+                //     alert('This module is still locked by the course path.');
+                //     return;
+                // }
                 openModuleSidebar(root.userData.id, root.userData.moduleId, root.userData.courseModuleId);
 
                 const mixerInfo = placementMixers[root.userData.id];
@@ -2576,8 +2591,11 @@ function handlePrimaryWorldClick(event) {
 
     if (!hitPoint) return;
 
-    // Prevent wandering into the infinite void
-    if (hitPoint.x < -15 || hitPoint.x > 150 || hitPoint.z < -20 || hitPoint.z > 20) {
+    // Prevent wandering into the infinite void (dynamic bounds based on course layout)
+    const runtime = window.__courseWorldContext?.runtime;
+    const maxZ = courseRoomLayoutMetrics ? courseRoomLayoutMetrics.roomDepth : 20;
+    const maxX = (runtime && runtime.modules) ? runtime.modules.length * (courseRoomLayoutMetrics ? courseRoomLayoutMetrics.roomSpacing : 14) + 15 : 150;
+    if (hitPoint.x < -15 || hitPoint.x > Math.max(150, maxX) || hitPoint.z < -maxZ || hitPoint.z > maxZ) {
         return;
     }
 
@@ -2956,9 +2974,12 @@ function updatePlayer(delta) {
         targetPos.x += moveX;
         targetPos.z += moveZ;
 
-        // Clamping to prevent getting lost in the void via WASD
-        targetPos.x = Math.max(-15, Math.min(150, targetPos.x));
-        targetPos.z = Math.max(-20, Math.min(20, targetPos.z));
+        // Keep within reasonable bounds
+        const runtimeCtx = window.__courseWorldContext?.runtime;
+        const maxZBounds = courseRoomLayoutMetrics ? courseRoomLayoutMetrics.roomDepth : 20;
+        const maxXBounds = (runtimeCtx && runtimeCtx.modules) ? runtimeCtx.modules.length * (courseRoomLayoutMetrics ? courseRoomLayoutMetrics.roomSpacing : 14) + 15 : 150;
+        targetPos.x = Math.max(-15, Math.min(maxXBounds, targetPos.x));
+        targetPos.z = Math.max(-maxZBounds, Math.min(maxZBounds, targetPos.z));
 
         // Collision check with sliding
         if (!checkCollision(targetPos)) {
@@ -3581,6 +3602,7 @@ const generalAiHistory = [];
 btnCloseSidebar.onclick = () => {
     stopModuleAssistantRecording();
     moduleSidebar.classList.add('hidden');
+    adjustCallLayerPosition(false);
 };
 
 function activateModuleTab(tab) {
@@ -4104,6 +4126,7 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
     renderModuleAssistant();
     document.getElementById('sidebar-preview-banner').classList.remove('active');
     moduleSidebar.classList.remove('hidden');
+    adjustCallLayerPosition(true);
     // Set default tab
     activateModuleTab('general');
 
@@ -5381,6 +5404,7 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
     renderModuleAssistant();
     document.getElementById('sidebar-preview-banner').classList.remove('active');
     moduleSidebar.classList.remove('hidden');
+    adjustCallLayerPosition(true);
     activateModuleTab('general');
 
     try {
@@ -5707,6 +5731,31 @@ function setupCallListeners(call) {
         }
     });
 
+    // Listen for track replacements from the remote peer (fixes frozen frame bugs)
+    // When the remote peer replaces their video track (e.g. screen share → webcam),
+    // the browser fires 'track' on the peerConnection, but the srcObject reference
+    // stays the same. Force a re-render by reassigning srcObject.
+    try {
+        const pc = call.peerConnection;
+        if (pc) {
+            pc.addEventListener('track', (event) => {
+                console.log('[PeerConnection] Remote track event:', event.track.kind, event.track.label);
+                if (event.track.kind === 'video') {
+                    // Force the video element to pick up the new track
+                    if (remoteVideo.srcObject) {
+                        const currentStream = remoteVideo.srcObject;
+                        remoteVideo.srcObject = null;
+                        remoteVideo.srcObject = currentStream;
+                        remoteVideo.play().catch(e => console.warn(e));
+                    }
+                    videoContainer.classList.remove('hidden');
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('Could not attach track listener to peerConnection:', e);
+    }
+
     call.on('close', () => {
         resetAudioUI();
     });
@@ -5748,6 +5797,8 @@ function setupVisualizer(stream) {
 function resetAudioUI() {
     stopTimer();
     audioCallLayer.classList.add('hidden');
+    audioCallLayer.classList.remove('expanded');
+    audioCallLayer.classList.remove('expanded-screen');
     videoContainer.classList.add('hidden');
 
     if (currentCall) currentCall.close();
@@ -5757,8 +5808,10 @@ function resetAudioUI() {
     remoteVideo.srcObject = null;
     activeRemoteStream = null;
 
-    // Stop local video track but keep audio for future calls if needed
-    // or just leave it if we want users to "stay ready"
+    // Reset expand button
+    btnExpand.innerText = '⛶';
+    const column = document.getElementById('left-ui-column');
+    if (column) column.style.zIndex = '1100';
 
     const bars = document.querySelectorAll('.bar');
     bars.forEach(bar => {
@@ -5797,6 +5850,19 @@ btnMute.onclick = () => {
     btnMute.style.background = !enabled ? 'rgba(255, 255, 255, 0.1)' : '#ef4444';
 };
 
+// Helper: find the video sender on the peer connection, even if the current track is null
+function findVideoSender() {
+    if (!currentCall || !currentCall.peerConnection) return null;
+    const senders = currentCall.peerConnection.getSenders();
+    // Prefer sender with active video track
+    const withTrack = senders.find(s => s.track && s.track.kind === 'video');
+    if (withTrack) return withTrack;
+    // Fallback: sender whose track is null (video sender after track was removed/stopped)
+    const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+    const nullSender = senders.find(s => !s.track && s !== audioSender);
+    return nullSender || null;
+}
+
 btnCamera.onclick = async () => {
     let videoTrack = localStream.getVideoTracks()[0];
     const isDummy = videoTrack && videoTrack.label === ''; // Canvas tracks often have empty labels
@@ -5814,11 +5880,11 @@ btnCamera.onclick = async () => {
                 videoContainer.classList.remove('hidden');
                 if (socket) socket.emit('setStreamType', { isScreenShare: false });
 
-                if (currentCall && currentCall.peerConnection) {
-                    const senders = currentCall.peerConnection.getSenders();
-                    const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-                    if (videoSender) videoSender.replaceTrack(newTrack);
-                    else currentCall.peerConnection.addTrack(newTrack, localStream);
+                const videoSender = findVideoSender();
+                if (videoSender) {
+                    videoSender.replaceTrack(newTrack);
+                } else if (currentCall && currentCall.peerConnection) {
+                    currentCall.peerConnection.addTrack(newTrack, localStream);
                 }
             } catch (err) {
                 alert('Não foi possível acessar a câmera.');
@@ -5853,7 +5919,7 @@ btnScreen.onclick = async () => {
             const currentVideoTrack = localStream.getVideoTracks()[0];
             if (currentVideoTrack) {
                 localStream.removeTrack(currentVideoTrack);
-                currentVideoTrack.enabled = false; // Disable camera visually
+                currentVideoTrack.enabled = false;
             }
             localStream.addTrack(newTrack);
             localVideo.srcObject = localStream;
@@ -5862,14 +5928,11 @@ btnScreen.onclick = async () => {
             videoContainer.classList.remove('hidden');
             if (socket) socket.emit('setStreamType', { isScreenShare: true });
 
-            if (currentCall && currentCall.peerConnection) {
-                const senders = currentCall.peerConnection.getSenders();
-                const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-                if (videoSender) {
-                    videoSender.replaceTrack(newTrack);
-                } else {
-                    currentCall.peerConnection.addTrack(newTrack, localStream);
-                }
+            const videoSender = findVideoSender();
+            if (videoSender) {
+                videoSender.replaceTrack(newTrack);
+            } else if (currentCall && currentCall.peerConnection) {
+                currentCall.peerConnection.addTrack(newTrack, localStream);
             }
         } catch (err) {
             console.error(err);
@@ -5887,13 +5950,17 @@ async function stopScreenShare() {
     btnScreen.classList.remove('active');
     if (socket) socket.emit('setStreamType', { isScreenShare: false });
 
-    // Remove screen track
+    // Remove the screen share track from localStream
     const currentVideoTrack = localStream.getVideoTracks()[0];
     if (currentVideoTrack) {
         localStream.removeTrack(currentVideoTrack);
     }
 
+    // Find the video sender BEFORE attempting camera restore (track may be null now)
+    const videoSender = findVideoSender();
+
     // Try to restore the camera automatically
+    let cameraRestored = false;
     try {
         const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
         const newTrack = tempStream.getVideoTracks()[0];
@@ -5902,15 +5969,34 @@ async function stopScreenShare() {
         btnCamera.classList.add('active');
         videoContainer.classList.remove('hidden');
 
-        if (currentCall && currentCall.peerConnection) {
-            const senders = currentCall.peerConnection.getSenders();
-            const sender = senders.find(s => s.track && s.track.kind === 'video');
-            if (sender) {
-                sender.replaceTrack(newTrack);
-            }
+        // Replace the track on the peer connection so the remote sees the webcam
+        if (videoSender) {
+            await videoSender.replaceTrack(newTrack);
+            console.log('[stopScreenShare] Camera track replaced on peer connection');
         }
+        cameraRestored = true;
     } catch (err) {
-        console.warn('Could not restore camera after screen share', err);
+        console.warn('Could not restore camera after screen share:', err);
+    }
+
+    // If camera could NOT be restored, send a black dummy frame so remote doesn't see a freeze
+    if (!cameraRestored) {
+        btnCamera.classList.remove('active');
+        const canvas = document.createElement('canvas');
+        canvas.width = 2; canvas.height = 2;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, 2, 2);
+        // Use requestAnimationFrame to generate continuous frames (prevents freeze)
+        const dummyStream = canvas.captureStream(1); // 1 fps
+        const dummyTrack = dummyStream.getVideoTracks()[0];
+        localStream.addTrack(dummyTrack);
+        localVideo.srcObject = localStream;
+
+        if (videoSender) {
+            await videoSender.replaceTrack(dummyTrack);
+            console.log('[stopScreenShare] Dummy black track sent to remote');
+        }
         videoContainer.classList.add('hidden');
     }
 
@@ -5920,59 +6006,61 @@ async function stopScreenShare() {
     btnExpand.innerText = '⛶';
     const column = document.getElementById('left-ui-column');
     if (column) column.style.zIndex = '1100';
-
-    // Call the camera logic to re-enable it if needed, or just let user click camera again
-    // For now, let's just leave it blank or simulate camera click to turn it back on
-    btnCamera.classList.remove('active');
-    localVideo.srcObject = localStream;
-
-    if (currentCall && currentCall.peerConnection) {
-        const senders = currentCall.peerConnection.getSenders();
-        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-        if (videoSender) {
-            // Replace with dummy or stop video for remote
-            const canvas = document.createElement('canvas');
-            canvas.width = 1; canvas.height = 1;
-            const dummyStream = canvas.captureStream();
-            videoSender.replaceTrack(dummyStream.getVideoTracks()[0]);
-        }
-    }
 }
 
 // Expand Video UI Logic
+// Rules:
+// 1. Expansion ALWAYS shows the REMOTE user's video as priority (never your own screen)
+// 2. If the REMOTE user is sharing their screen → fullscreen (expanded-screen)
+// 3. If it's webcam → half screen (expanded)
+// 4. If module-sidebar is open → always half screen on the right side
 btnExpand.onclick = () => {
-    // Check if the local user is sharing OR if the remote peer is sharing
-    let isScreenShare = false;
-
-    if (screenStream) {
-        // If I am sharing my screen, I want to expand my own screen share fully
-        isScreenShare = true;
-    } else if (currentCall) {
+    // Only check if the REMOTE user is sharing screen (never prioritize local)
+    let remoteIsScreenShare = false;
+    if (currentCall) {
         const peerId = currentCall.peer;
         const remotePlayer = Object.values(remotePlayers).find(p => p.peerId === peerId);
         if (remotePlayer && remotePlayer.isScreenShare) {
-            isScreenShare = true;
+            remoteIsScreenShare = true;
         }
     }
 
     const column = document.getElementById('left-ui-column');
+    const sidebarOpen = moduleSidebar && !moduleSidebar.classList.contains('hidden');
     let isExpandedNow = false;
 
-    if (isScreenShare) {
+    if (remoteIsScreenShare && !sidebarOpen) {
+        // Full screen for remote screen share (only when sidebar is closed)
         isExpandedNow = audioCallLayer.classList.toggle('expanded-screen');
-        audioCallLayer.classList.remove('expanded'); // ensure webcam expand is off
-        btnExpand.innerText = isExpandedNow ? '🗗' : '⛶';
+        audioCallLayer.classList.remove('expanded');
     } else {
+        // Half screen for webcam OR when sidebar is open (regardless of screen share)
         isExpandedNow = audioCallLayer.classList.toggle('expanded');
-        audioCallLayer.classList.remove('expanded-screen'); // ensure screen expand is off
-        btnExpand.innerText = isExpandedNow ? '🗗' : '⛶';
+        audioCallLayer.classList.remove('expanded-screen');
     }
+
+    btnExpand.innerText = isExpandedNow ? '🗗' : '⛶';
 
     // Elevate the parent container z-index to overlap course headers (z-index 1200+)
     if (column) {
         column.style.zIndex = isExpandedNow ? '9999' : '1100';
     }
 };
+
+// --- Call Layer Position Adjustment ---
+// Repositions #left-ui-column when the module sidebar opens/closes
+// so the call modal doesn't overlap the sidebar
+function adjustCallLayerPosition(sidebarOpen) {
+    const column = document.getElementById('left-ui-column');
+    if (!column) return;
+    if (sidebarOpen) {
+        column.style.left = '488px'; // 480px sidebar + 8px gap
+        document.body.classList.add('module-sidebar-open');
+    } else {
+        column.style.left = '88px';
+        document.body.classList.remove('module-sidebar-open');
+    }
+}
 
 // Sidebar Toggle Logic
 if (btnTogglePlayers) {
@@ -5987,7 +6075,7 @@ if (btnToggleChat) {
         const isHidden = chatHistoryContainer.classList.toggle('hidden');
         document.getElementById('chat-input-container').classList.toggle('hidden', isHidden);
         btnToggleChat.classList.toggle('active', !isHidden);
-        
+
         if (!isHidden && generalAiWrapper && !generalAiWrapper.classList.contains('hidden')) {
             closeGeneralAiAssistant();
         }
@@ -6495,3 +6583,12 @@ window.__worldBridge = {
         }
     }
 };
+
+// Disconnect socket cleanly when the user navigates away (back, link click, etc.)
+// This ensures the player is removed from the multiplayer room immediately,
+// without requiring the browser tab to be closed.
+window.addEventListener('beforeunload', () => {
+    if (socket && socket.connected) {
+        socket.disconnect();
+    }
+});

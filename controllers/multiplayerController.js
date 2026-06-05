@@ -1,13 +1,29 @@
 const fs = require('fs');
 const path = require('path');
 
-// State
-const players = {};
-const placedCubes = [];
-const placedModels = [];
-const placedModulePlacements = [];
-const chatHistory = [];
+// State — organized by rooms (one room per course)
+const rooms = {};
 const MAX_CHAT_LOGS = 50;
+
+// Get or create room state for a given roomId
+function getOrCreateRoom(roomId) {
+    if (!rooms[roomId]) {
+        rooms[roomId] = {
+            players: {},
+            placedCubes: [],
+            placedModels: [],
+            placedModulePlacements: [],
+            chatHistory: []
+        };
+        console.log(`[Rooms] Created room: ${roomId}`);
+    }
+    return rooms[roomId];
+}
+
+// Get the room a socket belongs to
+function getSocketRoom(socket) {
+    return socket._roomId || 'lobby';
+}
 
 function getCatalogItems(subDir) {
     const dirPath = path.join(__dirname, '../public/world/assets', subDir);
@@ -108,111 +124,157 @@ module.exports = {
         io.on('connection', (socket) => {
             console.log(`User connected to 3D World: ${socket.id}`);
 
-            players[socket.id] = {
-                id: socket.id,
-                name: 'Guest_' + Math.floor(Math.random() * 1000),
-                color: '#3b82f6',
-                position: { x: 0, y: 0, z: 0 },
-                rotation: { x: 0, y: 0, z: 0 },
-                animation: 'idle',
-                modelData: null,
-                peerId: null
-            };
+            // --- Room Join ---
+            // Player is NOT created until they join a room.
+            // The front-end emits 'joinRoom' with the courseId immediately after connecting.
+            socket.on('joinRoom', (courseId) => {
+                const roomId = courseId ? `course-${courseId}` : 'lobby';
+                socket._roomId = roomId;
+                socket.join(roomId);
 
-            socket.emit('currentPlayers', players);
-            socket.emit('initialCubes', placedCubes);
-            socket.emit('initialModels', placedModels);
-            socket.emit('initialModulePlacements', placedModulePlacements);
-            socket.emit('initialChatHistory', chatHistory);
+                const room = getOrCreateRoom(roomId);
 
-            socket.broadcast.emit('newPlayer', players[socket.id]);
+                // Create the player in this room's state
+                room.players[socket.id] = {
+                    id: socket.id,
+                    name: 'Guest_' + Math.floor(Math.random() * 1000),
+                    color: '#3b82f6',
+                    position: { x: 0, y: 0, z: 0 },
+                    rotation: { x: 0, y: 0, z: 0 },
+                    animation: 'idle',
+                    modelData: null,
+                    peerId: null,
+                    ready: false
+                };
 
-            socket.on('setName', (data) => {
-                if (players[socket.id]) {
-                    if (typeof data === 'string') {
-                        players[socket.id].name = data;
-                    } else {
-                        players[socket.id].name = data.name;
-                        players[socket.id].color = data.color;
-                        if (data.profilePicture) players[socket.id].profilePicture = data.profilePicture;
-                    }
-                    io.emit('playerUpdated', players[socket.id]);
+                // Only send players that are ready (have called setName) to avoid Guest names
+                const readyPlayers = {};
+                for (const [id, p] of Object.entries(room.players)) {
+                    if (p.ready || id === socket.id) readyPlayers[id] = p;
                 }
+                socket.emit('currentPlayers', readyPlayers);
+                socket.emit('initialCubes', room.placedCubes);
+                socket.emit('initialModels', room.placedModels);
+                socket.emit('initialModulePlacements', room.placedModulePlacements);
+                socket.emit('initialChatHistory', room.chatHistory);
+
+                console.log(`[Rooms] Socket ${socket.id} joined room: ${roomId} (${Object.keys(room.players).length} players)`);
+            });
+
+            // --- Player Identity ---
+            socket.on('setName', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
+
+                const wasReady = room.players[socket.id].ready;
+                if (typeof data === 'string') {
+                    room.players[socket.id].name = data;
+                } else {
+                    room.players[socket.id].name = data.name;
+                    room.players[socket.id].color = data.color;
+                    if (data.profilePicture) room.players[socket.id].profilePicture = data.profilePicture;
+                }
+                room.players[socket.id].ready = true;
+
+                if (!wasReady) {
+                    // First time setting name — NOW broadcast newPlayer with real identity
+                    socket.broadcast.to(roomId).emit('newPlayer', room.players[socket.id]);
+                }
+                io.to(roomId).emit('playerUpdated', room.players[socket.id]);
             });
 
             socket.on('setPeerId', (peerId) => {
-                if (players[socket.id]) {
-                    players[socket.id].peerId = peerId;
-                    socket.broadcast.emit('playerPeerUpdated', { id: socket.id, peerId: peerId });
-                }
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
+
+                room.players[socket.id].peerId = peerId;
+                socket.broadcast.to(roomId).emit('playerPeerUpdated', { id: socket.id, peerId: peerId });
             });
 
             socket.on('setStreamType', (data) => {
-                if (players[socket.id]) {
-                    players[socket.id].isScreenShare = data.isScreenShare;
-                    socket.broadcast.emit('streamTypeChanged', { id: socket.id, isScreenShare: data.isScreenShare });
-                }
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
+
+                room.players[socket.id].isScreenShare = data.isScreenShare;
+                socket.broadcast.to(roomId).emit('streamTypeChanged', { id: socket.id, isScreenShare: data.isScreenShare });
             });
 
-            let movementLogCounter = 0;
+            // --- Player Movement ---
             socket.on('playerMovement', (movementData) => {
-                if (players[socket.id]) {
-                    if (movementData && movementData.position) {
-                        players[socket.id].position = movementData.position;
-                        players[socket.id].rotation = movementData.rotation;
-                        players[socket.id].animation = movementData.animation || 'idle';
-                        
-                        socket.broadcast.emit('playerMoved', {
-                            id: socket.id,
-                            position: movementData.position,
-                            rotation: movementData.rotation,
-                            isJumping: movementData.isJumping,
-                            jumpAlpha: movementData.jumpAlpha,
-                            didInteract: movementData.didInteract,
-                            interactionPoint: movementData.interactionPoint
-                        });
-                    }
-                }
-            });
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
 
-            socket.on('modelUpdate', (modelData) => {
-                if (players[socket.id]) {
-                    players[socket.id].modelData = modelData;
-                    socket.broadcast.emit('playerModelUpdated', {
+                if (movementData && movementData.position) {
+                    room.players[socket.id].position = movementData.position;
+                    room.players[socket.id].rotation = movementData.rotation;
+                    room.players[socket.id].animation = movementData.animation || 'idle';
+                    
+                    socket.broadcast.to(roomId).emit('playerMoved', {
                         id: socket.id,
-                        modelData: modelData,
-                        color: players[socket.id].color
+                        position: movementData.position,
+                        rotation: movementData.rotation,
+                        isJumping: movementData.isJumping,
+                        jumpAlpha: movementData.jumpAlpha,
+                        didInteract: movementData.didInteract,
+                        interactionPoint: movementData.interactionPoint
                     });
                 }
             });
 
-            socket.on('chatMessage', (message) => {
-                if (players[socket.id]) {
-                    const chatData = {
-                        id: socket.id,
-                        name: players[socket.id].name,
-                        message: message,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
-                    
-                    chatHistory.push(chatData);
-                    if (chatHistory.length > MAX_CHAT_LOGS) chatHistory.shift();
-                    io.emit('chatMessage', chatData);
-                }
+            socket.on('modelUpdate', (modelData) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
+
+                room.players[socket.id].modelData = modelData;
+                socket.broadcast.to(roomId).emit('playerModelUpdated', {
+                    id: socket.id,
+                    modelData: modelData,
+                    color: room.players[socket.id].color
+                });
             });
 
+            // --- Chat ---
+            socket.on('chatMessage', (message) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room || !room.players[socket.id]) return;
+
+                const chatData = {
+                    id: socket.id,
+                    name: room.players[socket.id].name,
+                    message: message,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                
+                room.chatHistory.push(chatData);
+                if (room.chatHistory.length > MAX_CHAT_LOGS) room.chatHistory.shift();
+                io.to(roomId).emit('chatMessage', chatData);
+            });
+
+            // --- World Objects ---
             socket.on('placeCube', (cubeData) => {
+                const roomId = getSocketRoom(socket);
+                const room = getOrCreateRoom(roomId);
+
                 const newCube = {
                     id: 'cube_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                     position: cubeData.position,
                     size: cubeData.size || { w: 1, h: 1, d: 1 },
                     color: cubeData.color || '#ef4444'
                 };
-                placedCubes.push(newCube);
-                io.emit('cubeAdded', newCube);
+                room.placedCubes.push(newCube);
+                io.to(roomId).emit('cubeAdded', newCube);
             });
 
             socket.on('placeModel', (modelData) => {
+                const roomId = getSocketRoom(socket);
+                const room = getOrCreateRoom(roomId);
+
                 const newModel = {
                     id: 'model_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                     position: modelData.position,
@@ -221,38 +283,54 @@ module.exports = {
                     modelPath: modelData.modelPath || null,
                     isStructure: modelData.isStructure || false
                 };
-                placedModels.push(newModel);
-                io.emit('modelAdded', newModel);
+                room.placedModels.push(newModel);
+                io.to(roomId).emit('modelAdded', newModel);
             });
 
             socket.on('deleteObject', (id) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
                 if (id.startsWith('cube_')) {
-                    const index = placedCubes.findIndex(c => c.id === id);
-                    if (index !== -1) placedCubes.splice(index, 1);
+                    const index = room.placedCubes.findIndex(c => c.id === id);
+                    if (index !== -1) room.placedCubes.splice(index, 1);
                 } else if (id.startsWith('model_')) {
-                    const index = placedModels.findIndex(m => m.id === id);
-                    if (index !== -1) placedModels.splice(index, 1);
+                    const index = room.placedModels.findIndex(m => m.id === id);
+                    if (index !== -1) room.placedModels.splice(index, 1);
                 }
-                io.emit('objectDeleted', id);
+                io.to(roomId).emit('objectDeleted', id);
             });
 
             socket.on('updateObjectColor', (data) => {
-                const cube = placedCubes.find(c => c.id === data.id);
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
+                const cube = room.placedCubes.find(c => c.id === data.id);
                 if (cube) {
                     cube.color = data.color;
-                    io.emit('objectUpdated', { id: data.id, color: data.color });
+                    io.to(roomId).emit('objectUpdated', { id: data.id, color: data.color });
                 }
             });
 
             socket.on('updateObjectRotation', (data) => {
-                const model = placedModels.find(m => m.id === data.id);
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
+                const model = room.placedModels.find(m => m.id === data.id);
                 if (model) {
                     model.rotation = data.rotation;
-                    io.emit('objectUpdated', { id: data.id, rotation: data.rotation });
+                    io.to(roomId).emit('objectUpdated', { id: data.id, rotation: data.rotation });
                 }
             });
 
+            // --- Module Placements ---
             socket.on('placeModulePlacement', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = getOrCreateRoom(roomId);
+
                 const newPlacement = {
                     id: data.id,
                     moduleId: data.moduleId,
@@ -263,17 +341,21 @@ module.exports = {
                     ownerMasterId: socket.decoded?.id,
                     ownerUsername: socket.decoded?.username
                 };
-                placedModulePlacements.push(newPlacement);
-                io.emit('modulePlacementAdded', newPlacement);
+                room.placedModulePlacements.push(newPlacement);
+                io.to(roomId).emit('modulePlacementAdded', newPlacement);
             });
 
             socket.on('updateModuleAssignment', (data) => {
-                const placement = placedModulePlacements.find(p => p.id === data.id);
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
+                const placement = room.placedModulePlacements.find(p => p.id === data.id);
                 if (placement) {
                     placement.moduleId = data.moduleId;
                     placement.moduleTitle = data.moduleTitle || '';
                     placement.status = data.status || 'NONE';
-                    io.emit('modulePlacementUpdated', { 
+                    io.to(roomId).emit('modulePlacementUpdated', { 
                         id: data.id, 
                         moduleId: data.moduleId, 
                         moduleTitle: data.moduleTitle, 
@@ -283,17 +365,34 @@ module.exports = {
             });
 
             socket.on('deleteModulePlacement', (id) => {
-                const index = placedModulePlacements.findIndex(p => p.id === id);
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
+                const index = room.placedModulePlacements.findIndex(p => p.id === id);
                 if (index !== -1) {
-                    placedModulePlacements.splice(index, 1);
-                    io.emit('modulePlacementDeleted', id);
+                    room.placedModulePlacements.splice(index, 1);
+                    io.to(roomId).emit('modulePlacementDeleted', id);
                 }
             });
 
+            // --- Disconnect ---
             socket.on('disconnect', () => {
-                console.log(`User disconnected from 3D World: ${socket.id}`);
-                delete players[socket.id];
-                io.emit('playerDisconnected', socket.id);
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (room) {
+                    console.log(`User ${socket.id} disconnected from room: ${roomId}`);
+                    delete room.players[socket.id];
+                    io.to(roomId).emit('playerDisconnected', socket.id);
+
+                    // Cleanup: destroy room if empty to free memory
+                    if (Object.keys(room.players).length === 0) {
+                        delete rooms[roomId];
+                        console.log(`[Rooms] Room ${roomId} destroyed (empty)`);
+                    }
+                } else {
+                    console.log(`User disconnected from 3D World: ${socket.id} (no room)`);
+                }
             });
         });
     }

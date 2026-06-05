@@ -849,9 +849,10 @@ async function completeCourseModule(req, res) {
     if (!target) {
       return res.status(404).json({ error: 'Module is not part of this course.' });
     }
-    if (!target.unlocked && !managerView) {
-      return res.status(403).json({ error: 'This module is still locked by the course path.' });
-    }
+    // [WORLD-LOCK] Server-side lock gate disabled — all modules accessible from the 3D world
+    // if (!target.unlocked && !managerView) {
+    //   return res.status(403).json({ error: 'This module is still locked by the course path.' });
+    // }
     if (!target.canMarkComplete && !managerView) {
       return res.status(403).json({ error: target.completionBlockedReason || 'Pass the required quiz before marking this module as done.' });
     }

@@ -62,7 +62,7 @@
         latestRuntime = runtime;
         panel.classList.remove('hidden');
         titleEl.textContent = runtime.title;
-        summaryEl.textContent = runtime.description || (window.t ? window.t('world.followRooms', 'Follow the rooms in order and complete the required modules to unlock the next ones.') : 'Follow the rooms in order and complete the required modules to unlock the next ones.');
+        summaryEl.textContent = runtime.description || (window.t ? window.t('world.followRooms', 'All rooms are available — explore at your own pace.') : 'All rooms are available — explore at your own pace.');
         const _tc = (k, f) => window.t ? window.t(k, f) : f;
         progressEl.textContent = `${runtime.progressPercent || 0}% ${_tc('world.completeLabel','complete')} • ${runtime.completedCount || 0}/${(runtime.modules || []).length} ${_tc('world.modulesCompleted','modules completed')}`;
 
@@ -71,9 +71,13 @@
         const actionButtonStyle = 'padding:0.58rem 0.9rem; border:none; border-radius:12px; cursor:pointer; font-weight:700; letter-spacing:0.01em; transition:transform 120ms ease, opacity 120ms ease;';
 
         listEl.innerHTML = (runtime.modules || []).map((module, index) => {
-            const statusLabel = module.completed ? _tc('world.done','Done') : (module.unlocked ? _tc('world.ready','Ready') : _tc('world.locked','Locked'));
-            const statusColor = module.completed ? '#10b981' : (module.unlocked ? '#60a5fa' : '#ef4444');
-            const stepIcon = module.completed ? '✓' : (module.unlocked ? '•' : '⨯');
+            // [WORLD-LOCK] Status labels — lock gating disabled, all rooms always available
+            // const statusLabel = module.completed ? _tc('world.done','Done') : (module.unlocked ? _tc('world.ready','Ready') : _tc('world.locked','Locked'));
+            // const statusColor = module.completed ? '#10b981' : (module.unlocked ? '#60a5fa' : '#ef4444');
+            // const stepIcon = module.completed ? '✓' : (module.unlocked ? '•' : '⨯');
+            const statusLabel = module.completed ? _tc('world.done','Done') : _tc('world.ready','Ready');
+            const statusColor = module.completed ? '#10b981' : '#60a5fa';
+            const stepIcon = module.completed ? '✓' : '•';
             const isCurrentRoom = activeModuleId === module.moduleId;
             const quizRuleText = module.quizRequirementActive
                 ? `${_tc('world.quizGate','Quiz gate')} ${Math.round(module.minimumQuizScore || 0)}%`
@@ -83,7 +87,9 @@
                     ? _tc('world.noGradedAttempt','No graded attempt yet.')
                     : `${_tc('world.bestScore','Best score')} ${module.bestQuizScore.toFixed(1)}%${module.quizRequirementActive ? (module.quizPassed ? ' • ' + _tc('world.requirementMet','Requirement met') : ' • ' + _tc('world.requirementNotMet','Requirement not met yet')) : ''}`)
                 : null;
-            const showCompleteButton = module.unlocked && !module.completed;
+            // [WORLD-LOCK] Complete button gating disabled — always show if not completed
+            // const showCompleteButton = module.unlocked && !module.completed;
+            const showCompleteButton = !module.completed;
             const completeButtonLabel = module.canMarkComplete ? _tc('world.markDone','Mark done') : _tc('world.passQuizFirst','Pass quiz first');
             const completeButtonStyle = module.canMarkComplete
                 ? `${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(207,156,51,0.2); color:#fde047; border:1px solid rgba(207,156,51,0.4);' : 'background:rgba(207,156,51,0.15); color:#b48600; border:1px solid rgba(207,156,51,0.4);'}`
@@ -113,8 +119,8 @@
                     </div>
                     ${quizProgressText ? `<div style="font-size:0.78rem; color:${module.quizPassed ? (isCurrentRoom ? '#86efac' : '#059669') : (isCurrentRoom ? '#93c5fd' : '#2563eb')};">${escapeHtml(quizProgressText)}</div>` : ''}
                     <div style="display:flex; gap:0.55rem; flex-wrap:wrap;">
-                        ${module.unlocked && !isCurrentRoom ? `<button type="button" data-course-trail-action="teleport" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:linear-gradient(135deg, #2563eb, #38bdf8); color:white; box-shadow:0 10px 24px rgba(37,99,235,0.28);">${_tc('world.goToRoom','Go to room')}</button>` : ''}
-                        ${module.unlocked ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);' : 'background:white; color:#334155; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.02);'}">${_tc('world.openModule','Open module')}</button>` : ''}
+                        ${/* [WORLD-LOCK] Teleport gating disabled */ !isCurrentRoom ? `<button type="button" data-course-trail-action="teleport" data-module-id="${module.moduleId}" style="${actionButtonStyle} background:linear-gradient(135deg, #2563eb, #38bdf8); color:white; box-shadow:0 10px 24px rgba(37,99,235,0.28);">${_tc('world.goToRoom','Go to room')}</button>` : ''}
+                        ${/* [WORLD-LOCK] Open gating disabled */ true ? `<button type="button" data-course-trail-action="open" data-module-id="${module.moduleId}" style="${actionButtonStyle} ${isCurrentRoom ? 'background:rgba(255,255,255,0.1); color:#f8fafc; border:1px solid rgba(255,255,255,0.14);' : 'background:white; color:#334155; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.02);'}">${_tc('world.openModule','Open module')}</button>` : ''}
                         ${showCompleteButton ? `<button type="button" data-course-trail-action="complete" data-module-id="${module.moduleId}" style="${completeButtonStyle}" ${module.canMarkComplete ? '' : 'data-completion-blocked="true"'}>${completeButtonLabel}</button>` : ''}
                     </div>
                 </article>
@@ -131,10 +137,11 @@
                 const moduleId = Number(button.dataset.moduleId);
                 const module = runtime.modules.find((entry) => entry.moduleId === moduleId);
                 if (!module) return;
-                if (!module.unlocked && button.dataset.courseTrailAction !== 'complete') {
-                    alert(module.completionBlockedReason || (window.t ? window.t('world.completePreviousModule', 'Complete the required previous module before entering this room.') : 'Complete the required previous module before entering this room.'));
-                    return;
-                }
+                // [WORLD-LOCK] Unlock gate disabled — all modules accessible regardless of progress
+                // if (!module.unlocked && button.dataset.courseTrailAction !== 'complete') {
+                //     alert(module.completionBlockedReason || (window.t ? window.t('world.completePreviousModule', 'Complete the required previous module before entering this room.') : 'Complete the required previous module before entering this room.'));
+                //     return;
+                // }
 
                 const placement = normalizePlacement(module, runtime.modules.findIndex((entry) => entry.moduleId === moduleId));
 
@@ -235,7 +242,7 @@
                 courseModuleId: module.courseModuleId,
                 moduleTitle: module.title,
                 status: module.moduleStatus,
-                isLocked: !module.unlocked,
+                isLocked: false, // [WORLD-LOCK] Lock gating disabled — was: !module.unlocked
                 isCompleted: Boolean(module.completed),
                 position: placement.position,
                 rotation: placement.rotation || { x: 0, y: 0, z: 0 }
