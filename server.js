@@ -212,12 +212,18 @@ app.get('/app-config.js', (req, res) => {
 
 app.use(
   express.static(path.join(__dirname, 'public'), {
-    etag: false,
-    lastModified: false,
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      if (/\.(glb|gltf|png|jpg|jpeg|gif|webp|svg|css|js|woff|woff2)$/i.test(filePath)) {
+        // Cache assets for 1 year
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        // Do not cache HTML to ensure fresh entry points
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
     }
   })
 );

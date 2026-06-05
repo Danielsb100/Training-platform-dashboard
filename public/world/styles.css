@@ -3014,3 +3014,69 @@ body.course-world-mode:has(#course-trail-panel.hidden) .world-cards-container {
     border-color: rgba(239, 68, 68, 0.35);
     background: rgba(127, 29, 29, 0.18);
 }
+/* --- Global Loading Screen --- */
+.global-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+}
+
+.global-loading-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-content {
+    background: rgba(30, 41, 59, 0.7);
+    padding: 40px 60px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    min-width: 350px;
+}
+
+.spinner-3d {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 25px auto;
+    border: 4px solid rgba(59, 130, 246, 0.2);
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 5px;
+    transition: width 0.2s ease-out;
+}
+

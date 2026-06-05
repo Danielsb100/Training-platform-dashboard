@@ -9,6 +9,43 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 const globalDracoLoader = new DRACOLoader();
 globalDracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
+// Global Loading Screen Logic
+window.__assetsDownloaded = false;
+window.__worldBuilt = false;
+window.__loadingScreenHidden = false;
+
+function checkAndHideLoadingScreen() {
+    if (!window.__assetsDownloaded || !window.__worldBuilt || window.__loadingScreenHidden) return;
+    
+    window.__loadingScreenHidden = true;
+    setTimeout(() => {
+        if (typeof renderer !== 'undefined' && typeof scene !== 'undefined' && typeof camera !== 'undefined') {
+            renderer.compile(scene, camera);
+        }
+        
+        const loadingScreen = document.getElementById('global-loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 800);
+        }
+    }, 150); 
+}
+
+THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+    const progressPercent = Math.round((itemsLoaded / itemsTotal) * 100);
+    const progressBar = document.getElementById('loading-progress-bar');
+    const progressText = document.getElementById('loading-progress-text');
+    if (progressBar) progressBar.style.width = progressPercent + '%';
+    if (progressText) progressText.innerText = progressPercent + '%';
+};
+
+THREE.DefaultLoadingManager.onLoad = function () {
+    window.__assetsDownloaded = true;
+    checkAndHideLoadingScreen();
+};
+
 // Global variables for pathfinding
 const _pathfinding = new Pathfinding();
 const _navmeshZone = 'level1';
@@ -38,11 +75,11 @@ let courseRoomColliderIds = [];
 let activeCourseRoomModuleId = null;
 const COURSE_ROOM_MODEL_CONFIG = Object.freeze({
     paths: Object.freeze({
-        first: 'assets/course-room/room-first.glb',
-        middle: 'assets/course-room/room-middle.glb',
-        last: 'assets/course-room/room-last.glb'
+        first: 'assets/course-room/room-first.glb?v=1.0',
+        middle: 'assets/course-room/room-middle.glb?v=1.0',
+        last: 'assets/course-room/room-last.glb?v=1.0'
     }),
-    fallbackPath: 'assets/course-room/room-shell.glb',
+    fallbackPath: 'assets/course-room/room-shell.glb?v=1.0',
     position: { x: 0, y: 0, z: 0 },
     scale: { x: 1, y: 1, z: 1 },
     rotationY: 0,
@@ -1494,6 +1531,10 @@ function renderCourseRoomShells(runtime) {
         }
         delete window.__navmeshGeometries;
     }
+
+    // Notify that rooms are built
+    window.__worldBuilt = true;
+    checkAndHideLoadingScreen();
 }
 
 // --- Environment Map Loading ---
@@ -1536,6 +1577,10 @@ if (COURSE_ID_FROM_URL) {
                 preciseColliders.push(child);
             }
         });
+        
+        // Notify that lobby map is built
+        window.__worldBuilt = true;
+        checkAndHideLoadingScreen();
         console.log("Environment map loaded successfully.");
     }, undefined, (error) => {
         console.warn("Notice: No default map found or error loading map.glb");
