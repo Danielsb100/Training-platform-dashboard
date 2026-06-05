@@ -1532,9 +1532,11 @@ function renderCourseRoomShells(runtime) {
         delete window.__navmeshGeometries;
     }
 
-    // Notify that rooms are built
-    window.__worldBuilt = true;
-    checkAndHideLoadingScreen();
+    // Only notify that the world is built if we actually have the templates loaded
+    if (courseRoomModelTemplates || courseRoomModelLoadFailed) {
+        window.__worldBuilt = true;
+        checkAndHideLoadingScreen();
+    }
 }
 
 // --- Environment Map Loading ---
