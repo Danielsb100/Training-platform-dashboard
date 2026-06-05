@@ -1,8 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Pathfinding } from 'three-pathfinding';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+// Setup Global DRACO Loader
+const globalDracoLoader = new DRACOLoader();
+globalDracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
 // Global variables for pathfinding
 const _pathfinding = new Pathfinding();
@@ -1052,6 +1057,7 @@ function prepareCourseRoomModelTemplate(root) {
 
 function loadSingleCourseRoomModelTemplate(path, label) {
     const loader = new GLTFLoader();
+    loader.setDRACOLoader(globalDracoLoader);
     return new Promise((resolve) => {
         loader.load(
             path,
@@ -1495,6 +1501,7 @@ if (COURSE_ID_FROM_URL) {
     createCourseModeBaseEnvironment();
 } else {
     const mapLoader = new GLTFLoader();
+    mapLoader.setDRACOLoader(globalDracoLoader);
     mapLoader.load('assets/maps/map/map.glb', (gltf) => {
         const environmentMap = gltf.scene;
         scene.add(environmentMap);
@@ -1928,6 +1935,7 @@ function addOtherPlayer(playerInfo) {
 function loadPlayerModel(path, color, container, isLocal = false, remoteId = null) {
     loadingIndicator.classList.remove('hidden');
     const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(globalDracoLoader);
     gltfLoader.load(path, (gltf) => {
         // Clear previous meshes
         while (container.children.length > 0) container.remove(container.children[0]);
@@ -3218,6 +3226,7 @@ function createPlacedModel(data) {
     activeLoads.add(data.id);
 
     const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(globalDracoLoader);
     const onParsed = (gltf) => {
         activeLoads.delete(data.id);
         if (abortedLoads.has(data.id)) {
@@ -3383,6 +3392,7 @@ function createModulePlacement(data) {
     // Helper to load GLB model
     const loadCustomModel = () => {
         const loader = new GLTFLoader();
+        loader.setDRACOLoader(globalDracoLoader);
         loader.load(`${AUTH_API}/world/placements/${data.id}/model`, (gltf) => {
             modelGroup.clear();
             const model = gltf.scene;
