@@ -64,7 +64,7 @@ const emailInput = document.getElementById('email-input');
 const passwordInput = document.getElementById('password-input');
 const loginError = document.getElementById('login-error');
 let AUTH_API = window.location.origin;
-const COURSE_ID_FROM_URL = Number(new URLSearchParams(window.location.search).get('courseId')) || null;
+const COURSE_ID_FROM_URL = new URLSearchParams(window.location.search).get('courseId') || null;
 document.body.classList.toggle('course-world-mode', Boolean(COURSE_ID_FROM_URL));
 window.__courseWorldContext = { courseId: COURSE_ID_FROM_URL, runtime: null };
 const courseRoomContextCard = document.getElementById('course-room-context');
@@ -653,7 +653,7 @@ async function performJoin(token, user) {
  */
 async function checkAutoLogin() {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const token = urlParams.get('token') || sessionStorage.getItem('world_auth_token');
 
     if (token) {
         console.log("Auto-login token detected. Verifying...");
@@ -669,16 +669,24 @@ async function checkAutoLogin() {
             const result = await response.json();
             if (!response.ok) throw new Error("Invalid auto-login token");
 
+            // Persist token in sessionStorage so F5 works without URL token
+            sessionStorage.setItem('world_auth_token', token);
+
             await performJoin(token, result.user);
 
-            // Clean up URL to hide token
-            window.history.replaceState({}, document.title, window.location.pathname);
+            // Clean up URL to hide token but preserve courseId and other context params
+            const cleanParams = new URLSearchParams(window.location.search);
+            cleanParams.delete('token');
+            cleanParams.delete('source');
+            const cleanQuery = cleanParams.toString();
+            window.history.replaceState({}, document.title, window.location.pathname + (cleanQuery ? '?' + cleanQuery : ''));
         } catch (err) {
             console.error("Auto-login failed:", err);
-            // Hiding login screen logic completely. The user shouldn't see it even if it fails.
+            // Token may be expired — clear it so stale tokens don't loop
+            sessionStorage.removeItem('world_auth_token');
         }
     } else {
-        console.warn("No token provided in URL. Direct access without token will not work.");
+        console.warn("No token provided in URL or session. Direct access without token will not work.");
     }
 }
 
@@ -1286,13 +1294,11 @@ function clearCourseRoomShells() {
 }
 
 function updateCourseRoomContext() {
-    if (!COURSE_ID_FROM_URL || !courseRoomContextCard || !courseRoomContextCourse || !courseRoomContextRoom) return;
+    if (!COURSE_ID_FROM_URL) return;
     const runtime = window.__courseWorldContext?.runtime;
     if (!runtime) return;
 
-    courseRoomContextCard.classList.remove('hidden');
-    courseRoomContextCourse.textContent = runtime.title || 'Course world';
-
+    // Always detect which room the player is in, regardless of DOM state
     const currentRoom = courseRoomShells.find((room) => {
         const dx = Math.abs(playerGroup.position.x - room.center.x);
         const dz = Math.abs(playerGroup.position.z - room.center.z);
@@ -1301,14 +1307,20 @@ function updateCourseRoomContext() {
 
     if (!currentRoom) {
         activeCourseRoomModuleId = null;
-        courseRoomContextRoom.textContent = 'Between rooms';
-        return;
-    }
-
-    if (activeCourseRoomModuleId !== currentRoom.moduleId) {
+    } else if (activeCourseRoomModuleId !== currentRoom.moduleId) {
         activeCourseRoomModuleId = currentRoom.moduleId;
     }
-    courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} — ${currentRoom.title}`;
+
+    // Update DOM elements only if they exist (optional top-left card)
+    if (courseRoomContextCard && courseRoomContextCourse && courseRoomContextRoom) {
+        courseRoomContextCard.classList.remove('hidden');
+        courseRoomContextCourse.textContent = runtime.title || 'Course world';
+        if (!currentRoom) {
+            courseRoomContextRoom.textContent = 'Between rooms';
+        } else {
+            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} — ${currentRoom.title}`;
+        }
+    }
 }
 
 function renderCourseRoomShells(runtime) {
@@ -5065,11 +5077,57 @@ function renderModuleDocs(docs) {
     }
 }
 
-function renderModuleQuiz(quizzes) {
+async function renderModuleQuiz(quizzes) {
     const container = document.querySelector('#module-tab-quiz .quiz-container');
     container.innerHTML = (quizzes && quizzes.length) ? '' : `<p style="padding: 20px; color: #94a3b8;">${window.t ? window.t('world.noQuizzes', 'No quizzes available.') : 'No quizzes available.'}</p>`;
+    if (!quizzes || !quizzes.length) return;
 
+    // --- Entry Test / Final Evaluation Gating ---
+    const entryTests = quizzes.filter(q => q.type === 'ENTRY_TEST');
+    const finalEvaluations = quizzes.filter(q => q.type !== 'ENTRY_TEST');
+    let entryTestPassed = entryTests.length === 0; // No entry test means unlocked
+
+    if (entryTests.length > 0 && currentModuleId && authToken) {
+        try {
+            const subsRes = await fetch(`${AUTH_API}/modules/${currentModuleId}/quiz/submissions?t=${Date.now()}`, {
+                headers: { 'Authorization': `Bearer ${authToken}`, 'Cache-Control': 'no-cache' }
+            });
+            if (subsRes.ok) {
+                const submissions = await subsRes.json();
+                const entryTestIds = entryTests.map(et => et.id);
+                entryTestPassed = submissions.some(s =>
+                    entryTestIds.includes(s.quizId) ||
+                    (s.quiz && s.quiz.type === 'ENTRY_TEST')
+                );
+            }
+        } catch (e) {
+            console.warn('Could not check entry test submissions in 3D world:', e);
+        }
+    }
+
+    // --- Render Entry Test header if applicable ---
+    if (entryTests.length > 0) {
+        const _tc = (k, f) => window.t ? window.t(k, f) : f;
+        const statusLabel = entryTestPassed ? _tc('world.entryTestDone', 'Entry Test Completed') : _tc('world.entryTestRequired', 'Entry Test Required');
+        const statusColor = entryTestPassed ? '#10b981' : '#f59e0b';
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'margin-bottom:16px; padding:12px 16px; border-radius:14px; border:1px solid ' + (entryTestPassed ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)') + '; background:' + (entryTestPassed ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)') + '; display:flex; align-items:center; justify-content:space-between;';
+        headerDiv.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="width:10px; height:10px; border-radius:50%; background:${statusColor}; display:inline-block;"></span>
+                <strong style="color:#1e293b; font-size:0.88rem;">${statusLabel}</strong>
+            </div>
+            ${!entryTestPassed ? '<span style="font-size:0.78rem; color:#92400e;">' + _tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation') + '</span>' : '<span style="font-size:0.78rem; color:#065f46;">✓</span>'}
+        `;
+        container.appendChild(headerDiv);
+    }
+
+    // --- Render each quiz ---
     (quizzes || []).forEach((quiz) => {
+        const isEntryTest = quiz.type === 'ENTRY_TEST';
+        const isFinalEval = !isEntryTest;
+        const isLocked = isFinalEval && !entryTestPassed;
+
         const quizBox = document.createElement('div');
         quizBox.className = 'quiz-box glassmorphism';
         quizBox.style.marginBottom = '20px';
@@ -5078,8 +5136,27 @@ function renderModuleQuiz(quizzes) {
         quizBox.style.background = '#f8fafc';
         quizBox.style.color = '#1e293b';
         quizBox.style.border = '1px solid #e2e8f0';
+        quizBox.style.position = 'relative';
 
-        quizBox.innerHTML = `<h3 style="color: var(--accent-color); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px;">${quiz.title}</h3>`;
+        // Type badge
+        const typeBadge = isEntryTest
+            ? '<span style="font-size:0.72rem; padding:0.2rem 0.5rem; border-radius:999px; background:rgba(245,158,11,0.12); color:#92400e; border:1px solid rgba(245,158,11,0.3); margin-left:8px;">Entry Test</span>'
+            : '<span style="font-size:0.72rem; padding:0.2rem 0.5rem; border-radius:999px; background:rgba(37,99,235,0.1); color:#1e40af; border:1px solid rgba(59,130,246,0.3); margin-left:8px;">Final Evaluation</span>';
+
+        quizBox.innerHTML = `<h3 style="color: var(--accent-color); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; display:flex; align-items:center; flex-wrap:wrap;">${quiz.title}${typeBadge}</h3>`;
+
+        // If this final evaluation quiz is locked, add an overlay
+        if (isLocked) {
+            const _tc = (k, f) => window.t ? window.t(k, f) : f;
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,245,249,0.88); backdrop-filter:blur(2px); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; gap:8px;';
+            overlay.innerHTML = `
+                <span style="font-size:2rem;">🔒</span>
+                <strong style="color:#334155; font-size:0.92rem;">${_tc('world.finalEvalLocked', 'Final Evaluation Locked')}</strong>
+                <span style="color:#64748b; font-size:0.8rem; text-align:center; max-width:260px;">${_tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation')}</span>
+            `;
+            quizBox.appendChild(overlay);
+        }
 
         quiz.questions.forEach((q, qIdx) => {
             const qDiv = document.createElement('div');
@@ -5093,7 +5170,7 @@ function renderModuleQuiz(quizzes) {
                 optDiv.style.marginBottom = '4px';
                 optDiv.innerHTML = `
                     <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; color:#1e293b; line-height:1.45;">
-                        <input type="radio" name="quiz_${quiz.id}_question_${q.id}" value="${opt.id}">
+                        <input type="radio" name="quiz_${quiz.id}_question_${q.id}" value="${opt.id}"${isLocked ? ' disabled' : ''}>
                         <span>${opt.text}</span>
                     </label>
                 `;
@@ -5102,7 +5179,7 @@ function renderModuleQuiz(quizzes) {
             quizBox.appendChild(qDiv);
         });
 
-        if (quiz.questions.length) {
+        if (quiz.questions.length && !isLocked) {
             const submitBtn = document.createElement('button');
             submitBtn.className = 'btn-open';
             submitBtn.style.marginTop = '10px';
@@ -5138,6 +5215,10 @@ function renderModuleQuiz(quizzes) {
                     await refreshCourseWorldRuntime();
                     const scoreMsg = window.t ? window.t('world.quizSubmitted', 'Quiz "{title}" submitted! Your score: {score}%').replace('{title}', quiz.title).replace('{score}', result.score.toFixed(1)) : `Quiz "${quiz.title}" submitted! Your score: ${result.score.toFixed(1)}%`;
                     alert(scoreMsg);
+                    // If this was an entry test, re-render quizzes to unlock final evaluation
+                    if (isEntryTest) {
+                        renderModuleQuiz(quizzes);
+                    }
                 } catch (err) {
                     alert((window.t ? window.t('world.quizSubmitError', 'Error submitting quiz: ') : 'Error submitting quiz: ') + err.message);
                 } finally {
