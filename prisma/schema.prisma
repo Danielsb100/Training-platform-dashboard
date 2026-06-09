@@ -44,6 +44,7 @@ model User {
   roleAssignments     UserRoleAssignment[]
   placements          WorldModulePlacement[]   @relation("MasterPlacements")
   ownedChannels       Channel[]                @relation("ChannelOwner")
+  roomMemberships     CourseRoomMember[]
 }
 
 model UserProfile {
@@ -281,6 +282,7 @@ model Course {
   completions   ModuleCompletion[]
   placements    WorldModulePlacement[]
   channels      ChannelCourse[]
+  rooms         CourseRoom[]
 }
 
 model CourseEditor {
@@ -773,4 +775,33 @@ model SystemSetting {
   value     Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CourseRoom {
+  id          Int                @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?            @db.Text
+  thumbnail   String?            @db.Text
+  maxMembers  Int?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  members     CourseRoomMember[]
+
+  @@index([courseId, isActive])
+}
+
+model CourseRoomMember {
+  id           Int        @id @default(autoincrement())
+  courseRoomId Int
+  userId       Int
+  createdAt    DateTime   @default(now())
+  courseRoom   CourseRoom @relation(fields: [courseRoomId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseRoomId, userId])
 }

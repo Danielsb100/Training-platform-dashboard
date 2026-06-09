@@ -81,12 +81,31 @@ function openModuleManager() {
     renderAttachedModules();
     updateSimulationButton();
 }
+let sectionOpen = false;
+function openStudentSection() {
+
+    if (sectionOpen == false) {
+        document.querySelector('.main-section').style.display = 'none';
+        document.querySelector('.student-section').style.display = 'block';
+        document.getElementById('student-section-p').innerText = 'Open Course Editor Section';
+        sectionOpen = true;
+        // Load rooms when opening student section
+        if (typeof loadCourseRooms === 'function') loadCourseRooms();
+    } else {
+        document.querySelector('.main-section').style.display = 'grid';
+        document.querySelector('.student-section').style.display = 'none';
+        document.getElementById('student-section-p').innerText = 'Open Student Section';
+        sectionOpen = false;
+    }
+}
+
+
 
 function closeModuleEditor() {
     document.querySelector('.course-header').style.display = 'flex';
     document.querySelector('.main-container').style.display = 'grid';
     document.getElementById('module-editor-modal').style.display = 'none';
-    if(typeof updateConstructionUI === 'function') {
+    if (typeof updateConstructionUI === 'function') {
         updateConstructionUI();
     }
 }
@@ -326,14 +345,14 @@ function switchModuleTab(tabName) {
     document.querySelectorAll('.module-tab-pane').forEach(p => p.style.display = 'none');
 
     const activeBtn = document.querySelector(`.module-tab-btn[data-tab="${tabName}"]`);
-    if(activeBtn) {
+    if (activeBtn) {
         activeBtn.classList.add('active');
         activeBtn.style.color = '#cf982e';
         activeBtn.style.borderBottomColor = '#cf982e';
     }
 
     const activePane = document.getElementById(`pane-${tabName}`);
-    if(activePane) activePane.style.display = 'block';
+    if (activePane) activePane.style.display = 'block';
 }
 
 async function loadModuleData(id) {
@@ -615,9 +634,9 @@ function showSwapLanguageModal() {
     // The base content doesn't have a languageSessionId. If we "swap" it, we actually move base content into a session and vice versa.
     // To keep it simple, if current is null, alert that Base is implicitly English for now.
     // Or we allow swapping. Let's allow swapping via API.
-    
+
     const availableLocales = Object.keys(LOCALE_LABELS);
-    
+
     const backdrop = document.createElement('div');
     backdrop.id = 'lang-modal-backdrop';
     backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999;';
@@ -911,13 +930,13 @@ async function saveModuleBasics() {
 
         // Atualiza o local window.courseModules se este módulo estiver atrelado
         const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
-        if(localMod) {
+        if (localMod) {
             localMod.title = title;
             localMod.content = description;
             localMod.status = status;
-            if(typeof saveDraft === 'function') saveDraft(true);
+            if (typeof saveDraft === 'function') saveDraft(true);
         }
-        
+
         if (typeof renderAttachedModules === 'function') renderAttachedModules();
 
         alert('General changes saved successfully!');
@@ -938,7 +957,7 @@ async function saveModuleCover(silent = false) {
 
         // Update local memory
         const localMod = window.courseModules.find(m => m.dbId === editingModuleId);
-        if(localMod) {
+        if (localMod) {
             localMod.coverImage = coverImage;
             localMod.titleFont = titleFont;
             localMod.textColor = textColor;
@@ -960,15 +979,15 @@ async function removeCoverImage() {
 }
 
 async function deleteModuleFromDB() {
-    if(!editingModuleId) return;
-    if(!confirm('Are you sure you want to permanently delete this module from the database? It will disappear from all courses.')) return;
+    if (!editingModuleId) return;
+    if (!confirm('Are you sure you want to permanently delete this module from the database? It will disappear from all courses.')) return;
 
     try {
         await apiCall(`/modules/${editingModuleId}`, 'DELETE');
 
         // Remove do curso local se estiver atrelado
         window.courseModules = window.courseModules.filter(m => m.dbId !== editingModuleId);
-        if(typeof saveDraft === 'function') saveDraft(true);
+        if (typeof saveDraft === 'function') saveDraft(true);
 
         alert('Module deleted!');
         closeModuleEditor();
@@ -978,9 +997,9 @@ async function deleteModuleFromDB() {
 }
 
 // --- VIDEOS ---
-function showAddVideoForm() { 
+function showAddVideoForm() {
     const form = document.getElementById('add-video-form');
-    form.style.display = 'block'; 
+    form.style.display = 'block';
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function hideAddVideoForm() {
@@ -994,10 +1013,10 @@ function hideAddVideoForm() {
 
     // Change button text back to Save
     const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
-    if(submitBtn) submitBtn.innerText = 'Save Video';
+    if (submitBtn) submitBtn.innerText = 'Save Video';
 
     const h4 = document.querySelector('#add-video-form h4');
-    if(h4) h4.innerText = 'New Video';
+    if (h4) h4.innerText = 'New Video';
 }
 
 function openEditVideoForm(videoId) {
@@ -1020,10 +1039,10 @@ function openEditVideoForm(videoId) {
 
     // Change button text
     const submitBtn = document.querySelector('#add-video-form button[onclick="submitAddVideo()"]');
-    if(submitBtn) submitBtn.innerText = 'Save Changes';
+    if (submitBtn) submitBtn.innerText = 'Save Changes';
 
     const h4 = document.querySelector('#add-video-form h4');
-    if(h4) h4.innerText = 'Edit Video';
+    if (h4) h4.innerText = 'Edit Video';
 
     const form = document.getElementById('add-video-form');
     form.style.display = 'block';
@@ -1085,7 +1104,7 @@ async function submitAddVideo() {
     const title = document.getElementById('v-title-input').value;
     const url = document.getElementById('v-url-input').value;
 
-    if(!title || !url) return alert('Title and URL are required.');
+    if (!title || !url) return alert('Title and URL are required.');
 
     try {
         if (window.editingVideoId) {
@@ -1107,7 +1126,7 @@ async function submitAddVideo() {
 }
 
 async function deleteVideo(videoId) {
-    if(!confirm('Delete video?')) return;
+    if (!confirm('Delete video?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/videos/${videoId}`, 'DELETE');
         loadModuleData(editingModuleId);
@@ -1283,7 +1302,7 @@ function buildVideoPlayerSource(url) {
 
 function renderVideos(videos) {
     const list = document.getElementById('v-list');
-    if(!videos || videos.length === 0) {
+    if (!videos || videos.length === 0) {
         list.innerHTML = '<p style="color: #64748b; text-align: center;">No video added.</p>';
         return;
     }
@@ -1366,8 +1385,8 @@ function playVideo(url, title) {
 function closeVideoPlayer() {
     const modal = document.getElementById('video-player-modal');
     const container = document.getElementById('video-player-container');
-    if(container) container.innerHTML = '';
-    if(modal) modal.style.display = 'none';
+    if (container) container.innerHTML = '';
+    if (modal) modal.style.display = 'none';
 }
 
 // --- DOCS ---
@@ -1479,7 +1498,7 @@ function updateCoverPreview() {
 }
 
 async function deleteDoc(docId) {
-    if(!confirm('Remove this document from the module?')) return;
+    if (!confirm('Remove this document from the module?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/documents/${docId}`, 'DELETE');
         loadModuleData(editingModuleId);
@@ -1495,7 +1514,7 @@ function setDocFilter(filter) {
 
     // Update active button styling
     document.querySelectorAll('.doc-filter-btn').forEach(btn => {
-        if(btn.dataset.filter === filter) {
+        if (btn.dataset.filter === filter) {
             btn.classList.add('active');
             btn.style.background = '#e2e8f0';
             btn.style.color = '#1e293b';
@@ -1508,7 +1527,7 @@ function setDocFilter(filter) {
         }
     });
 
-    if(window.currentModuleData && window.currentModuleData.documents) {
+    if (window.currentModuleData && window.currentModuleData.documents) {
         renderDocs(window.currentModuleData.documents); // Documents are shared globally — always render all
     }
 }
@@ -1517,7 +1536,7 @@ function renderDocs(docs) {
     const list = document.getElementById('d-list');
     const grid = document.getElementById('d-grid');
 
-    if(!docs || docs.length === 0) {
+    if (!docs || docs.length === 0) {
         list.style.display = 'flex';
         grid.style.display = 'none';
         list.innerHTML = '<p style="color: #64748b; text-align: center;">No document added.</p>';
@@ -1671,7 +1690,7 @@ function showManualQuizForm(quizId) {
     document.getElementById('manual-q-text').value = '';
     document.querySelectorAll('.manual-q-opt').forEach(opt => opt.value = '');
     document.querySelector('input[name="manual-q-correct"][value="0"]').checked = true;
-    
+
     setTimeout(() => {
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -1861,7 +1880,7 @@ async function submitAiQuiz() {
 }
 
 async function deleteQuiz(quizId) {
-    if(!confirm('Delete this quiz and all its questions?')) return;
+    if (!confirm('Delete this quiz and all its questions?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quizzes/${quizId}`, 'DELETE');
         window.currentModuleQuizId = null;
@@ -1872,7 +1891,7 @@ async function deleteQuiz(quizId) {
 }
 
 async function deleteQuestion(questionId) {
-    if(!confirm('Delete this question?')) return;
+    if (!confirm('Delete this question?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
         loadModuleData(editingModuleId);
@@ -1891,7 +1910,7 @@ function renderQuizzes(quizzes) {
     if (manualForm && paneQuiz) paneQuiz.appendChild(manualForm);
     if (aiForm && paneQuiz) paneQuiz.appendChild(aiForm);
 
-    if(!quizzes || quizzes.length === 0) {
+    if (!quizzes || quizzes.length === 0) {
         window.currentQuizDataList = [];
         list.innerHTML = `
             <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px dashed #cbd5e1; text-align: center;">
@@ -1981,7 +2000,7 @@ function renderQuizzes(quizzes) {
 function openSubModal(title, html, onConfirm) {
     const modalId = 'dynamic-sub-modal';
     let modal = document.getElementById(modalId);
-    if(modal) modal.remove();
+    if (modal) modal.remove();
 
     modal = document.createElement('div');
     modal.id = modalId;
@@ -2005,7 +2024,7 @@ function openSubModal(title, html, onConfirm) {
 
 
 async function deleteQuestion(questionId) {
-    if(!confirm('Delete question?')) return;
+    if (!confirm('Delete question?')) return;
     try {
         await apiCall(`/modules/${editingModuleId}/quiz/questions/${questionId}`, 'DELETE');
         loadModuleData(editingModuleId);
@@ -2057,7 +2076,7 @@ function updateSimulationButton() {
     if (courseData && courseData.simulationHtml && courseData.simulationHtml.length > 50) {
         label.innerHTML = '<i class="fas fa-edit" style="margin-right:5px;"></i> Edit Simulation';
         btn.style.background = '#4f46e5';
-        
+
         // Add delete button if it doesn't exist
         if (!document.getElementById('btn-delete-simulation')) {
             const deleteBtn = document.createElement('button');
@@ -2084,7 +2103,7 @@ function updateSimulationButton() {
                         if (window.currentCourseData) window.currentCourseData.simulationHtml = null;
                         updateSimulationButton();
                     } else {
-                        const err = await res.json().catch(()=>({}));
+                        const err = await res.json().catch(() => ({}));
                         alert('Failed to delete simulation: ' + (err.error || 'Unknown error'));
                     }
                 } catch (e) {
@@ -2097,7 +2116,7 @@ function updateSimulationButton() {
     } else {
         label.innerHTML = '+ Create Simulation';
         btn.style.background = '#6366f1';
-        
+
         const deleteBtn = document.getElementById('btn-delete-simulation');
         if (deleteBtn) deleteBtn.remove();
     }

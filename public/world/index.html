@@ -193,6 +193,10 @@
 
     <!-- Left Vertical Sidebar -->
     <div id="left-sidebar" class="ui-layer">
+        <div id="room-nav-thumbnail-container" class="hidden" style="position:relative; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <img id="room-nav-thumbnail" src="" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #ef4444; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div id="room-nav-tooltip" style="position: absolute; left: calc(100% + 15px); top: 50%; transform: translateY(-50%); background: var(--bg-color, #1e293b); color: var(--text-primary, #fff); padding: 6px 12px; border-radius: 8px; white-space: nowrap; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.2s; border: 1px solid var(--panel-border, #334155); box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10;">Room Name</div>
+        </div>
         <img id="sidebar-profile-pic" src="https://ui-avatars.com/api/?name=User&background=random"
             title="Open Dashboard">
         <div class="sidebar-actions">

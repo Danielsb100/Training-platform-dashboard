@@ -39,6 +39,7 @@ const aiTipsController = require('./controllers/aiTipsController');
 const systemController = require('./controllers/systemController');
 const multiplayerController = require('./controllers/multiplayerController');
 const languageSessionController = require('./controllers/languageSessionController');
+const courseRoomController = require('./controllers/courseRoomController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
@@ -160,6 +161,9 @@ const peerServer = ExpressPeerServer(server, {
 });
 
 multiplayerController.initSocket(io);
+
+// Inject the multiplayer rooms reference into the courseRoomController for online counts
+courseRoomController.setRoomsRef(multiplayerController.getRoomsRef());
 
 const PORT = env.port;
 
@@ -307,6 +311,18 @@ app.get('/api/courses/:id/insights', authenticateToken, courseController.getCour
 app.get('/api/courses/:id/editors', authenticateToken, courseController.getCourseEditors);
 app.post('/api/courses/:id/editors', authenticateToken, courseController.addCourseEditor);
 app.delete('/api/courses/:id/editors/:userId', authenticateToken, courseController.removeCourseEditor);
+
+// --- Course Rooms (3D World Room Management) ---
+app.post('/api/courses/:id/rooms', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.createRoom);
+app.get('/api/courses/:id/rooms', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.getRooms);
+app.get('/api/courses/:id/rooms/my', authenticateToken, courseRoomController.getMyRooms);
+app.put('/api/courses/:id/rooms/:roomId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.updateRoom);
+app.delete('/api/courses/:id/rooms/:roomId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.deleteRoom);
+app.post('/api/courses/:id/rooms/:roomId/members', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.addMembers);
+app.delete('/api/courses/:id/rooms/:roomId/members/:userId', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.removeMember);
+app.get('/api/courses/:id/rooms/:roomId/members', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), courseRoomController.getMembers);
+app.get('/api/courses/:id/rooms/:roomId/online-count', authenticateToken, courseRoomController.getOnlineCount);
+app.post('/api/courses/:id/rooms/:roomId/thumbnail', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), handleUploadError('thumbnail'), courseRoomController.uploadThumbnail);
 
 // --- Landing Pages API ---
 app.get('/api/landing-pages', authenticateToken, landingPageController.getLandingPages);

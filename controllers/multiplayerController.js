@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// State — organized by rooms (one room per course)
+// State — organized by rooms (one room per course, or course+room combos)
 const rooms = {};
 const MAX_CHAT_LOGS = 50;
 
@@ -23,6 +23,14 @@ function getOrCreateRoom(roomId) {
 // Get the room a socket belongs to
 function getSocketRoom(socket) {
     return socket._roomId || 'lobby';
+}
+
+/**
+ * Expose the rooms reference so other modules (e.g. courseRoomController)
+ * can read online counts.
+ */
+function getRoomsRef() {
+    return rooms;
 }
 
 function getCatalogItems(subDir) {
@@ -126,9 +134,23 @@ module.exports = {
 
             // --- Room Join ---
             // Player is NOT created until they join a room.
-            // The front-end emits 'joinRoom' with the courseId immediately after connecting.
-            socket.on('joinRoom', (courseId) => {
-                const roomId = courseId ? `course-${courseId}` : 'lobby';
+            // The front-end emits 'joinRoom' with:
+            //   - a courseId string (backward compatible, joins course-{id})
+            //   - OR an object { courseId, roomId } to join a specific room
+            socket.on('joinRoom', (data) => {
+                let roomId;
+                if (typeof data === 'object' && data !== null && data.courseId) {
+                    // New format: { courseId, roomId }
+                    if (data.roomId) {
+                        roomId = `course-${data.courseId}-room-${data.roomId}`;
+                    } else {
+                        roomId = `course-${data.courseId}`;
+                    }
+                } else {
+                    // Legacy format: just courseId string
+                    const courseId = data;
+                    roomId = courseId ? `course-${courseId}` : 'lobby';
+                }
                 socket._roomId = roomId;
                 socket.join(roomId);
 
@@ -395,5 +417,6 @@ module.exports = {
                 }
             });
         });
-    }
+    },
+    getRoomsRef
 };

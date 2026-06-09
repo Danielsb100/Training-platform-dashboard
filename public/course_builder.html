@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,45 +8,218 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="app.css">
     <style>
-        body { font-family: 'Helvetica', 'Arial', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
-        .course-header { background: linear-gradient(to right, #cf9c33 0%, #878c8c 50%, #44749f 100%); padding: 40px 60px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .course-header h1 { margin: 0; font-size: 2rem; }
-        .back-btn { color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: bold; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.5); transition: 0.3s; }
-        .back-btn:hover { background: rgba(255,255,255,0.3); }
-        
-        .main-container { padding: 40px 60px; display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
-        
-        .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .card-header { border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
-        .card-header h3 { margin: 0; color: #1e293b; font-size: 1.4rem; }
-        .card-header p { margin: 5px 0 0 0; color: #64748b; font-size: 0.95rem; }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: bold; color: #1e293b; margin-bottom: 8px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #497aa7; box-shadow: 0 0 0 3px rgba(73,122,167,0.1); }
-        
-        .action-card { text-align: center; padding: 40px 20px; cursor: pointer; transition: 0.3s; border: 2px dashed #cbd5e1; border-radius: 12px; }
-        .action-card:hover { border-color: #497aa7; background: #f8fafc; }
-        .action-card i { font-size: 3rem; color: #497aa7; margin-bottom: 15px; }
-        .action-card h4 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.2rem; }
-        .action-card p { margin: 0; color: #64748b; font-size: 0.9rem; }
-        
-        .publish-btn { width: 100%; padding: 15px; border-radius: 8px; background: #cf982e; color: white; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px; }
-        .publish-btn:hover { background: #b88625; }
-        
-        .cover-preview { width: 100%; height: 200px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; margin-bottom: 15px; border: 1px solid #e2e8f0; background-size: cover; background-position: center; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .course-header {
+            background: linear-gradient(to right, #cf9c33 0%, #878c8c 50%, #44749f 100%);
+            padding: 40px 60px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .course-header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .main-section-btn:hover {
+            background: rgb(143, 143, 143);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .main-section-btn {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            color: black;
+            transition: 0.3s;
+            padding-inline: 50px;
+        }
+
+        .main-container {
+            padding: 40px 60px;
+            display: grid;
+            /*grid-template-columns: 1fr 350px;*/
+            /*gap: 30px;*/
+        }
+
+        .main-section {
+            padding: 40px 60px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .student-section {
+            padding: 40px 60px;
+            display: none;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.4rem;
+        }
+
+        .card-header p {
+            margin: 5px 0 0 0;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #497aa7;
+            box-shadow: 0 0 0 3px rgba(73, 122, 167, 0.1);
+        }
+
+        .action-card {
+            text-align: center;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+        }
+
+        .action-card:hover {
+            border-color: #497aa7;
+            background: #f8fafc;
+        }
+
+        .action-card i {
+            font-size: 3rem;
+            color: #497aa7;
+            margin-bottom: 15px;
+        }
+
+        .action-card h4 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 1.2rem;
+        }
+
+        .action-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .publish-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            background: #cf982e;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .publish-btn:hover {
+            background: #b88625;
+        }
+
+        .cover-preview {
+            width: 100%;
+            height: 200px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            background-size: cover;
+            background-position: center;
+        }
     </style>
 </head>
+
 <body>
 
     <header class="course-header">
         <div>
             <h1 id="course-title-display" data-i18n="courseBuilder.newCourse">New Course</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.9;" data-i18n="courseBuilder.dashboard">Course Management Dashboard</p>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;" data-i18n="courseBuilder.dashboard">Course Management Dashboard
+            </p>
         </div>
         <div style="display:flex; gap:15px;">
-            <button id="btn-view-content-fast" style="display:none; color: white; text-decoration: none; align-items: center; gap: 10px; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; cursor:pointer;" onclick="window.location.href='course_content.html?id=' + window.editingCourseId">
+            <button id="btn-view-content-fast"
+                style="display:none; color: white; text-decoration: none; align-items: center; gap: 10px; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; cursor:pointer;"
+                onclick="window.location.href='course_content.html?id=' + window.editingCourseId">
                 <i class="fas fa-eye"></i> View Content
             </button>
             <a href="profile.html?tab=creations" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Profile</a>
@@ -53,157 +227,264 @@
     </header>
 
     <div class="main-container">
-        <!-- Esquerda: Configurações Gerais -->
-        <div class="left-col">
-            <div class="card">
-                <div class="card-header">
-                    <h3 data-i18n="courseBuilder.basicInfo">Basic Information</h3>
-                    <p data-i18n="courseBuilder.basicInfoDesc">Define the title, description and course details.</p>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="courseBuilder.courseTitle">Course Title</label>
-                    <input type="text" id="course-title" data-i18n-placeholder="courseBuilder.titlePlaceholder" placeholder="Ex: Information Security Course" onkeyup="document.getElementById('course-title-display').innerText = this.value || 'New Course'; checkCourseSaveStatus();">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="courseBuilder.shortDesc"> <span data-i18n="courseBuilder.shortDesc">Short Description</span> </label>
-                    <textarea id="course-desc" rows="3" data-i18n-placeholder="courseBuilder.descPlaceholder" data-i18n-placeholder="courseBuilder.descPlaceholder" placeholder="Summary of what students will learn in this course..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="courseBuilder.linkedChannel">Linked Channel</label>
-                    <select id="course-channel" style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;">
-                        <option value="" data-i18n="courseBuilder.noneChannel"> <span data-i18n="courseBuilder.noneChannel">None (Standalone Course)</span> </option>
-                        <!-- Options injected by JS -->
-                    </select>
-                    <small style="color:#94a3b8; display:block; margin-top:5px;" data-i18n="courseBuilder.channelHint"> <span data-i18n="courseBuilder.channelHint">Only channels created by you will appear here.</span> </small>
-                </div>
-            </div>
-
-            <div class="card" id="editors-section">
-                <div class="card-header">
-                    <h3 data-i18n="courseBuilder.coEditors">Co-Editors & Instructors</h3>
-                    <p data-i18n="courseBuilder.coEditorsDesc"> <span data-i18n="courseBuilder.coEditorsDesc">Assign other users to help you edit this course and its landing page.</span> </p>
-                </div>
-                <div class="form-group" style="position: relative;">
-                    <input type="text" id="new-editor-search" data-i18n-placeholder="courseBuilder.searchUser" data-i18n-placeholder="courseBuilder.searchUser" data-i18n-placeholder="courseBuilder.searchUser" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'editor')" onfocus="searchUsersForRole(this.value, 'editor')">
-                    <div id="editor-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
-                </div>
-                <ul id="editors-list" style="list-style: none; padding: 0; margin-top: 15px;">
-                    <!-- Injected by JS -->
-                </ul>
-            </div>
-
-                <div class="card" id="students-section">
+        <div>
+            <button class="main-section-btn" onclick="openStudentSection()" style="margin-left: 5vw;">
+                <p id="student-section-p">Course Editor Section</p>
+            </button>
+        </div>
+        <section class="main-section">
+            <!-- Esquerda: Configurações Gerais -->
+            <div class="left-col">
+                <div class="card">
                     <div class="card-header">
-                        <h3 data-i18n="courseBuilder.inviteStudents">Invite Students</h3>
-                        <p data-i18n="courseBuilder.inviteStudentsDesc"> <span data-i18n="courseBuilder.inviteStudentsDesc">Manually enroll users directly into this course.</span> </p>
+                        <h3 data-i18n="courseBuilder.basicInfo">Basic Information</h3>
+                        <p data-i18n="courseBuilder.basicInfoDesc">Define the title, description and course details.</p>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="courseBuilder.courseTitle">Course Title</label>
+                        <input type="text" id="course-title" data-i18n-placeholder="courseBuilder.titlePlaceholder"
+                            placeholder="Ex: Information Security Course"
+                            onkeyup="document.getElementById('course-title-display').innerText = this.value || 'New Course'; checkCourseSaveStatus();">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="courseBuilder.shortDesc"> <span data-i18n="courseBuilder.shortDesc">Short
+                                Description</span> </label>
+                        <textarea id="course-desc" rows="3" data-i18n-placeholder="courseBuilder.descPlaceholder"
+                            data-i18n-placeholder="courseBuilder.descPlaceholder"
+                            placeholder="Summary of what students will learn in this course..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="courseBuilder.linkedChannel">Linked Channel</label>
+                        <select id="course-channel"
+                            style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;">
+                            <option value="" data-i18n="courseBuilder.noneChannel"> <span
+                                    data-i18n="courseBuilder.noneChannel">None (Standalone Course)</span> </option>
+                            <!-- Options injected by JS -->
+                        </select>
+                        <small style="color:#94a3b8; display:block; margin-top:5px;"
+                            data-i18n="courseBuilder.channelHint">
+                            <span data-i18n="courseBuilder.channelHint">Only channels created by you will appear
+                                here.</span> </small>
+                    </div>
+                </div>
+
+                <div class="card" id="editors-section">
+                    <div class="card-header">
+                        <h3 data-i18n="courseBuilder.coEditors">Co-Editors & Instructors</h3>
+                        <p data-i18n="courseBuilder.coEditorsDesc"> <span data-i18n="courseBuilder.coEditorsDesc">Assign
+                                other users to help you edit this course and its landing page.</span> </p>
                     </div>
                     <div class="form-group" style="position: relative;">
-                        <input type="text" id="new-student-search" data-i18n-placeholder="courseBuilder.searchUser" placeholder="Search user by name or email..." style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;" oninput="searchUsersForRole(this.value, 'student')" onfocus="searchUsersForRole(this.value, 'student')">
-                        <div id="student-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;"></div>
+                        <input type="text" id="new-editor-search" data-i18n-placeholder="courseBuilder.searchUser"
+                            data-i18n-placeholder="courseBuilder.searchUser"
+                            data-i18n-placeholder="courseBuilder.searchUser"
+                            placeholder="Search user by name or email..."
+                            style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;"
+                            oninput="searchUsersForRole(this.value, 'editor')"
+                            onfocus="searchUsersForRole(this.value, 'editor')">
+                        <div id="editor-search-results"
+                            style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;">
+                        </div>
                     </div>
-                    
-                    <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                        <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.1rem;"> <span data-i18n="courseBuilder.enrolledStudents">Enrolled Students</span> </h4>
-                        <input type="text" id="enrolled-student-filter" data-i18n-placeholder="courseBuilder.filterStudentsPlaceholder" placeholder="Filter enrolled students..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px;" oninput="filterEnrolledStudents()">
-                        <ul id="students-list" style="list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
-                            <!-- Injected by JS -->
-                        </ul>
+                    <ul id="editors-list" style="list-style: none; padding: 0; margin-top: 15px;">
+                        <!-- Injected by JS -->
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3> <span data-i18n="courseBuilder.constructionLayout">Construction and Layout</span> </h3>
+                        <p> <span data-i18n="courseBuilder.whatToEdit">What do you want to edit now?</span> </p>
+                    </div>
+
+                    <!-- Grid Wrapper para Construção Lado-a-Lado -->
+                    <div id="construction-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+                        <!-- Container de Landing Page -->
+                        <div id="lp-action-container">
+                            <div class="action-card" onclick="goToLandingPageBuilder()">
+                                <i class="fas fa-desktop"></i>
+                                <h4> <span data-i18n="courseBuilder.createLandingPage">Create Landing Page</span> </h4>
+                                <p> <span data-i18n="courseBuilder.landingPageDesc">The design of your course's sales
+                                        page.</span> </p>
+                            </div>
+                        </div>
+
+                        <!-- Container de Módulos -->
+                        <div id="modules-action-container">
+                            <div class="action-card" onclick="openModuleModal()">
+                                <i class="fas fa-photo-video"></i>
+                                <h4> <span data-i18n="courseBuilder.createModules">Create Modules</span> </h4>
+                                <p> <span data-i18n="courseBuilder.createModulesDesc">The classes and videos of the
+                                        course
+                                        content.</span> </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-            <div class="card">
+                <!-- Danger Zone -->
+                <div class="card" style="border-color: #fecaca; background: #fffafb;">
+                    <div class="card-header" style="border-color: #fecaca;">
+                        <h3 style="color: #ef4444;"> <span data-i18n="courseBuilder.dangerZone">Danger Zone</span> </h3>
+                        <p> <span data-i18n="courseBuilder.irreversibleActions">Irreversible actions for this
+                                course.</span>
+                        </p>
+                    </div>
+                    <button onclick="deleteCourse()"
+                        style="padding: 12px; background: none; border: 2px solid #ef4444; color: #ef4444; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;"
+                        onmouseover="this.style.background='#ef4444'; this.style.color='white'"
+                        onmouseout="this.style.background='none'; this.style.color='#ef4444'">
+                        <i class="fas fa-trash"></i> <span data-i18n="courseBuilder.permanentlyDelete">Permanently
+                            Delete
+                            this Course</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Direita: Capa e Publicação -->
+            <div class="right-col">
+                <div class="card">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 data-i18n="courseBuilder.courseCover">Course Cover</h3>
+                            <p data-i18n="courseBuilder.courseCoverDesc"> <span
+                                    data-i18n="courseBuilder.courseCoverDesc">Upload an image. If left blank, it will
+                                    use
+                                    the Landing Page cover.</span> </p>
+                        </div>
+                        <span id="course-status-badge"
+                            style="background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;"
+                            data-i18n="courseBuilder.draft"> <span data-i18n="courseBuilder.draft">Draft</span> </span>
+                    </div>
+                    <div class="cover-preview" id="cover-preview" style="position:relative;">
+                        <i class="fas fa-image" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <button onclick="document.getElementById('course-thumb-upload').click()"
+                            style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;"><i
+                                class="fas fa-upload"></i> <span data-i18n="change">Change</span></button>
+                        <input type="file" id="course-thumb-upload" accept="image/*" style="display:none;"
+                            onchange="handleCourseThumbUpload(event)">
+                    </div>
+                    <p style="font-size: 0.85rem; color: #64748b; text-align: center; margin-top: 10px;"
+                        id="cover-status-text" data-i18n="courseBuilder.coverNotSelected">(Cover not selected)</p>
+
+                    <div style="display:flex; gap:10px; margin-top: 20px;">
+                        <button id="btn-save-draft" class="publish-btn"
+                            style="flex:1; background: #e2e8f0; color: #1e293b; margin-top:0;" onclick="saveDraft()">
+                            <i class="fas fa-save"></i> Save Draft
+                        </button>
+                        <button id="btn-publish" class="publish-btn" style="flex:2; margin-top:0;"
+                            onclick="publishCourse()">
+                            <i class="fas fa-globe"></i> Publish Course
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e293b;"><i class="fas fa-info-circle"></i> How does it work?
+                    </h4>
+                    <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin: 0;">
+                        1. Define the basic information.<br><br>
+                        2. Create your Landing Page. When published, it will be the showcase of this course.<br><br>
+                        3. Create the Modules (Classes/Videos).<br><br>
+                        4. When everything is ready, publish the Course so it appears in the Marketplace and students
+                        can
+                        enroll!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!--student-section-->
+
+        <section class="student-section">
+            <div class="card" id="students-section">
                 <div class="card-header">
-                    <h3> <span data-i18n="courseBuilder.constructionLayout">Construction and Layout</span> </h3>
-                    <p> <span data-i18n="courseBuilder.whatToEdit">What do you want to edit now?</span> </p>
+                    <h3 data-i18n="courseBuilder.inviteStudents">Invite Students</h3>
+                    <p data-i18n="courseBuilder.inviteStudentsDesc"> <span
+                            data-i18n="courseBuilder.inviteStudentsDesc">Manually enroll users directly into this
+                            course.</span> </p>
                 </div>
-                
-                <!-- Grid Wrapper para Construção Lado-a-Lado -->
-                <div id="construction-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-                    <!-- Container de Landing Page -->
-                    <div id="lp-action-container">
-                        <div class="action-card" onclick="goToLandingPageBuilder()">
-                            <i class="fas fa-desktop"></i>
-                            <h4> <span data-i18n="courseBuilder.createLandingPage">Create Landing Page</span> </h4>
-                            <p> <span data-i18n="courseBuilder.landingPageDesc">The design of your course's sales page.</span> </p>
-                        </div>
-                    </div>
-
-                    <!-- Container de Módulos -->
-                    <div id="modules-action-container">
-                        <div class="action-card" onclick="openModuleModal()">
-                            <i class="fas fa-photo-video"></i>
-                            <h4> <span data-i18n="courseBuilder.createModules">Create Modules</span> </h4>
-                            <p> <span data-i18n="courseBuilder.createModulesDesc">The classes and videos of the course content.</span> </p>
-                        </div>
+                <div class="form-group" style="position: relative;">
+                    <input type="text" id="new-student-search" data-i18n-placeholder="courseBuilder.searchUser"
+                        placeholder="Search user by name or email..."
+                        style="width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem;"
+                        oninput="searchUsersForRole(this.value, 'student')"
+                        onfocus="searchUsersForRole(this.value, 'student')">
+                    <div id="student-search-results"
+                        style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10;">
                     </div>
                 </div>
-            </div>
 
-            <!-- Danger Zone -->
-            <div class="card" style="border-color: #fecaca; background: #fffafb;">
-                <div class="card-header" style="border-color: #fecaca;">
-                    <h3 style="color: #ef4444;"> <span data-i18n="courseBuilder.dangerZone">Danger Zone</span> </h3>
-                    <p> <span data-i18n="courseBuilder.irreversibleActions">Irreversible actions for this course.</span> </p>
+                <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 1.1rem;"> <span
+                            data-i18n="courseBuilder.enrolledStudents">Enrolled Students</span> </h4>
+                    <input type="text" id="enrolled-student-filter"
+                        data-i18n-placeholder="courseBuilder.filterStudentsPlaceholder"
+                        placeholder="Filter enrolled students..."
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px;"
+                        oninput="filterEnrolledStudents()">
+                    <ul id="students-list"
+                        style="list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
+                        <!-- Injected by JS -->
+                    </ul>
                 </div>
-                <button onclick="deleteCourse()" style="padding: 12px; background: none; border: 2px solid #ef4444; color: #ef4444; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;" onmouseover="this.style.background='#ef4444'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='#ef4444'">
-                    <i class="fas fa-trash"></i> <span data-i18n="courseBuilder.permanentlyDelete">Permanently Delete this Course</span>
-                </button>
             </div>
-        </div>
-
-        <!-- Direita: Capa e Publicação -->
-        <div class="right-col">
-            <div class="card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div class="card" style="grid-row: 1 / -1; padding: 30px;">
+                <!-- Room Management Header -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
                     <div>
-                        <h3 data-i18n="courseBuilder.courseCover">Course Cover</h3>
-                        <p data-i18n="courseBuilder.courseCoverDesc"> <span data-i18n="courseBuilder.courseCoverDesc">Upload an image. If left blank, it will use the Landing Page cover.</span> </p>
+                        <h3 style="margin:0; color:#1e293b; font-size:1.3rem;"><i class="fas fa-cube" style="color:#497aa7; margin-right:8px;"></i>3D World Rooms</h3>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:0.85rem;">Create and manage isolated rooms for the 3D multiplayer environment.</p>
                     </div>
-                    <span id="course-status-badge" style="background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;" data-i18n="courseBuilder.draft"> <span data-i18n="courseBuilder.draft">Draft</span> </span>
-                </div>
-                <div class="cover-preview" id="cover-preview" style="position:relative;">
-                    <i class="fas fa-image" style="font-size: 3rem; opacity: 0.5;"></i>
-                    <button onclick="document.getElementById('course-thumb-upload').click()" style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;"><i class="fas fa-upload"></i> <span data-i18n="change">Change</span></button>
-                    <input type="file" id="course-thumb-upload" accept="image/*" style="display:none;" onchange="handleCourseThumbUpload(event)">
-                </div>
-                <p style="font-size: 0.85rem; color: #64748b; text-align: center; margin-top: 10px;" id="cover-status-text" data-i18n="courseBuilder.coverNotSelected">(Cover not selected)</p>
-                
-                <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <button id="btn-save-draft" class="publish-btn" style="flex:1; background: #e2e8f0; color: #1e293b; margin-top:0;" onclick="saveDraft()">
-                        <i class="fas fa-save"></i> Save Draft
-                    </button>
-                    <button id="btn-publish" class="publish-btn" style="flex:2; margin-top:0;" onclick="publishCourse()">
-                        <i class="fas fa-globe"></i> Publish Course
+                    <button onclick="createNewRoom()"
+                        style="padding:10px 20px; background:#497aa7; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s; white-space:nowrap;"
+                        onmouseover="this.style.background='#3b6a94'" onmouseout="this.style.background='#497aa7'">
+                        <i class="fas fa-plus"></i> Create Room
                     </button>
                 </div>
+
+                <!-- Rooms Dashboard Stats -->
+                <div id="rooms-dashboard"></div>
+
+                <!-- Rooms Grid -->
+                <div id="rooms-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+                    <div style="text-align:center; padding:40px 20px; color:#94a3b8; grid-column: 1 / -1;">
+                        <i class="fas fa-door-open" style="font-size:3rem; margin-bottom:15px; opacity:0.4;"></i>
+                        <p style="margin:0; font-size:0.95rem;">Loading rooms...</p>
+                    </div>
+                </div>
+
+                <!-- Room Editor Panel (appears when a room is selected) -->
+                <div id="room-editor-panel" class="card" style="display:none; border:1px solid #e2e8f0; border-radius:12px; padding:25px; box-shadow:0 4px 6px rgba(0,0,0,0.05); margin-top:10px;">
+                    <!-- Content injected by rooms_manager.js -->
+                </div>
             </div>
-            
-            <div class="card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                <h4 style="margin: 0 0 10px 0; color: #1e293b;"><i class="fas fa-info-circle"></i> How does it work?</h4>
-                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin: 0;">
-                    1. Define the basic information.<br><br>
-                    2. Create your Landing Page. When published, it will be the showcase of this course.<br><br>
-                    3. Create the Modules (Classes/Videos).<br><br>
-                    4. When everything is ready, publish the Course so it appears in the Marketplace and students can enroll!
-                </p>
-            </div>
-        </div>
+        </section>
     </div>
 
     <!-- Gerenciador de Módulos do Curso -->
-    <div id="module-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:800px; border-radius:15px; padding:30px; position:relative; max-height: 90vh; overflow-y: auto;">
-            <button onclick="closeModuleModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;"><i class="fas fa-times"></i></button>
+    <div id="module-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+        <div
+            style="background:white; width:90%; max-width:800px; border-radius:15px; padding:30px; position:relative; max-height: 90vh; overflow-y: auto;">
+            <button onclick="closeModuleModal()"
+                style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;"><i
+                    class="fas fa-times"></i></button>
             <h2 style="color:#1e293b; margin-top:0;" data-i18n="courseBuilder.courseModules">Course Modules</h2>
             <p style="color:#64748b;">Manage the exclusive modules of this course track.</p>
-            
+
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h4 style="margin:0; font-size:1.1rem; color:#1e293b;">Modules Linked to this Course</h4>
-                <button onclick="openModuleEditor()" style="padding: 10px 20px; background: #497aa7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+ Create New Module</button>
+                <button onclick="openModuleEditor()"
+                    style="padding: 10px 20px; background: #497aa7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+
+                    Create New Module</button>
             </div>
 
             <div style="background:#f8fafc; padding:20px; border-radius:10px; border: 1px solid #e2e8f0;">
-                <div id="modules-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">
+                <div id="modules-list"
+                    style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">
                     <!-- Módulos atrelados aparecerão aqui -->
                 </div>
             </div>
@@ -211,13 +492,19 @@
     </div>
 
     <!-- Modal de Player de Vídeo -->
-    <div id="video-player-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;">
-        <div style="width:90%; max-width:1000px; position:relative; border-radius:12px; overflow:hidden; background:black; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:15px 20px;">
+    <div id="video-player-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;">
+        <div
+            style="width:90%; max-width:1000px; position:relative; border-radius:12px; overflow:hidden; background:black; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:15px 20px;">
                 <h3 id="video-player-title" style="margin:0; color:white; font-size:1.1rem;">Watch Video</h3>
-                <button onclick="closeVideoPlayer()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <button onclick="closeVideoPlayer()"
+                    style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><i
+                        class="fas fa-times"></i></button>
             </div>
-            <div id="video-player-container" style="position:relative; width:100%; padding-bottom:56.25%;"> <!-- 16:9 aspect ratio -->
+            <div id="video-player-container" style="position:relative; width:100%; padding-bottom:56.25%;">
+                <!-- 16:9 aspect ratio -->
                 <!-- Iframe injetado aqui -->
             </div>
         </div>
@@ -229,37 +516,70 @@
             <!-- Header do Gerenciador -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
                 <div>
-                    <h1 style="margin: 0; color: #1e293b; font-size: 2rem;" data-i18n="courseBuilder.courseModules">Course Modules</h1>
-                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 1rem;"><span id="modules-count-header">0</span> <span data-i18n="courseBuilder.modulesCreated">modules created</span></p>
+                    <h1 style="margin: 0; color: #1e293b; font-size: 2rem;" data-i18n="courseBuilder.courseModules">
+                        Course Modules</h1>
+                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 1rem;"><span
+                            id="modules-count-header">0</span> <span data-i18n="courseBuilder.modulesCreated">modules
+                            created</span></p>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button id="btn-create-simulation" onclick="goToSimulationBuilder()" style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fas fa-flask"></i> <span id="btn-simulation-label">+ Create Simulation Field</span></button>
-                    <button id="btn-create-module" onclick="openModuleEditor(null)" style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;" data-i18n="courseBuilder.createModule"> <span data-i18n="courseBuilder.createModuleBtn">+ Create Module</span> </button>
-                    <button onclick="closeModuleEditor()" style="padding: 10px 20px; background: white; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer;" data-i18n="courseBuilder.backToCourse"> <span data-i18n="courseBuilder.backToCourse">Back to Course</span> </button>
+                    <button id="btn-create-simulation" onclick="goToSimulationBuilder()"
+                        style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;"><i
+                            class="fas fa-flask"></i> <span id="btn-simulation-label">+ Create Simulation
+                            Field</span></button>
+                    <button id="btn-create-module" onclick="openModuleEditor(null)"
+                        style="padding: 10px 20px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;"
+                        data-i18n="courseBuilder.createModule"> <span data-i18n="courseBuilder.createModuleBtn">+ Create
+                            Module</span> </button>
+                    <button onclick="closeModuleEditor()"
+                        style="padding: 10px 20px; background: white; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer;"
+                        data-i18n="courseBuilder.backToCourse"> <span data-i18n="courseBuilder.backToCourse">Back to
+                            Course</span> </button>
                 </div>
             </div>
 
             <!-- Grid de Módulos -->
-            <div id="modules-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px; margin-bottom:40px;">
+            <div id="modules-grid-container"
+                style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px; margin-bottom:40px;">
                 <!-- Módulos renderizados aqui -->
             </div>
 
             <!-- Painel de Edição (Apenas visível se um módulo estiver selecionado) -->
-            <div id="active-module-editor" style="display:none; position:relative; background:white; border:1px solid #e2e8f0; border-radius:12px; padding:30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px; flex-wrap: wrap; gap: 15px;">
-                    <h2 id="editor-title" style="margin:0; color:#1e293b; font-size: 1.5rem;" data-i18n="courseBuilder.editModule">Edit Module</h2>
+            <div id="active-module-editor"
+                style="display:none; position:relative; background:white; border:1px solid #e2e8f0; border-radius:12px; padding:30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px; flex-wrap: wrap; gap: 15px;">
+                    <h2 id="editor-title" style="margin:0; color:#1e293b; font-size: 1.5rem;"
+                        data-i18n="courseBuilder.editModule">Edit Module</h2>
                     <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                        <button onclick="document.getElementById('module-basics-form').requestSubmit()" style="background:#cf982e; color:white; border:none; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Module</button>
+                        <button onclick="document.getElementById('module-basics-form').requestSubmit()"
+                            style="background:#cf982e; color:white; border:none; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">Save
+                            Module</button>
                     </div>
                 </div>
 
                 <!-- Abas Horizontais -->
-                <div style="display:flex; gap:30px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x: auto;">
-                    <button class="module-tab-btn active" data-tab="basics" onclick="switchModuleTab('basics')" style="background:none; border:none; font-weight:bold; color:#cf982e; cursor:pointer; padding-bottom:10px; border-bottom:3px solid #cf982e; margin-bottom:-12px;" data-i18n="courseBuilder.tabGeneral"> <span data-i18n="courseBuilder.general">General</span> </button>
-                    <button class="module-tab-btn" data-tab="videos" onclick="switchModuleTab('videos')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;" data-i18n="courseBuilder.tabVideos"> <span data-i18n="courseBuilder.videos">Videos</span> </button>
-                    <button class="module-tab-btn" data-tab="docs" onclick="switchModuleTab('docs')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;" data-i18n="courseBuilder.tabDocs"> <span data-i18n="courseBuilder.documents">Documents</span> </button>
-                    <button class="module-tab-btn" data-tab="quiz" onclick="switchModuleTab('quiz')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;" data-i18n="courseBuilder.tabQuiz"> <span data-i18n="courseBuilder.quizAi">Quiz & AI</span> </button>
-                    <button class="module-tab-btn" data-tab="cover" onclick="switchModuleTab('cover')" style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;" data-i18n="courseBuilder.tabCover"> <span data-i18n="courseBuilder.cover">Cover</span> </button>
+                <div
+                    style="display:flex; gap:30px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x: auto;">
+                    <button class="module-tab-btn active" data-tab="basics" onclick="switchModuleTab('basics')"
+                        style="background:none; border:none; font-weight:bold; color:#cf982e; cursor:pointer; padding-bottom:10px; border-bottom:3px solid #cf982e; margin-bottom:-12px;"
+                        data-i18n="courseBuilder.tabGeneral"> <span data-i18n="courseBuilder.general">General</span>
+                    </button>
+                    <button class="module-tab-btn" data-tab="videos" onclick="switchModuleTab('videos')"
+                        style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;"
+                        data-i18n="courseBuilder.tabVideos"> <span data-i18n="courseBuilder.videos">Videos</span>
+                    </button>
+                    <button class="module-tab-btn" data-tab="docs" onclick="switchModuleTab('docs')"
+                        style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;"
+                        data-i18n="courseBuilder.tabDocs"> <span data-i18n="courseBuilder.documents">Documents</span>
+                    </button>
+                    <button class="module-tab-btn" data-tab="quiz" onclick="switchModuleTab('quiz')"
+                        style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;"
+                        data-i18n="courseBuilder.tabQuiz"> <span data-i18n="courseBuilder.quizAi">Quiz & AI</span>
+                    </button>
+                    <button class="module-tab-btn" data-tab="cover" onclick="switchModuleTab('cover')"
+                        style="background:none; border:none; font-weight:bold; color:#64748b; cursor:pointer; padding-bottom:10px; border-bottom:3px solid transparent; margin-bottom:-12px;"
+                        data-i18n="courseBuilder.tabCover"> <span data-i18n="courseBuilder.cover">Cover</span> </button>
                 </div>
 
                 <!-- Conteúdos das Abas -->
@@ -268,23 +588,35 @@
                     <div class="module-tab-pane" id="pane-basics">
                         <form id="module-basics-form" onsubmit="event.preventDefault(); saveModuleBasics();">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;" data-i18n="courseBuilder.moduleTitle"> <span data-i18n="courseBuilder.moduleTitle">Module Title</span> </label>
-                                <input type="text" id="m-title" required placeholder="Ex: Course Introduction" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;"
+                                    data-i18n="courseBuilder.moduleTitle"> <span
+                                        data-i18n="courseBuilder.moduleTitle">Module Title</span> </label>
+                                <input type="text" id="m-title" required placeholder="Ex: Course Introduction"
+                                    style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;">
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;" data-i18n="courseBuilder.description">Description</label>
-                                <textarea id="m-description" rows="4" data-i18n-placeholder="courseBuilder.descriptionOfCovered" placeholder="Description of what will be covered..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px; font-family: inherit;"></textarea>
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;"
+                                    data-i18n="courseBuilder.description">Description</label>
+                                <textarea id="m-description" rows="4"
+                                    data-i18n-placeholder="courseBuilder.descriptionOfCovered"
+                                    placeholder="Description of what will be covered..."
+                                    style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px; font-family: inherit;"></textarea>
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;" data-i18n="courseBuilder.status"> <span data-i18n="courseBuilder.status">Status</span> </label>
-                                <select id="m-status" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;"
+                                    data-i18n="courseBuilder.status"> <span
+                                        data-i18n="courseBuilder.status">Status</span> </label>
+                                <select id="m-status"
+                                    style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;">
                                     <option value="DRAFT"> <span data-i18n="courseBuilder.draft">Draft</span> </option>
                                     <option value="PUBLISHED" data-i18n="courseBuilder.published">Published</option>
                                     <option value="ARCHIVED">Archived</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 15px; margin-top: 20px;">
-                                <button type="button" id="btn-delete-module" onclick="deleteModuleFromDB()" style="padding: 12px 20px; background: white; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; font-weight: bold; cursor: pointer; display: none;">Delete Module</button>
+                                <button type="button" id="btn-delete-module" onclick="deleteModuleFromDB()"
+                                    style="padding: 12px 20px; background: white; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; font-weight: bold; cursor: pointer; display: none;">Delete
+                                    Module</button>
                             </div>
                         </form>
                     </div>
@@ -293,17 +625,29 @@
                     <div class="module-tab-pane" id="pane-cover" style="display: none;">
                         <form id="module-cover-form" onsubmit="event.preventDefault(); saveModuleCover();">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Cover Image URL</label>
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Cover
+                                    Image URL</label>
                                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                                    <input type="text" id="m-coverImage" placeholder="https://..." style="flex:1; padding:12px; border:1px solid #cbd5e1; border-radius:8px;" oninput="updateCoverPreview()">
-                                    <input type="file" id="m-coverImage-file" style="display:none;" accept="image/*" onchange="handleCoverUpload(event)">
-                                    <button type="button" id="btn-upload-cover" onclick="document.getElementById('m-coverImage-file').click()" style="background:#e2e8f0; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#475569;"><i class="fas fa-upload"></i> Upload</button>
-                                    <button type="button" onclick="removeCoverImage()" style="background:#fee2e2; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#ef4444;" title="Remove Cover Image"><i class="fas fa-trash"></i></button>
+                                    <input type="text" id="m-coverImage" placeholder="https://..."
+                                        style="flex:1; padding:12px; border:1px solid #cbd5e1; border-radius:8px;"
+                                        oninput="updateCoverPreview()">
+                                    <input type="file" id="m-coverImage-file" style="display:none;" accept="image/*"
+                                        onchange="handleCoverUpload(event)">
+                                    <button type="button" id="btn-upload-cover"
+                                        onclick="document.getElementById('m-coverImage-file').click()"
+                                        style="background:#e2e8f0; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#475569;"><i
+                                            class="fas fa-upload"></i> Upload</button>
+                                    <button type="button" onclick="removeCoverImage()"
+                                        style="background:#fee2e2; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#ef4444;"
+                                        title="Remove Cover Image"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title Font</label>
-                                <select id="m-titleFont" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;" onchange="updateCoverPreview()">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title
+                                    Font</label>
+                                <select id="m-titleFont"
+                                    style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;"
+                                    onchange="updateCoverPreview()">
                                     <option value="inherit">Default Font</option>
                                     <option value="'Inter', sans-serif">Inter</option>
                                     <option value="'Roboto', sans-serif">Roboto</option>
@@ -313,142 +657,213 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Text Color</label>
-                                <input type="color" id="m-textColor" value="#ffffff" style="width:100%; height:45px; padding:2px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;" onchange="updateCoverPreview()" oninput="updateCoverPreview()">
+                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Text
+                                    Color</label>
+                                <input type="color" id="m-textColor" value="#ffffff"
+                                    style="width:100%; height:45px; padding:2px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;"
+                                    onchange="updateCoverPreview()" oninput="updateCoverPreview()">
                             </div>
-                            
+
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Preview</label>
-                                <div id="cover-preview-box" style="width: 100%; aspect-ratio: 1; border-radius: 16px; background-color: #1e293b; background-size: cover; background-position: center; margin-bottom: 15px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 20px;">
-                                    <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0;"></div>
-                                    <h3 id="cover-preview-title" style="position: relative; z-index: 10; margin: 0; font-size: 1.5rem; color: #ffffff; font-family: inherit;">Preview Title</h3>
+                                <label
+                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Preview</label>
+                                <div id="cover-preview-box"
+                                    style="width: 100%; aspect-ratio: 1; border-radius: 16px; background-color: #1e293b; background-size: cover; background-position: center; margin-bottom: 15px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 20px;">
+                                    <div
+                                        style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0;">
+                                    </div>
+                                    <h3 id="cover-preview-title"
+                                        style="position: relative; z-index: 10; margin: 0; font-size: 1.5rem; color: #ffffff; font-family: inherit;">
+                                        Preview Title</h3>
                                 </div>
                             </div>
-                            <button type="submit" style="width: 100%; padding: 12px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;">Save Cover Layout</button>
+                            <button type="submit"
+                                style="width: 100%; padding: 12px; background: #cf982e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;">Save
+                                Cover Layout</button>
                         </form>
                     </div>
 
                     <!-- Videos Pane -->
                     <div class="module-tab-pane" id="pane-videos" style="display: none;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
                             <h3 style="margin:0; color:#1e293b;">Module Videos</h3>
-                            <button onclick="showAddVideoForm()" style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i class="fas fa-video"></i> + Video</button>
+                            <button onclick="showAddVideoForm()"
+                                style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
+                                    class="fas fa-video"></i> + Video</button>
                         </div>
                         <div id="v-list" style="display: flex; flex-direction: column; gap: 15px;">
                             <p style="color: #64748b; text-align: center;">No video added.</p>
                         </div>
-                        
+
                         <!-- Form Add Vídeo -->
-                        <div id="add-video-form" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
+                        <div id="add-video-form"
+                            style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
                             <h4 style="margin-top: 0;">New Video</h4>
-                            
-                            <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title and Description</label>
-                            <input type="text" id="v-title-input" placeholder="Video Title" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom: 10px;">
-                            <textarea id="v-desc-input" placeholder="Video description" rows="2" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom: 15px; font-family: inherit;"></textarea>
-                            
-                            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                                <label style="display:block; margin-bottom:10px; color:#475569; font-weight:bold;">Option 1: Upload File from Computer</label>
-                                <input type="file" id="v-upload-input" accept="video/*" style="display: none;" onchange="handleVideoUpload(event)">
-                                <button type="button" id="btn-upload-video" onclick="document.getElementById('v-upload-input').click()" style="padding: 10px 15px; background: #f8fafc; color: #497aa7; border: 1px dashed #497aa7; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 15px;"><i class="fas fa-upload"></i> Choose Video from Computer</button>
-                                
-                                <div style="text-align: center; color: #94a3b8; font-weight: bold; margin-bottom: 15px;">OR</div>
-                                
-                                <label style="display:block; margin-bottom:10px; color:#475569; font-weight:bold;">Option 2: Use External Link</label>
-                                <input type="text" id="v-url-input" placeholder="Video URL (YouTube, Vimeo, OneDrive, SharePoint, direct MP4, etc.)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+
+                            <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title and
+                                Description</label>
+                            <input type="text" id="v-title-input" placeholder="Video Title"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom: 10px;">
+                            <textarea id="v-desc-input" placeholder="Video description" rows="2"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom: 15px; font-family: inherit;"></textarea>
+
+                            <div
+                                style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                                <label
+                                    style="display:block; margin-bottom:10px; color:#475569; font-weight:bold;">Option
+                                    1: Upload File from Computer</label>
+                                <input type="file" id="v-upload-input" accept="video/*" style="display: none;"
+                                    onchange="handleVideoUpload(event)">
+                                <button type="button" id="btn-upload-video"
+                                    onclick="document.getElementById('v-upload-input').click()"
+                                    style="padding: 10px 15px; background: #f8fafc; color: #497aa7; border: 1px dashed #497aa7; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 15px;"><i
+                                        class="fas fa-upload"></i> Choose Video from Computer</button>
+
+                                <div
+                                    style="text-align: center; color: #94a3b8; font-weight: bold; margin-bottom: 15px;">
+                                    OR</div>
+
+                                <label
+                                    style="display:block; margin-bottom:10px; color:#475569; font-weight:bold;">Option
+                                    2: Use External Link</label>
+                                <input type="text" id="v-url-input"
+                                    placeholder="Video URL (YouTube, Vimeo, OneDrive, SharePoint, direct MP4, etc.)"
+                                    style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="submitAddVideo()" style="padding: 10px 15px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save Video</button>
-                                <button onclick="hideAddVideoForm()" style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                                <button onclick="submitAddVideo()"
+                                    style="padding: 10px 15px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save
+                                    Video</button>
+                                <button onclick="hideAddVideoForm()"
+                                    style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Docs Pane -->
                     <div class="module-tab-pane" id="pane-docs" style="display: none;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-wrap:wrap; gap:10px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-wrap:wrap; gap:10px;">
                             <h3 style="margin:0; color:#1e293b;">Support Materials</h3>
                             <div style="display:flex; gap:8px;">
-                                <button class="doc-filter-btn active" data-filter="all" onclick="setDocFilter('all')" style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#1e293b;">All</button>
-                                <button class="doc-filter-btn" data-filter="pdf" onclick="setDocFilter('pdf')" style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PDF</button>
-                                <button class="doc-filter-btn" data-filter="word" onclick="setDocFilter('word')" style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Word</button>
-                                <button class="doc-filter-btn" data-filter="image" onclick="setDocFilter('image')" style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Images</button>
-                                <button class="doc-filter-btn" data-filter="ppt" onclick="setDocFilter('ppt')" style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PowerPoint</button>
+                                <button class="doc-filter-btn active" data-filter="all" onclick="setDocFilter('all')"
+                                    style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#1e293b;">All</button>
+                                <button class="doc-filter-btn" data-filter="pdf" onclick="setDocFilter('pdf')"
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PDF</button>
+                                <button class="doc-filter-btn" data-filter="word" onclick="setDocFilter('word')"
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Word</button>
+                                <button class="doc-filter-btn" data-filter="image" onclick="setDocFilter('image')"
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Images</button>
+                                <button class="doc-filter-btn" data-filter="ppt" onclick="setDocFilter('ppt')"
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PowerPoint</button>
                             </div>
-                            <button id="btn-add-doc" onclick="document.getElementById('doc-upload-input').click()" style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i class="fas fa-file-alt"></i> + Doc</button>
+                            <button id="btn-add-doc" onclick="document.getElementById('doc-upload-input').click()"
+                                style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
+                                    class="fas fa-file-alt"></i> + Doc</button>
                         </div>
-                        <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,image/*,video/*" multiple style="display: none;" onchange="handleDocUpload(event)">
-                        
+                        <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,image/*,video/*" multiple
+                            style="display: none;" onchange="handleDocUpload(event)">
+
                         <div id="d-list" style="display: flex; flex-direction: column; gap: 15px;">
                             <p style="color: #64748b; text-align: center;">No document added.</p>
                         </div>
-                        
-                        <div id="d-grid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;"></div>
+
+                        <div id="d-grid"
+                            style="display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+                        </div>
                     </div>
 
                     <!-- Quiz Pane -->
                     <div class="module-tab-pane" id="pane-quiz" style="display: none;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
                             <h3 style="margin:0; color:#1e293b;">Quiz Manager</h3>
                             <div style="display:flex; gap:10px;">
-                                <button onclick="showCreateQuizForm()" style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i class="fas fa-plus"></i> New Empty Quiz</button>
-                                <button onclick="showGenerateAiQuizForm()" style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#8b5cf6;"><i class="fas fa-robot"></i> Generate AI Quiz</button>
+                                <button onclick="showCreateQuizForm()"
+                                    style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
+                                        class="fas fa-plus"></i> New Empty Quiz</button>
+                                <button onclick="showGenerateAiQuizForm()"
+                                    style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#8b5cf6;"><i
+                                        class="fas fa-robot"></i> Generate AI Quiz</button>
                             </div>
                         </div>
                         <div id="q-list">
                             <p style="color: #64748b; text-align: center;">No questions in the quiz.</p>
                         </div>
-                        
+
                         <div style="margin-top: 20px; display: none; gap: 10px; justify-content: center;">
                             <!-- Removed redundant Adicionar Pergunta button -->
                         </div>
 
                         <!-- Form Manual Quiz -->
-                        <div id="manual-quiz-form" style="display: none; background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                        <div id="manual-quiz-form"
+                            style="display: none; background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                             <h4 style="margin-top: 0; color: #1e293b;">New Question</h4>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Question</label>
-                                <textarea id="manual-q-text" rows="2" placeholder="Type the question here..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:15px; font-family:inherit;"></textarea>
+                                <label
+                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Question</label>
+                                <textarea id="manual-q-text" rows="2" placeholder="Type the question here..."
+                                    style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:15px; font-family:inherit;"></textarea>
                             </div>
-                            
-                            <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Options (Check the correct one)</label>
-                            <div id="manual-q-options" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+
+                            <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Options
+                                (Check the correct one)</label>
+                            <div id="manual-q-options"
+                                style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="radio" name="manual-q-correct" value="0" checked>
-                                    <input type="text" class="manual-q-opt" placeholder="Option 1" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <input type="text" class="manual-q-opt" placeholder="Option 1"
+                                        style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="radio" name="manual-q-correct" value="1">
-                                    <input type="text" class="manual-q-opt" placeholder="Option 2" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <input type="text" class="manual-q-opt" placeholder="Option 2"
+                                        style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="radio" name="manual-q-correct" value="2">
-                                    <input type="text" class="manual-q-opt" placeholder="Option 3" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <input type="text" class="manual-q-opt" placeholder="Option 3"
+                                        style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="radio" name="manual-q-correct" value="3">
-                                    <input type="text" class="manual-q-opt" placeholder="Option 4" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <input type="text" class="manual-q-opt" placeholder="Option 4"
+                                        style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                                 </div>
                             </div>
-                            
+
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="submitManualQuizQuestion()" style="padding: 10px 15px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save Question</button>
-                                <button onclick="hideManualQuizForm()" style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancel</button>
+                                <button onclick="submitManualQuizQuestion()"
+                                    style="padding: 10px 15px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save
+                                    Question</button>
+                                <button onclick="hideManualQuizForm()"
+                                    style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancel</button>
                             </div>
                         </div>
-                        
+
                         <!-- Form AI Quiz -->
-                        <div id="ai-quiz-form" style="display: none; background: #f3e8ff; padding: 20px; border-radius: 8px; border: 1px solid #d8b4fe; margin-top: 20px;">
-                            <h4 style="margin-top: 0; color: #6b21a8;"><i class="fas fa-magic"></i> Generate Quiz with AI</h4>
-                            <p style="font-size: 0.9rem; color: #6b21a8;">AI will analyze the module content (title, description, videos and textual documents) to create the questions.</p>
-                            
+                        <div id="ai-quiz-form"
+                            style="display: none; background: #f3e8ff; padding: 20px; border-radius: 8px; border: 1px solid #d8b4fe; margin-top: 20px;">
+                            <h4 style="margin-top: 0; color: #6b21a8;"><i class="fas fa-magic"></i> Generate Quiz with
+                                AI</h4>
+                            <p style="font-size: 0.9rem; color: #6b21a8;">AI will analyze the module content (title,
+                                description, videos and textual documents) to create the questions.</p>
+
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                 <div>
-                                    <label style="display: block; margin-bottom: 5px; color: #4c1d95; font-weight: bold;">Number of Questions</label>
-                                    <input type="number" id="ai-q-count" value="5" min="1" max="20" style="width:100%; padding:10px; border:1px solid #d8b4fe; border-radius:6px;">
+                                    <label
+                                        style="display: block; margin-bottom: 5px; color: #4c1d95; font-weight: bold;">Number
+                                        of Questions</label>
+                                    <input type="number" id="ai-q-count" value="5" min="1" max="20"
+                                        style="width:100%; padding:10px; border:1px solid #d8b4fe; border-radius:6px;">
                                 </div>
                                 <div>
-                                    <label style="display: block; margin-bottom: 5px; color: #4c1d95; font-weight: bold;">Difficulty Level</label>
-                                    <select id="ai-q-difficulty" style="width:100%; padding:10px; border:1px solid #d8b4fe; border-radius:6px;">
+                                    <label
+                                        style="display: block; margin-bottom: 5px; color: #4c1d95; font-weight: bold;">Difficulty
+                                        Level</label>
+                                    <select id="ai-q-difficulty"
+                                        style="width:100%; padding:10px; border:1px solid #d8b4fe; border-radius:6px;">
                                         <option value="easy">Easy</option>
                                         <option value="medium" selected>Medium</option>
                                         <option value="hard">Hard</option>
@@ -456,8 +871,11 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button id="btn-submit-ai-quiz" onclick="submitAiQuiz()" style="padding: 10px 15px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Generate Questions Now</button>
-                                <button onclick="hideAiQuizForm()" style="padding: 10px 15px; background: #e9d5ff; color: #6b21a8; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancel</button>
+                                <button id="btn-submit-ai-quiz" onclick="submitAiQuiz()"
+                                    style="padding: 10px 15px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Generate
+                                    Questions Now</button>
+                                <button onclick="hideAiQuizForm()"
+                                    style="padding: 10px 15px; background: #e9d5ff; color: #6b21a8; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancel</button>
                             </div>
                         </div>
                     </div>
@@ -501,7 +919,7 @@
             }
 
             const isSaved = window.editingCourseId && !window.editingCourseId.toString().startsWith('course_');
-            
+
             if (btnCreateModule) {
                 if (!isSaved) {
                     btnCreateModule.setAttribute('disabled', 'true');
@@ -536,7 +954,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             let courseId = urlParams.get('id');
-            
+
             // Força a criação de um ID se for novo, para que a LP saiba de onde vem
             if (!courseId) {
                 courseId = 'course_' + Date.now();
@@ -546,7 +964,7 @@
             }
 
             const channelSelect = document.getElementById('course-channel');
-            
+
             // Tenta carregar os canais reais salvos no navegador ANTES de preencher o formulário
             const tokenForChannels = localStorage.getItem('token');
             fetch('/channels/my', { headers: { 'Authorization': `Bearer ${tokenForChannels}` } })
@@ -565,7 +983,7 @@
 
             const coursesLocal = JSON.parse(localStorage.getItem('published_courses') || '[]');
             let course = coursesLocal.find(c => String(c.id) === String(courseId));
-            
+
             // Tenta buscar o curso no backend se for um ID real
             if (courseId && !courseId.startsWith('course_')) {
                 try {
@@ -583,11 +1001,11 @@
                                 course = data.data;
                                 window.apiCourseData = data.data;
                             }
-                            
+
                             if (typeof updateSimulationButton === 'function') {
                                 updateSimulationButton();
                             }
-                            
+
                             // Load editors if saved course
                             loadCoEditors(window.editingCourseId);
                             loadStudents(window.editingCourseId);
@@ -597,20 +1015,20 @@
                     console.error('Erro ao buscar curso da API:', err);
                 }
             }
-            
+
             if (course) {
                 document.getElementById('course-title').value = course.title || '';
                 document.getElementById('course-desc').value = course.description || '';
-                
+
                 // Set channel
                 if (course.channelId) {
                     document.getElementById('course-channel').value = course.channelId;
                 } else if (course.CourseChannel && course.CourseChannel.length > 0) {
                     document.getElementById('course-channel').value = course.CourseChannel[0].channelId;
                 }
-                
+
                 document.getElementById('course-title-display').innerText = course.title || 'New Course';
-                
+
                 const statusBadge = document.getElementById('course-status-badge');
                 if (statusBadge) {
                     if (course.status === 'PUBLISHED') {
@@ -623,7 +1041,7 @@
                         statusBadge.style.color = '#475569';
                     }
                 }
-                
+
                 // Lógica da Capa: Se tem coverImage ou custom_thumb usa, senão usa lp_thumb
                 if (course.coverImage || course.custom_thumb || course.thumbnailUrl) {
                     const thumbUrl = course.coverImage || course.thumbnailUrl || course.custom_thumb;
@@ -641,7 +1059,7 @@
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = course.modular_content;
                     const firstImg = tempDiv.querySelector('img');
-                    if(firstImg) {
+                    if (firstImg) {
                         const bgImage = firstImg.src;
                         document.getElementById('cover-preview').style.backgroundImage = `url(${bgImage})`;
                         document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'none';
@@ -649,7 +1067,7 @@
                         course.thumb = bgImage;
                     }
                 }
-                
+
                 if (course.modules) {
                     window.courseModules = course.modules.map(m => ({
                         id: m.courseModuleId,
@@ -667,13 +1085,13 @@
                 } else {
                     window.courseModules = [];
                 }
-                
+
                 document.getElementById('btn-view-content-fast').style.display = 'flex';
                 document.querySelector('.publish-btn').innerText = 'Save Changes';
             } else {
                 window.courseModules = [];
             }
-            
+
             updateConstructionUI();
             checkCourseSaveStatus();
         });
@@ -687,7 +1105,7 @@
             // Verifica se tem Landing Page (via storage para este ID)
             const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
             let course = courses.find(c => String(c.id) === String(window.editingCourseId));
-            
+
             if (window.apiCourseData && window.apiCourseData.landingPage) {
                 if (!course) course = {};
                 course.modular_content = true;
@@ -696,14 +1114,14 @@
 
             const lpContainer = document.getElementById('lp-action-container');
             const modContainer = document.getElementById('modules-action-container');
-            
+
             const isSaved = window.editingCourseId && !window.editingCourseId.toString().startsWith('course_');
 
             if (course && course.modular_content) {
-                const lpThumbHTML = course.lp_thumb 
+                const lpThumbHTML = course.lp_thumb
                     ? `<div style="width:100%; height:120px; background-image:url(${course.lp_thumb}); background-size:cover; background-position:center; border-radius:8px 8px 0 0; border-bottom:1px solid #cbd5e1;"></div>`
                     : `<div style="width:100%; height:120px; background:#e2e8f0; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:0.9rem;">No Cover</div>`;
-                
+
                 lpContainer.innerHTML = `
                     <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; display:flex; flex-direction:column; overflow:hidden; height:100%;">
                         ${lpThumbHTML}
@@ -748,7 +1166,7 @@
                         </div>
                     </div>
                 `).join('');
-                
+
                 modContainer.innerHTML = `
                     <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:15px; height:100%;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -787,12 +1205,12 @@
             const title = document.getElementById('course-title').value;
             const desc = document.getElementById('course-desc').value;
             const channelId = document.getElementById('course-channel').value;
-            
-            if(!title && !silent) {
+
+            if (!title && !silent) {
                 alert('Please give the course a title before saving.');
                 return;
             }
-            if(!title && silent) return;
+            if (!title && silent) return;
 
             try {
                 let courseRes;
@@ -805,7 +1223,7 @@
                     };
                     if (!silent) payload.status = 'DRAFT';
                     courseRes = await apiCall(`/courses/${window.editingCourseId}`, 'PUT', payload);
-                    
+
                     if (!silent) {
                         const statusBadge = document.getElementById('course-status-badge');
                         if (statusBadge) {
@@ -824,12 +1242,12 @@
                     window.editingCourseId = courseRes.id.toString();
                     window.history.replaceState({}, '', `?id=${window.editingCourseId}`);
                 }
-                
+
                 checkCourseSaveStatus();
                 updateConstructionUI();
-                if(!silent) alert('Draft saved successfully to the database!');
+                if (!silent) alert('Draft saved successfully to the database!');
             } catch (error) {
-                if(!silent) alert('Error saving draft: ' + error.message);
+                if (!silent) alert('Error saving draft: ' + error.message);
             }
         }
 
@@ -837,7 +1255,7 @@
             const title = document.getElementById('course-title').value;
             const desc = document.getElementById('course-desc').value;
 
-            if(!title) {
+            if (!title) {
                 alert('Please give the course a title before publishing.');
                 return;
             }
@@ -859,16 +1277,16 @@
                     await apiCall(`/courses/${window.editingCourseId}`, 'PUT', { status: 'PUBLISHED' });
                     window.history.replaceState({}, '', `?id=${window.editingCourseId}`);
                 }
-                
+
                 checkCourseSaveStatus();
-                
+
                 const statusBadge = document.getElementById('course-status-badge');
                 if (statusBadge) {
                     statusBadge.innerText = 'Published';
                     statusBadge.style.background = '#10b981';
                     statusBadge.style.color = 'white';
                 }
-                
+
                 alert('Changes saved and course published!');
             } catch (error) {
                 alert('Error publishing course: ' + error.message);
@@ -876,8 +1294,8 @@
         }
 
         async function deleteLandingPage() {
-            if(!confirm("Are you sure you want to unlink and delete the Landing Page of this course?")) return;
-            
+            if (!confirm("Are you sure you want to unlink and delete the Landing Page of this course?")) return;
+
             // Apaga no backend, se existir
             if (window.apiCourseData && window.apiCourseData.landingPage) {
                 try {
@@ -888,15 +1306,15 @@
                     return; // Se falhar no servidor, aborta
                 }
             }
-            
+
             const courses = JSON.parse(localStorage.getItem('published_courses') || '[]');
             const index = courses.findIndex(c => String(c.id) === String(window.editingCourseId));
-            
+
             if (index !== -1) {
                 courses[index].modular_content = '';
                 courses[index].compiled_content = '';
                 courses[index].lp_thumb = '';
-                
+
                 // Fallback do thumb se não tiver custom thumb
                 if (!courses[index].custom_thumb) {
                     courses[index].thumb = '';
@@ -904,14 +1322,14 @@
                     document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'block';
                     document.getElementById('cover-status-text').innerText = '(Cover not selected)';
                 }
-                
+
                 localStorage.setItem('published_courses', JSON.stringify(courses));
             } else if (window.apiCourseData && !window.apiCourseData.custom_thumb && !window.apiCourseData.coverImage) {
                 document.getElementById('cover-preview').style.backgroundImage = 'none';
                 document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'block';
                 document.getElementById('cover-status-text').innerText = '(Cover not selected)';
             }
-            
+
             updateConstructionUI();
             alert("Landing Page removed!");
         }
@@ -920,32 +1338,32 @@
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const img = new Image();
-                    img.onload = function() {
+                    img.onload = function () {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
                         const MAX_WIDTH = 800; // max width
-                        
+
                         if (width > MAX_WIDTH) {
                             height = Math.round((height * MAX_WIDTH) / width);
                             width = MAX_WIDTH;
                         }
-                        
+
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
+
                         // Compress as JPEG
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        
+
                         window.courseCustomThumb = dataUrl;
                         document.getElementById('cover-preview').style.backgroundImage = `url(${dataUrl})`;
                         document.getElementById('cover-preview').querySelector('.fa-image').style.display = 'none';
                         document.getElementById('cover-status-text').innerText = '(Custom Course Cover)';
-                        
+
                         // Salvar o rascunho automaticamente para não perder a capa
                         saveDraft(true); // true = silent save
                     };
@@ -1016,11 +1434,11 @@
         async function selectUserForRole(roleType, userId, username) {
             document.getElementById(`new-${roleType}-search`).value = username;
             document.getElementById(`${roleType}-search-results`).style.display = 'none';
-            
+
             if (window.editingCourseId && window.editingCourseId.toString().startsWith('course_')) {
                 await saveDraft(true); // create the course silently first
             }
-            
+
             if (roleType === 'editor') {
                 addCoEditor(userId);
             } else if (roleType === 'student') {
@@ -1033,7 +1451,7 @@
             try {
                 const res = await fetch(`/api/courses/${window.editingCourseId}/editors`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
                     },
@@ -1057,7 +1475,7 @@
             try {
                 const res = await fetch(`/api/courses/${window.editingCourseId}/enrollments`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
                     },
@@ -1077,7 +1495,7 @@
         }
 
         window.enrolledStudentsData = [];
-        
+
         async function loadStudents(courseId) {
             try {
                 const res = await fetch(`/api/courses/${courseId}/enrollments`, {
@@ -1102,9 +1520,9 @@
         function renderEnrolledStudents() {
             const query = document.getElementById('enrolled-student-filter').value.toLowerCase();
             const list = document.getElementById('students-list');
-            
-            const filtered = window.enrolledStudentsData.filter(u => 
-                (u.username && u.username.toLowerCase().includes(query)) || 
+
+            const filtered = window.enrolledStudentsData.filter(u =>
+                (u.username && u.username.toLowerCase().includes(query)) ||
                 (u.email && u.email.toLowerCase().includes(query))
             );
 
@@ -1122,7 +1540,7 @@
 
             list.innerHTML = sorted.map(u => {
                 const isPending = u.enrollmentStatus === 'PENDING';
-                
+
                 if (isPending) {
                     return `
                         <li style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f0fdf4;">
@@ -1215,6 +1633,8 @@
         }
     </script>
     <script src="js/module_manager.js?v=external-video-open-direct-20260512"></script>
+    <script src="js/rooms_manager.js?v=20260609"></script>
     <script src="js/i18n.js"></script>
 </body>
+
 </html>

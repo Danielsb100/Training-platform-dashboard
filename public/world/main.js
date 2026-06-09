@@ -65,8 +65,9 @@ const passwordInput = document.getElementById('password-input');
 const loginError = document.getElementById('login-error');
 let AUTH_API = window.location.origin;
 const COURSE_ID_FROM_URL = new URLSearchParams(window.location.search).get('courseId') || null;
+const ROOM_ID_FROM_URL = new URLSearchParams(window.location.search).get('roomId') || null;
 document.body.classList.toggle('course-world-mode', Boolean(COURSE_ID_FROM_URL));
-window.__courseWorldContext = { courseId: COURSE_ID_FROM_URL, runtime: null };
+window.__courseWorldContext = { courseId: COURSE_ID_FROM_URL, roomId: ROOM_ID_FROM_URL, runtime: null };
 const courseRoomContextCard = document.getElementById('course-room-context');
 const courseRoomContextCourse = document.getElementById('course-room-context-course');
 const courseRoomContextRoom = document.getElementById('course-room-context-room');
@@ -598,7 +599,12 @@ async function performJoin(token, user) {
     setupSocketListeners();
 
     // Join the course room (or lobby if no courseId)
-    socket.emit('joinRoom', COURSE_ID_FROM_URL);
+    // New format: { courseId, roomId } for room-specific isolation
+    if (COURSE_ID_FROM_URL) {
+        socket.emit('joinRoom', { courseId: COURSE_ID_FROM_URL, roomId: ROOM_ID_FROM_URL });
+    } else {
+        socket.emit('joinRoom', null);
+    }
 
     // Emit initial user data
     socket.emit('setName', { name: localUsername, color: localUserColor, profilePicture: localProfilePicture });
@@ -641,6 +647,53 @@ async function performJoin(token, user) {
     } catch (e) {
         console.warn('Could not fetch user locale:', e);
     }
+
+    // Fetch room details for sidebar thumbnail if ROOM_ID_FROM_URL is present
+    if (COURSE_ID_FROM_URL && ROOM_ID_FROM_URL) {
+        try {
+            const roomRes = await fetch(`${AUTH_API}/api/courses/${COURSE_ID_FROM_URL}/rooms/my`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (roomRes.ok) {
+                const roomsData = await roomRes.json();
+                const roomsList = roomsData.data || roomsData;
+                const currentRoom = roomsList.find(r => String(r.id) === String(ROOM_ID_FROM_URL));
+                
+                if (currentRoom) {
+                    const roomNavContainer = document.getElementById('room-nav-thumbnail-container');
+                    const roomNavThumb = document.getElementById('room-nav-thumbnail');
+                    const roomNavTooltip = document.getElementById('room-nav-tooltip');
+                    
+                    if (roomNavContainer && roomNavThumb && roomNavTooltip) {
+                        if (currentRoom.thumbnail) {
+                            roomNavThumb.src = currentRoom.thumbnail;
+                        } else {
+                            // Generic room icon via ui-avatars
+                            roomNavThumb.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentRoom.title)}&background=ef4444&color=fff`;
+                        }
+                        
+                        roomNavTooltip.innerText = currentRoom.title;
+                        roomNavContainer.classList.remove('hidden');
+                        
+                        roomNavContainer.onclick = () => {
+                            window.location.href = `/room_select.html?courseId=${COURSE_ID_FROM_URL}`;
+                        };
+                        
+                        // Hover effects
+                        roomNavContainer.onmouseover = () => {
+                            roomNavTooltip.style.opacity = '1';
+                        };
+                        roomNavContainer.onmouseout = () => {
+                            roomNavTooltip.style.opacity = '0';
+                        };
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Could not fetch room details for nav thumbnail:', e);
+        }
+    }
+
 
     if (document.activeElement) document.activeElement.blur();
     window.focus();

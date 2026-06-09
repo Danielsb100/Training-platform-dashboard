@@ -663,7 +663,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     navTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             if (tab.dataset.action === 'course-world') {
-                openCourseWorld();
+                // Redirect to room selection page instead of inline iframe
+                if (courseId) {
+                    window.location.href = `/room_select.html?courseId=${courseId}`;
+                } else {
+                    alert('No course ID available for the 3D World.');
+                }
                 return;
             }
 
