@@ -7,6 +7,7 @@
     "start": "node server.js",
     "clonedb": "node scripts/sync-db.js",
     "postinstall": "prisma generate",
+    "build": "npx prisma generate && npx prisma db push",
     "shuffle-quiz-options": "node scripts/shuffleQuizOptions.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
