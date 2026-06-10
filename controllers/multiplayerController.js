@@ -5,6 +5,9 @@ const path = require('path');
 const rooms = {};
 const MAX_CHAT_LOGS = 50;
 
+// Group call state — keyed by roomId, value is Map of groupCallId -> groupCallData
+const activeGroupCalls = {};
+
 // Get or create room state for a given roomId
 function getOrCreateRoom(roomId) {
     if (!rooms[roomId]) {
@@ -206,22 +209,269 @@ module.exports = {
                 io.to(roomId).emit('playerUpdated', room.players[socket.id]);
             });
 
-            socket.on('setPeerId', (peerId) => {
+            // ===== GROUP CALL SYSTEM =====
+
+            socket.on('createGroupCall', () => {
                 const roomId = getSocketRoom(socket);
                 const room = rooms[roomId];
                 if (!room || !room.players[socket.id]) return;
 
-                room.players[socket.id].peerId = peerId;
-                socket.broadcast.to(roomId).emit('playerPeerUpdated', { id: socket.id, peerId: peerId });
+                if (!activeGroupCalls[roomId]) activeGroupCalls[roomId] = {};
+
+                const groupId = 'gc_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                const jitsiRoomName = `tp-${roomId}-${groupId}`.replace(/[^a-zA-Z0-9_-]/g, '');
+                const creatorName = room.players[socket.id].name || 'Unknown';
+
+                activeGroupCalls[roomId][groupId] = {
+                    id: groupId,
+                    creatorId: socket.id,
+                    creatorName: creatorName,
+                    members: [{ socketId: socket.id, name: creatorName }],
+                    jitsiRoomName: jitsiRoomName
+                };
+
+                room.players[socket.id].inGroupCall = groupId;
+
+                socket.emit('groupCallCreated', activeGroupCalls[roomId][groupId]);
+                io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+                io.to(roomId).emit('playerCallStatusChanged', { id: socket.id, inGroupCall: groupId });
             });
 
-            socket.on('setStreamType', (data) => {
+            socket.on('closeGroupCall', (groupId) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][groupId]) return;
+
+                const group = activeGroupCalls[roomId][groupId];
+                if (group.creatorId !== socket.id) return; // Only creator can close
+
+                // Clear inGroupCall for all members
+                group.members.forEach(m => {
+                    if (room && room.players[m.socketId]) {
+                        room.players[m.socketId].inGroupCall = null;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: m.socketId, inGroupCall: null });
+                    }
+                });
+
+                delete activeGroupCalls[roomId][groupId];
+                io.to(roomId).emit('groupCallClosed', { groupId });
+                io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+            });
+
+            socket.on('leaveGroupCall', (groupId) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][groupId]) return;
+
+                const group = activeGroupCalls[roomId][groupId];
+                group.members = group.members.filter(m => m.socketId !== socket.id);
+
+                if (room && room.players[socket.id]) {
+                    room.players[socket.id].inGroupCall = null;
+                    io.to(roomId).emit('playerCallStatusChanged', { id: socket.id, inGroupCall: null });
+                }
+
+                // If creator left or no members remain, close the group
+                if (group.creatorId === socket.id || group.members.length === 0) {
+                    group.members.forEach(m => {
+                        if (room && room.players[m.socketId]) {
+                            room.players[m.socketId].inGroupCall = null;
+                            io.to(roomId).emit('playerCallStatusChanged', { id: m.socketId, inGroupCall: null });
+                        }
+                    });
+                    delete activeGroupCalls[roomId][groupId];
+                    io.to(roomId).emit('groupCallClosed', { groupId });
+                } else {
+                    io.to(roomId).emit('memberLeftGroup', { groupId, socketId: socket.id });
+                }
+                io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+            });
+
+            socket.on('requestJoinGroup', (groupId) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][groupId]) return;
+                if (!room || !room.players[socket.id]) return;
+
+                const group = activeGroupCalls[roomId][groupId];
+                const requesterName = room.players[socket.id].name || 'Unknown';
+
+                // Send join request to the creator
+                io.to(group.creatorId).emit('joinRequest', {
+                    groupId,
+                    requesterId: socket.id,
+                    requesterName: requesterName
+                });
+            });
+
+            socket.on('respondJoinRequest', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][data.groupId]) return;
+
+                const group = activeGroupCalls[roomId][data.groupId];
+                if (group.creatorId !== socket.id) return; // Only creator can respond
+
+                if (data.accepted) {
+                    const requesterName = (room && room.players[data.requesterId])
+                        ? room.players[data.requesterId].name : 'Unknown';
+                    group.members.push({ socketId: data.requesterId, name: requesterName });
+
+                    if (room && room.players[data.requesterId]) {
+                        room.players[data.requesterId].inGroupCall = data.groupId;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: data.requesterId, inGroupCall: data.groupId });
+                    }
+
+                    io.to(data.requesterId).emit('joinRequestResponse', {
+                        accepted: true,
+                        groupId: data.groupId,
+                        jitsiRoomName: group.jitsiRoomName,
+                        creatorName: group.creatorName
+                    });
+                    io.to(roomId).emit('memberJoinedGroup', { groupId: data.groupId, socketId: data.requesterId, name: requesterName });
+                    io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+                } else {
+                    io.to(data.requesterId).emit('joinRequestResponse', {
+                        accepted: false,
+                        groupId: data.groupId
+                    });
+                }
+            });
+
+            socket.on('inviteToGroup', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][data.groupId]) return;
+                if (!room || !room.players[socket.id]) return;
+
+                const inviterName = room.players[socket.id].name || 'Unknown';
+                io.to(data.targetSocketId).emit('groupInvite', {
+                    groupId: data.groupId,
+                    inviterId: socket.id,
+                    inviterName: inviterName,
+                    jitsiRoomName: activeGroupCalls[roomId][data.groupId].jitsiRoomName
+                });
+            });
+
+            socket.on('respondGroupInvite', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!activeGroupCalls[roomId] || !activeGroupCalls[roomId][data.groupId]) return;
+
+                const group = activeGroupCalls[roomId][data.groupId];
+                const responderName = (room && room.players[socket.id]) ? room.players[socket.id].name : 'Unknown';
+
+                if (data.accepted) {
+                    group.members.push({ socketId: socket.id, name: responderName });
+                    if (room && room.players[socket.id]) {
+                        room.players[socket.id].inGroupCall = data.groupId;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: socket.id, inGroupCall: data.groupId });
+                    }
+                    io.to(roomId).emit('memberJoinedGroup', { groupId: data.groupId, socketId: socket.id, name: responderName });
+                    io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+                    socket.emit('joinRequestResponse', {
+                        accepted: true,
+                        groupId: data.groupId,
+                        jitsiRoomName: group.jitsiRoomName,
+                        creatorName: group.creatorName
+                    });
+                }
+                io.to(data.inviterId).emit('inviteResponse', { accepted: data.accepted, responderName });
+            });
+
+            // --- Direct Call (1-on-1 via Jitsi) ---
+            socket.on('directCallOffer', (data) => {
                 const roomId = getSocketRoom(socket);
                 const room = rooms[roomId];
                 if (!room || !room.players[socket.id]) return;
 
-                room.players[socket.id].isScreenShare = data.isScreenShare;
-                socket.broadcast.to(roomId).emit('streamTypeChanged', { id: socket.id, isScreenShare: data.isScreenShare });
+                // Block if caller is already in any call
+                if (room.players[socket.id].inGroupCall) {
+                    socket.emit('directCallBusy', { reason: 'You are already in a call.' });
+                    return;
+                }
+
+                // Block if target is already in any call (group or direct)
+                const targetPlayer = room.players[data.targetSocketId];
+                if (!targetPlayer) return;
+                if (targetPlayer.inGroupCall) {
+                    socket.emit('directCallBusy', { reason: 'This player is currently in a call.' });
+                    return;
+                }
+
+                const callerName = room.players[socket.id].name || 'Unknown';
+                const jitsiRoomName = `tp-direct-${[socket.id, data.targetSocketId].sort().join('-')}`.replace(/[^a-zA-Z0-9_-]/g, '');
+
+                // Track the direct call partner on the caller side immediately
+                room.players[socket.id].directCallPartner = data.targetSocketId;
+
+                io.to(data.targetSocketId).emit('directCallIncoming', {
+                    callerId: socket.id,
+                    callerName: callerName,
+                    jitsiRoomName: jitsiRoomName
+                });
+
+                socket.emit('directCallStarted', { jitsiRoomName: jitsiRoomName });
+            });
+
+            socket.on('directCallResponse', (data) => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+
+                if (data.accepted) {
+                    // Mark both parties as in a direct call
+                    const directCallTag = 'direct_' + [socket.id, data.callerId].sort().join('_');
+                    if (room && room.players[socket.id]) {
+                        room.players[socket.id].inGroupCall = directCallTag;
+                        room.players[socket.id].directCallPartner = data.callerId;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: socket.id, inGroupCall: directCallTag });
+                    }
+                    if (room && room.players[data.callerId]) {
+                        room.players[data.callerId].inGroupCall = directCallTag;
+                        room.players[data.callerId].directCallPartner = socket.id;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: data.callerId, inGroupCall: directCallTag });
+                    }
+                } else {
+                    // Call rejected — clear the caller's pending partner
+                    if (room && room.players[data.callerId]) {
+                        room.players[data.callerId].directCallPartner = null;
+                    }
+                }
+
+                io.to(data.callerId).emit('directCallAnswered', {
+                    accepted: data.accepted,
+                    responderId: socket.id
+                });
+            });
+
+            // When one side hangs up a direct call, notify ONLY the partner (not broadcast)
+            socket.on('directCallHangup', () => {
+                const roomId = getSocketRoom(socket);
+                const room = rooms[roomId];
+                if (!room) return;
+
+                const player = room.players[socket.id];
+                const partnerId = player?.directCallPartner;
+
+                // Clear caller's call state
+                if (player) {
+                    player.inGroupCall = null;
+                    player.directCallPartner = null;
+                    io.to(roomId).emit('playerCallStatusChanged', { id: socket.id, inGroupCall: null });
+                }
+
+                // Clear partner's call state and notify them
+                if (partnerId && room.players[partnerId]) {
+                    room.players[partnerId].inGroupCall = null;
+                    room.players[partnerId].directCallPartner = null;
+                    io.to(roomId).emit('playerCallStatusChanged', { id: partnerId, inGroupCall: null });
+                    io.to(partnerId).emit('directCallHangup');
+                }
+            });
+
+            socket.on('getGroupCallList', () => {
+                const roomId = getSocketRoom(socket);
+                socket.emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
             });
 
             // --- Player Movement ---
@@ -402,6 +652,41 @@ module.exports = {
             socket.on('disconnect', () => {
                 const roomId = getSocketRoom(socket);
                 const room = rooms[roomId];
+
+                // Cleanup direct call partner on disconnect
+                if (room && room.players[socket.id]) {
+                    const partnerId = room.players[socket.id].directCallPartner;
+                    if (partnerId && room.players[partnerId]) {
+                        room.players[partnerId].inGroupCall = null;
+                        room.players[partnerId].directCallPartner = null;
+                        io.to(roomId).emit('playerCallStatusChanged', { id: partnerId, inGroupCall: null });
+                        io.to(partnerId).emit('directCallHangup');
+                    }
+                }
+
+                // Cleanup group calls on disconnect
+                if (activeGroupCalls[roomId]) {
+                    for (const groupId of Object.keys(activeGroupCalls[roomId])) {
+                        const group = activeGroupCalls[roomId][groupId];
+                        if (group.creatorId === socket.id) {
+                            // Creator disconnected — close the group
+                            group.members.forEach(m => {
+                                if (room && room.players[m.socketId]) {
+                                    room.players[m.socketId].inGroupCall = null;
+                                    io.to(roomId).emit('playerCallStatusChanged', { id: m.socketId, inGroupCall: null });
+                                }
+                            });
+                            delete activeGroupCalls[roomId][groupId];
+                            io.to(roomId).emit('groupCallClosed', { groupId });
+                        } else {
+                            // Member disconnected — remove from group
+                            group.members = group.members.filter(m => m.socketId !== socket.id);
+                            io.to(roomId).emit('memberLeftGroup', { groupId, socketId: socket.id });
+                        }
+                    }
+                    io.to(roomId).emit('groupCallList', Object.values(activeGroupCalls[roomId] || {}));
+                }
+
                 if (room) {
                     console.log(`User ${socket.id} disconnected from room: ${roomId}`);
                     delete room.players[socket.id];
@@ -410,6 +695,7 @@ module.exports = {
                     // Cleanup: destroy room if empty to free memory
                     if (Object.keys(room.players).length === 0) {
                         delete rooms[roomId];
+                        if (activeGroupCalls[roomId]) delete activeGroupCalls[roomId];
                         console.log(`[Rooms] Room ${roomId} destroyed (empty)`);
                     }
                 } else {

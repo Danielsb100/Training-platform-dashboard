@@ -22,7 +22,7 @@
             }
         }
     </script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://jitsi.riot.im/external_api.js"></script>
 </head>
 
 <body>
@@ -208,6 +208,7 @@
                 </svg>
             </button>
             <button id="btn-toggle-chat" class="sidebar-btn" title="Toggle Chat">💬</button>
+            <button id="btn-toggle-groups" class="sidebar-btn" title="Group Calls">📹</button>
         </div>
     </div>
 
@@ -221,14 +222,13 @@
             <div id="player-list-content"></div>
         </div>
 
-        <!-- Audio call UI Elements -->
+        <!-- Audio/Video Call UI Elements (Jitsi) -->
         <div id="audio-call-layer" class="hidden">
             <div class="audio-call-card glass">
                 <div id="video-container" class="video-grid hidden">
-                    <video id="remote-video" autoplay playsinline></video>
-                    <video id="local-video" autoplay playsinline muted></video>
+                    <div id="jitsi-meet-container"></div>
                 </div>
-                <h2 id="calling-name">Chamando...</h2>
+                <h2 id="calling-name">In Call...</h2>
                 <div id="call-timer" class="call-timer">00:00</div>
                 <div class="audio-visualizer">
                     <div class="bar"></div>
@@ -242,8 +242,23 @@
                     <button id="btn-screen" class="secondary-btn" title="Share Screen">🖥️</button>
                     <button id="btn-mute" class="secondary-btn" title="Toggle Mute">🎤</button>
                     <button id="btn-expand" class="secondary-btn" title="Fullscreen">⛶</button>
-                    <button id="btn-hangup" class="danger-btn" title="Hangup">✖</button>
+                    <button id="btn-hangup" class="danger-btn" title="Leave Call">✖</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Group Call List Container -->
+        <div id="group-call-container" class="hidden">
+            <div class="group-call-header">
+                <h3>Group Calls</h3>
+            </div>
+            <div id="group-call-actions">
+                <button id="btn-create-group" class="create-group-btn">
+                    <span>＋</span> Create Group Call
+                </button>
+            </div>
+            <div id="group-call-list">
+                <!-- Active groups listed here by JS -->
             </div>
         </div>
 
@@ -534,18 +549,38 @@
 
 
 
-    <!-- Incoming Call Notification -->
-    <div id="incoming-modal" class="modal hidden ui-layer">
+    <!-- Join Request Modal (creator receives this) -->
+    <div id="join-request-modal" class="modal hidden ui-layer">
         <div class="modal-content glass">
-            <h3>Chamada de <span id="incoming-caller">...</span></h3>
+            <h3><span id="join-requester-name">...</span> wants to join your call</h3>
             <div class="modal-actions">
-                <button id="btn-answer" class="success-btn">Atender</button>
-                <button id="btn-reject" class="danger-btn">Recusar</button>
+                <button id="btn-accept-join" class="success-btn">Accept</button>
+                <button id="btn-reject-join" class="danger-btn">Reject</button>
             </div>
         </div>
     </div>
 
-    <audio id="remote-audio" autoplay></audio>
+    <!-- Group Invite Modal (invited player receives this) -->
+    <div id="group-invite-modal" class="modal hidden ui-layer">
+        <div class="modal-content glass">
+            <h3><span id="invite-from-name">...</span> invited you to a group call</h3>
+            <div class="modal-actions">
+                <button id="btn-accept-invite" class="success-btn">Join</button>
+                <button id="btn-reject-invite" class="danger-btn">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Call Incoming Modal -->
+    <div id="incoming-modal" class="modal hidden ui-layer">
+        <div class="modal-content glass">
+            <h3>Call from <span id="incoming-caller">...</span></h3>
+            <div class="modal-actions">
+                <button id="btn-answer" class="success-btn">Answer</button>
+                <button id="btn-reject-call" class="danger-btn">Decline</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Catalog de Assets (Overlay) -->
     <div id="catalog-overlay" class="hidden ui-layer">

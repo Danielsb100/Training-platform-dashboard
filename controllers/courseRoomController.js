@@ -124,13 +124,13 @@ module.exports = {
                 return sendError(res, { status: 403, code: 'NOT_ENROLLED', message: 'You are not enrolled in this course.' });
             }
 
-            // Get rooms where user is a member
+            // Owner/editors see ALL active rooms; regular students see only rooms they are a member of
+            const whereClause = isOwnerOrEditor
+                ? { courseId, isActive: true }
+                : { courseId, isActive: true, members: { some: { userId } } };
+
             const userRooms = await prisma.courseRoom.findMany({
-                where: {
-                    courseId,
-                    isActive: true,
-                    members: { some: { userId } }
-                },
+                where: whereClause,
                 include: {
                     _count: { select: { members: true } }
                 },
@@ -244,18 +244,30 @@ module.exports = {
             // Check member limit
             const room = await prisma.courseRoom.findUnique({
                 where: { id: roomId },
-                include: { _count: { select: { members: true } } }
+                include: {
+                    _count: { select: { members: true } },
+                    course: { select: { ownerMasterId: true } }
+                }
             });
 
             if (!room) {
                 return sendError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found.' });
             }
 
-            if (room.maxMembers && (room._count.members + userIds.length > room.maxMembers)) {
+            // Exclude course owner from member count — they have implicit access and don't consume a slot
+            const ownerMasterId = room.course?.ownerMasterId;
+            const ownerIsCurrentMember = ownerMasterId
+                ? await prisma.courseRoomMember.findFirst({ where: { courseRoomId: roomId, userId: ownerMasterId } })
+                : null;
+            const effectiveMemberCount = ownerIsCurrentMember
+                ? room._count.members - 1
+                : room._count.members;
+
+            if (room.maxMembers && (effectiveMemberCount + userIds.length > room.maxMembers)) {
                 return sendError(res, {
                     status: 400,
                     code: 'MEMBER_LIMIT_EXCEEDED',
-                    message: `Room has a maximum of ${room.maxMembers} members. Currently ${room._count.members}, trying to add ${userIds.length}.`
+                    message: `Room has a maximum of ${room.maxMembers} members. Currently ${effectiveMemberCount}, trying to add ${userIds.length}.`
                 });
             }
 

@@ -232,7 +232,7 @@ let currentLoadedAssets = [];
 let isSelfModal = false;
 
 let selectedPlayerForAction = null;
-let selectedPlayerPeerId = null;
+
 // Char catalog button removed
 const menuCatalogModels = document.getElementById('menu-catalog-models');
 
@@ -261,33 +261,43 @@ if (tabLogin && tabRegister) {
     };
 }
 
-// PeerJS & Audio State
-let peer = null;
-let localStream = null;
-let currentCall = null;
-let activeRemoteStream = null;
-const peerIdToName = {};
+// Jitsi & Call State
+let jitsiApi = null;
+let isInGroupCall = false;
+let isInDirectCall = false;
+let currentGroupCallId = null;
+let isGroupCreator = false;
 let callDurationInterval = null;
 let secondsElapsed = 0;
-let audioContext = null;
-let analyser = null;
-let dataArray = null;
-let animationFrameId = null;
+let pendingDirectCallJitsiRoom = null;
 
-// Audio DOM Elements
+// Call DOM Elements
 const audioCallLayer = document.getElementById('audio-call-layer');
 const callingName = document.getElementById('calling-name');
 const callTimer = document.getElementById('call-timer');
-const remoteAudio = document.getElementById('remote-audio');
 const incomingModal = document.getElementById('incoming-modal');
 const incomingCaller = document.getElementById('incoming-caller');
 const btnMute = document.getElementById('btn-mute');
-const btnCamera = document.getElementById('btn-camera'); // New
-const btnScreen = document.getElementById('btn-screen'); // New
-const btnExpand = document.getElementById('btn-expand'); // New
+const btnCamera = document.getElementById('btn-camera');
+const btnScreen = document.getElementById('btn-screen');
+const btnExpand = document.getElementById('btn-expand');
 const btnHangup = document.getElementById('btn-hangup');
 const btnAnswer = document.getElementById('btn-answer');
-const btnReject = document.getElementById('btn-reject');
+const btnRejectCall = document.getElementById('btn-reject-call');
+
+// Group Call DOM Elements
+const groupCallContainer = document.getElementById('group-call-container');
+const groupCallList = document.getElementById('group-call-list');
+const btnCreateGroup = document.getElementById('btn-create-group');
+const btnToggleGroups = document.getElementById('btn-toggle-groups');
+const joinRequestModal = document.getElementById('join-request-modal');
+const joinRequesterName = document.getElementById('join-requester-name');
+const btnAcceptJoin = document.getElementById('btn-accept-join');
+const btnRejectJoin = document.getElementById('btn-reject-join');
+const groupInviteModal = document.getElementById('group-invite-modal');
+const inviteFromName = document.getElementById('invite-from-name');
+const btnAcceptInvite = document.getElementById('btn-accept-invite');
+const btnRejectInvite = document.getElementById('btn-reject-invite');
 
 // Sidebar Elements
 const btnToggleAiAssistant = document.getElementById('btn-toggle-ai-assistant');
@@ -296,8 +306,6 @@ const btnTogglePlayers = document.getElementById('btn-toggle-players');
 const btnToggleChat = document.getElementById('btn-toggle-chat');
 
 const videoContainer = document.getElementById('video-container');
-const remoteVideo = document.getElementById('remote-video');
-const localVideo = document.getElementById('local-video');
 
 // Player List DOM
 const playerListContainer = document.getElementById('player-list-container');
@@ -407,7 +415,7 @@ function openWorldAiTipModal(index) {
     if (!tip || !worldAiTipModal) return;
     const metadata = tip.metadata || {};
     if (worldAiTipModalTitle) worldAiTipModalTitle.textContent = tip.title || 'AI tip';
-    if (worldAiTipModalMeta) worldAiTipModalMeta.textContent = `${tip.severity || 'INFO'} · ${tip.scope || 'COURSE'}${metadata.llmGenerated ? ' · LLM generated' : ''}`;
+    if (worldAiTipModalMeta) worldAiTipModalMeta.textContent = `${tip.severity || 'INFO'} Ã‚Â· ${tip.scope || 'COURSE'}${metadata.llmGenerated ? ' Ã‚Â· LLM generated' : ''}`;
     if (worldAiTipModalSummary) worldAiTipModalSummary.textContent = tip.message || '';
     if (worldAiTipModalReason) {
         worldAiTipModalReason.textContent = tip.reason || '';
@@ -448,7 +456,7 @@ function renderWorldAiTips(payload = {}) {
         <li class="world-operations-item world-ai-tip-item" tabindex="0" role="button" data-ai-tip-index="${index}">
             <strong>${escapeWorldHtml(tip.title || 'AI tip')}</strong>
             <span>${escapeWorldHtml(tip.message || '')}</span>
-            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} · ${escapeWorldHtml(tip.scope || 'COURSE')} · View details</em>
+            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} Ã‚Â· ${escapeWorldHtml(tip.scope || 'COURSE')} Ã‚Â· View details</em>
         </li>
     `).join('');
 }
@@ -554,7 +562,7 @@ joinBtn.addEventListener('click', async () => {
 });
 
 /**
- * Funçao centralizada para entrar no mundo após ter o token
+ * FunÃƒÂ§ao centralizada para entrar no mundo apÃƒÂ³s ter o token
  */
 async function performJoin(token, user) {
     if (socket && socket.connected) return;
@@ -622,8 +630,8 @@ async function performJoin(token, user) {
     // For local immediate feedback:
     createGametag("local", localUsername, localUserColor, true, localProfilePicture);
 
-    // Initialize PeerJS for audio calls
-    initPeer();
+    // Request group call list on join
+    socket.emit('getGroupCallList');
 
     updatePlayerList();
     await refreshWorldOperationsSummary();
@@ -702,7 +710,7 @@ async function performJoin(token, user) {
 }
 
 /**
- * Verifica se há um token na URL para login automático
+ * Verifica se hÃƒÂ¡ um token na URL para login automÃƒÂ¡tico
  */
 async function checkAutoLogin() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -735,7 +743,7 @@ async function checkAutoLogin() {
             window.history.replaceState({}, document.title, window.location.pathname + (cleanQuery ? '?' + cleanQuery : ''));
         } catch (err) {
             console.error("Auto-login failed:", err);
-            // Token may be expired — clear it so stale tokens don't loop
+            // Token may be expired Ã¢â‚¬â€ clear it so stale tokens don't loop
             sessionStorage.removeItem('world_auth_token');
         }
     } else {
@@ -810,6 +818,7 @@ function setupSocketListeners() {
     socket.on('connect', () => {
         localPlayerSocketId = socket.id;
         console.log("Socket connected! ID:", socket.id);
+        setupCallSocketListeners(); // Initialize Jitsi call event listeners
     });
 
     socket.on('connect_error', (err) => {
@@ -825,7 +834,6 @@ function setupSocketListeners() {
                 return;
             }
             addOtherPlayer(players[id]);
-            if (players[id].peerId) peerIdToName[players[id].peerId] = players[id].name;
         });
         updatePlayerList();
     });
@@ -867,11 +875,6 @@ function setupSocketListeners() {
         if (remotePlayers[playerInfo.id]) {
             remotePlayers[playerInfo.id].name = playerInfo.name;
             remotePlayers[playerInfo.id].color = playerInfo.color;
-            // Also sync peerId if present in the update
-            if (playerInfo.peerId) {
-                remotePlayers[playerInfo.id].peerId = playerInfo.peerId;
-                peerIdToName[playerInfo.peerId] = playerInfo.name;
-            }
             if (remotePlayers[playerInfo.id].mainMesh) {
                 applyCharacterColor(remotePlayers[playerInfo.id].mainMesh, playerInfo.color);
             }
@@ -879,11 +882,6 @@ function setupSocketListeners() {
         updatePlayerList();
     });
 
-    socket.on('streamTypeChanged', (data) => {
-        if (remotePlayers[data.id]) {
-            remotePlayers[data.id].isScreenShare = data.isScreenShare;
-        }
-    });
 
     socket.on('playerDisconnected', (id) => {
         console.log("Player disconnected:", id);
@@ -893,14 +891,6 @@ function setupSocketListeners() {
         }
         removeGametag(id);
         updatePlayerList();
-    });
-
-    socket.on('playerPeerUpdated', (data) => {
-        if (remotePlayers[data.id]) {
-            remotePlayers[data.id].peerId = data.peerId;
-            peerIdToName[data.peerId] = remotePlayers[data.id].name || 'Player';
-            updatePlayerList();
-        }
     });
 
     socket.on('playerModelUpdated', (data) => {
@@ -1109,9 +1099,9 @@ container.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.zoomSpeed = 0.55; // Ajustado conforme feedback do usuário
+controls.zoomSpeed = 0.55; // Ajustado conforme feedback do usuÃƒÂ¡rio
 controls.minZoom = 0.15; // Limite de recuo
-controls.maxZoom = 3.0; // Limite de avanço
+controls.maxZoom = 3.0; // Limite de avanÃƒÂ§o
 controls.enablePan = true;
 controls.screenSpacePanning = true;
 controls.panSpeed = 0.9;
@@ -1371,7 +1361,7 @@ function updateCourseRoomContext() {
         if (!currentRoom) {
             courseRoomContextRoom.textContent = 'Between rooms';
         } else {
-            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} — ${currentRoom.title}`;
+            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} Ã¢â‚¬â€ ${currentRoom.title}`;
         }
     }
 }
@@ -1511,7 +1501,7 @@ function renderCourseRoomShells(runtime) {
                 roomGroup,
                 center.x + roomSpacing / 2,
                 center.z,
-                Boolean(true), // [WORLD-LOCK] Always open passage — was: Boolean(nextModule?.unlocked)
+                Boolean(true), // [WORLD-LOCK] Always open passage Ã¢â‚¬â€ was: Boolean(nextModule?.unlocked)
                 `${colliderBaseId}_to_${nextModule.moduleId}`
             ));
         }
@@ -1570,7 +1560,7 @@ function renderCourseRoomShells(runtime) {
                 }
             });
 
-            // [WORLD-LOCK] Door blocker disabled — all rooms always accessible
+            // [WORLD-LOCK] Door blocker disabled Ã¢â‚¬â€ all rooms always accessible
             // if (nextCenter && !nextModule?.unlocked) {
             //     addDoorBlocker(roomGroup, center.x + roomSpacing / 2, center.z);
             // }
@@ -1778,48 +1768,16 @@ function createGametag(id, name, color, isLocal, profilePictureUrl = null) {
             openPlayerActionMenuForId(id, e);
         });
 
-        // Gametag mini-webcam logic
+        // Gametag click - open action menu
         const imgEl = element.querySelector('.gametag-avatar');
         imgEl.style.cursor = 'pointer';
         imgEl.addEventListener('click', (e) => {
             e.stopPropagation();
-            const player = remotePlayers[id];
-
-            // Allow showing mini-video only if we are in a call, have a stream, and it's NOT a screen share
-            const isInCallWithPlayer = currentCall && currentCall.peer === player.peerId;
-
-            if (isInCallWithPlayer && activeRemoteStream && !player.isScreenShare) {
-                // Check if video already exists
-                let videoEl = element.querySelector('.gametag-video');
-                if (videoEl) {
-                    // Toggle back to image
-                    videoEl.remove();
-                    imgEl.style.display = 'block';
-                } else {
-                    // Hide image and show video
-                    imgEl.style.display = 'none';
-                    videoEl = document.createElement('video');
-                    videoEl.className = 'gametag-video';
-                    videoEl.autoplay = true;
-                    videoEl.playsInline = true;
-                    videoEl.muted = true; // prevent double audio since we already have the call audio playing
-                    videoEl.style.width = '36px';
-                    videoEl.style.height = '36px';
-                    videoEl.style.borderRadius = '50%';
-                    videoEl.style.objectFit = 'cover';
-                    videoEl.style.border = `2px solid ${color || '#fff'}`;
-                    videoEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.5)';
-                    videoEl.srcObject = activeRemoteStream;
-                    imgEl.parentElement.insertBefore(videoEl, imgEl);
-                }
-            } else {
-                // If not available, maybe just trigger the menu anyway or do nothing
-                openPlayerActionMenuForId(id, e);
-            }
+            openPlayerActionMenuForId(id, e);
         });
 
         const callBtn = document.createElement('button');
-        callBtn.innerText = '📞';
+        callBtn.innerText = String.fromCodePoint(0x1F4DE);
         callBtn.className = 'gametag-call-btn';
         callBtn.style.background = 'none';
         callBtn.style.border = 'none';
@@ -1827,10 +1785,12 @@ function createGametag(id, name, color, isLocal, profilePictureUrl = null) {
         callBtn.onclick = (e) => {
             e.stopPropagation();
             const player = remotePlayers[id];
-            if (player && player.peerId) {
-                makeCall(player.peerId, name);
+            if (isInGroupCall) {
+                invitePlayerToGroup(id);
+            } else if (player && !player.inGroupCall) {
+                startDirectCall(id, name);
             } else {
-                alert('This player has not configured a voice channel yet.');
+                alert('This player is currently in a call.');
             }
         };
         element.querySelector('div > div:nth-child(2)').appendChild(callBtn);
@@ -1878,7 +1838,7 @@ function updatePlayerList() {
 
         // Final fallback: if state name is Guest or Unknown, check gametag
         if ((!player.name || player.name.includes('Guest')) && gametags[id]) {
-            const tagText = gametags[id].element.innerText.replace('📞', '').replace('(no voice)', '').trim();
+            const tagText = gametags[id].element.innerText.replace('Ã°Å¸â€œÅ¾', '').replace('(no voice)', '').trim();
             if (tagText && !tagText.includes('Guest') && tagText !== 'Loading...') {
                 name = tagText;
                 player.name = name; // Update state silently
@@ -1891,10 +1851,12 @@ function updatePlayerList() {
         const infoDiv = document.createElement('div');
         infoDiv.className = 'player-info';
         infoDiv.style.cursor = 'pointer';
+
+        const inCall = player.inGroupCall ? true : false;
         infoDiv.innerHTML = `
-            <div class="player-status-dot" style="background: ${player.peerId ? '#10b981' : '#64748b'}"></div>
+            <div class="player-status-dot" style="background: #10b981"></div>
             <span class="player-name">${name}</span>
-            ${!player.peerId ? '<span style="font-size: 0.7rem; color: #94a3b8; margin-left: 5px;">(no voice)</span>' : ''}
+            ${inCall ? '<span style="font-size: 0.75rem; color: #10b981; margin-left: 5px; display:inline-flex; align-items:center; gap:2px;"><i class="fas fa-phone-alt" style="font-size:0.65rem;"></i> In Call</span>' : ''}
         `;
 
         infoDiv.addEventListener('click', (e) => {
@@ -2006,14 +1968,14 @@ function addOtherPlayer(playerInfo) {
         console.warn("Player already exists, skipping addOtherPlayer:", playerInfo.id);
         return;
     }
-    // Anchor group: holds only network position/rotation — never touched visually
+    // Anchor group: holds only network position/rotation Ã¢â‚¬â€ never touched visually
     const anchorGroup = new THREE.Group();
     anchorGroup.position.set(playerInfo.position.x, playerInfo.position.y, playerInfo.position.z);
     anchorGroup.rotation.set(playerInfo.rotation.x, playerInfo.rotation.y, playerInfo.rotation.z);
     anchorGroup.userData.remotePlayerId = playerInfo.id;
     scene.add(anchorGroup);
 
-    // Avatar container: child of anchor — all visual mesh loading/centering goes here
+    // Avatar container: child of anchor Ã¢â‚¬â€ all visual mesh loading/centering goes here
     const avatarContainer = new THREE.Group();
     avatarContainer.userData.remotePlayerId = playerInfo.id;
     anchorGroup.add(avatarContainer);
@@ -2028,7 +1990,7 @@ function addOtherPlayer(playerInfo) {
         avatarContainer: avatarContainer, // visual container: use this for model loading
         mainMesh: avatar.bodyMesh,
         color: playerInfo.color,
-        peerId: playerInfo.peerId || null, // FIX: Store PeerJS ID for audio calls
+        inGroupCall: playerInfo.inGroupCall || null,
         // --- Interpolation Targets ---
         targetPosition: anchorGroup.position.clone(),
         targetRotation: anchorGroup.rotation.clone()
@@ -2121,7 +2083,7 @@ function openPlayerActionMenuForId(playerId, eventOrPosition) {
     if (!player) return;
 
     const name = player.name || 'Unknown';
-    selectedPlayerPeerId = player.peerId || null;
+
     showPlayerActionMenu(name, eventOrPosition);
 }
 
@@ -2388,7 +2350,7 @@ document.getElementById('menu-catalog-models').addEventListener('click', () => {
 // Add Structures to Context Menu
 const menuCatalogStructs = document.createElement('div');
 menuCatalogStructs.className = 'menu-item';
-menuCatalogStructs.innerHTML = '🏗️ Estruturas (Paredes/Escadas)';
+menuCatalogStructs.innerHTML = 'Ã°Å¸Ââ€”Ã¯Â¸Â Estruturas (Paredes/Escadas)';
 document.getElementById('menu-ground-section').appendChild(menuCatalogStructs);
 
 menuCatalogStructs.onclick = () => {
@@ -2572,9 +2534,9 @@ function rotateObject(target, angle) {
         return;
     }
 
-    // Update AABB in wallBoxes (only for simple objects — not for those with preciseColliders)
+    // Update AABB in wallBoxes (only for simple objects Ã¢â‚¬â€ not for those with preciseColliders)
     // For objects with preciseColliders (structures), the collision meshes follow the root
-    // automatically as children — no separate update needed.
+    // automatically as children Ã¢â‚¬â€ no separate update needed.
     const hasPC = preciseColliders.some(c => c.userData.id == target.userData.id);
     if (!hasPC) {
         for (const box of wallBoxes) {
@@ -2673,7 +2635,7 @@ function handlePrimaryWorldClick(event) {
         let root = hit.object;
         while (root && root !== scene) {
             if (root.userData && root.userData.isPlacement) {
-                // [WORLD-LOCK] Lock click guard disabled — all placements are always clickable
+                // [WORLD-LOCK] Lock click guard disabled Ã¢â‚¬â€ all placements are always clickable
                 // if (root.userData.isLocked) {
                 //     alert('This module is still locked by the course path.');
                 //     return;
@@ -2947,7 +2909,7 @@ function getSurfaceHeight(xzPos) {
 
     // 2. Precise Mesh Check (Ramps, Stairs, Slopes)
     if (preciseColliders.length > 0) {
-        // Cast from Eye Level (1.8m) — ensures ray sees floor/ramp from safe height
+        // Cast from Eye Level (1.8m) Ã¢â‚¬â€ ensures ray sees floor/ramp from safe height
         const originY = (playerGroup ? playerGroup.position.y : 0) + 1.8;
         const rayOrigin = new THREE.Vector3(xzPos.x, originY, xzPos.z);
         const rayDir = new THREE.Vector3(0, -1, 0);
@@ -3218,7 +3180,7 @@ function animate() {
         scene.updateMatrixWorld(true);
 
         // Update remote players with time-based interpolation
-        const SMOOTHING_FACTOR = 8.0; // Diminuído para 8.0 para um "deslizamento" mais constante sem "teleporte"
+        const SMOOTHING_FACTOR = 8.0; // DiminuÃƒÂ­do para 8.0 para um "deslizamento" mais constante sem "teleporte"
         const alpha = 1.0 - Math.exp(-SMOOTHING_FACTOR * delta);
 
         for (const id in remotePlayers) {
@@ -3372,7 +3334,7 @@ function createPlacedModel(data) {
         model.updateMatrixWorld(true);
         const placementBox = new THREE.Box3().setFromObject(model);
         if (data.isOptimistic && checkOverlap(placementBox, data.id)) {
-            alert("Não é possível colocar: Espaço ocupado!");
+            alert("NÃƒÂ£o ÃƒÂ© possÃƒÂ­vel colocar: EspaÃƒÂ§o ocupado!");
             activeLoads.delete(data.id);
             return;
         }
@@ -3414,7 +3376,7 @@ function createPlacedModel(data) {
 
         // --- IMPORTANT CHANGE ---
         // Structures ONLY use preciseColliders (Mesh) for collision.
-        // We do NOT add them to wallBoxes (AABB) to avoid "Giant Square" 45° issues.
+        // We do NOT add them to wallBoxes (AABB) to avoid "Giant Square" 45Ã‚Â° issues.
         if (!hasCollisionMeshes && !data.isStructure) {
             const modelBox = new THREE.Box3().setFromObject(model);
             modelBox.relatedId = data.id;
@@ -3601,7 +3563,7 @@ menuPlaceModule.addEventListener('click', async () => {
 
         didInteractThisFrame = true;
     } catch (err) {
-        alert('Erro ao criar módulo interativo: ' + err.message);
+        alert('Erro ao criar mÃƒÂ³dulo interativo: ' + err.message);
     }
 });
 
@@ -3609,7 +3571,7 @@ document.getElementById('menu-delete-placement').addEventListener('click', async
     const id = contextMenuTarget.userData.id;
     closeContextMenu();
 
-    if (!confirm('Excluir este módulo interativo?')) return;
+    if (!confirm('Excluir este mÃƒÂ³dulo interativo?')) return;
 
     try {
         const response = await fetch(`${AUTH_API}/world/placements/${id}`, {
@@ -3639,13 +3601,13 @@ document.getElementById('menu-assign-module').addEventListener('click', async ()
         const modules = await response.json();
 
         if (modules.length === 0) {
-            alert('Você não possui módulos para vincular. Crie um no Dashboard!');
+            alert('VocÃƒÂª nÃƒÂ£o possui mÃƒÂ³dulos para vincular. Crie um no Dashboard!');
             return;
         }
 
         // Show a simple prompt/selection for now (MVP)
         const moduleList = modules.map((m, i) => `${i + 1}. ${m.title} (${m.status})`).join('\n');
-        const choice = prompt(`Escolha o módulo para vincular:\n\n${moduleList}\n\nDigite o número:`);
+        const choice = prompt(`Escolha o mÃƒÂ³dulo para vincular:\n\n${moduleList}\n\nDigite o nÃƒÂºmero:`);
 
         const idx = parseInt(choice) - 1;
         if (isNaN(idx) || !modules[idx]) return;
@@ -3672,9 +3634,9 @@ document.getElementById('menu-assign-module').addEventListener('click', async ()
             moduleTitle: selectedModule.title,
             status: selectedModule.status
         });
-        alert(`Módulo "${selectedModule.title}" vinculado com sucesso!`);
+        alert(`MÃƒÂ³dulo "${selectedModule.title}" vinculado com sucesso!`);
     } catch (err) {
-        alert('Erro ao vincular módulo: ' + err.message);
+        alert('Erro ao vincular mÃƒÂ³dulo: ' + err.message);
     }
 });
 
@@ -4225,9 +4187,9 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
 
     if (!moduleId) {
         if (isOwner) {
-            alert('Este sinalizador ainda não possui um módulo vinculado. Clique com o botão direito para vincular.');
+            alert('Este sinalizador ainda nÃƒÂ£o possui um mÃƒÂ³dulo vinculado. Clique com o botÃƒÂ£o direito para vincular.');
         } else {
-            alert('Este módulo ainda não foi configurado pelo professor.');
+            alert('Este mÃƒÂ³dulo ainda nÃƒÂ£o foi configurado pelo professor.');
         }
         return;
     }
@@ -4339,7 +4301,7 @@ function createPlacementBadge(parentGroup) {
         const { status, moduleTitle } = parentGroup.userData;
         const isMaster = localUserRole === 'MASTER' || localUserRole === 'ADMIN';
 
-        let label = moduleTitle || (isMaster ? 'Sem Módulo' : 'Interativo');
+        let label = moduleTitle || (isMaster ? 'Sem MÃƒÂ³dulo' : 'Interativo');
         let color = '#3b82f6'; // Default blue
 
         if (status === 'DRAFT') {
@@ -4539,7 +4501,7 @@ function buildModuleMaterialProgressSection(module = currentModulePayload) {
             label: item.type === 'video' ? 'Video' : item.type === 'document' ? 'Material' : 'Quiz',
             accent: item.viewed ? '#34d399' : '#94a3b8',
             title: item.title,
-            caption: `${item.viewed ? '✓ ' + (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : '○ ' + (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed')}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` · Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
+            caption: `${item.viewed ? 'Ã¢Å“â€œ ' + (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : 'Ã¢â€”â€¹ ' + (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed')}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` Ã‚Â· Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
             actionLabel: item.type === 'video' ? (window.t ? window.t('world.open', 'Open') : 'Open') : item.type === 'document' ? (window.t ? window.t('world.open', 'Open') : 'Open') : (window.t ? window.t('world.goToQuiz', 'Go to quiz') : 'Go to quiz'),
             onClick: () => {
                 if (item.type === 'video') openModuleVideoAsset(item.source);
@@ -4909,7 +4871,7 @@ function renderModuleVideos(videos) {
         }
 
         const playIcon = document.createElement('div');
-        playIcon.innerHTML = '▶';
+        playIcon.innerHTML = 'Ã¢â€“Â¶';
         playIcon.style.cssText = 'position: absolute; color: white; font-size: 3rem; filter: drop-shadow(0 0 8px rgba(0,0,0,0.8)); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; text-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 10;';
         thumb.appendChild(playIcon);
 
@@ -4932,7 +4894,7 @@ function playModuleVideo(video) {
     }
 
     if (!url) {
-        alert("URL do vídeo inválido.");
+        alert("URL do vÃƒÂ­deo invÃƒÂ¡lido.");
         return;
     }
 
@@ -5030,7 +4992,7 @@ function renderModuleDocs(docs) {
             li.style.borderRadius = '8px';
             li.innerHTML = `
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #ff4444; font-weight:bold;">📄 PDF</span>
+                    <span style="color: #ff4444; font-weight:bold;">Ã°Å¸â€œâ€ž PDF</span>
                     <span>${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
@@ -5048,7 +5010,7 @@ function renderModuleDocs(docs) {
             li.style.borderRadius = '8px';
             li.innerHTML = `
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #4488ff; font-weight:bold;">📝 Word</span>
+                    <span style="color: #4488ff; font-weight:bold;">Ã°Å¸â€œÂ Word</span>
                     <span>${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
@@ -5170,7 +5132,7 @@ async function renderModuleQuiz(quizzes) {
                 <span style="width:10px; height:10px; border-radius:50%; background:${statusColor}; display:inline-block;"></span>
                 <strong style="color:#1e293b; font-size:0.88rem;">${statusLabel}</strong>
             </div>
-            ${!entryTestPassed ? '<span style="font-size:0.78rem; color:#92400e;">' + _tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation') + '</span>' : '<span style="font-size:0.78rem; color:#065f46;">✓</span>'}
+            ${!entryTestPassed ? '<span style="font-size:0.78rem; color:#92400e;">' + _tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation') + '</span>' : '<span style="font-size:0.78rem; color:#065f46;">Ã¢Å“â€œ</span>'}
         `;
         container.appendChild(headerDiv);
     }
@@ -5204,7 +5166,7 @@ async function renderModuleQuiz(quizzes) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,245,249,0.88); backdrop-filter:blur(2px); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; gap:8px;';
             overlay.innerHTML = `
-                <span style="font-size:2rem;">🔒</span>
+                <span style="font-size:2rem;">Ã°Å¸â€â€™</span>
                 <strong style="color:#334155; font-size:0.92rem;">${_tc('world.finalEvalLocked', 'Final Evaluation Locked')}</strong>
                 <span style="color:#64748b; font-size:0.8rem; text-align:center; max-width:260px;">${_tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation')}</span>
             `;
@@ -5306,8 +5268,8 @@ function renderForumThreadList(container, moduleId, threads) {
             <button class="forum-thread-card" type="button" onclick="openModuleForumThread(${Number(thread.id)})">
                 <div>
                     <strong>${escapeWorldHtml(thread.title || 'Untitled discussion')}</strong>
-                    <p>${escapeWorldHtml(thread.content || '').slice(0, 140)}${String(thread.content || '').length > 140 ? '…' : ''}</p>
-                    <span>${escapeWorldHtml(thread.user?.username || 'User')} • ${Number(thread._count?.replies || 0)} repl${Number(thread._count?.replies || 0) === 1 ? 'y' : 'ies'}</span>
+                    <p>${escapeWorldHtml(thread.content || '').slice(0, 140)}${String(thread.content || '').length > 140 ? 'Ã¢â‚¬Â¦' : ''}</p>
+                    <span>${escapeWorldHtml(thread.user?.username || 'User')} Ã¢â‚¬Â¢ ${Number(thread._count?.replies || 0)} repl${Number(thread._count?.replies || 0) === 1 ? 'y' : 'ies'}</span>
                 </div>
             </button>
         `).join('')
@@ -5422,7 +5384,7 @@ async function openModuleForumThread(threadId) {
 
         container.innerHTML = `
             <div class="module-forum-panel">
-                <button class="forum-back-btn" type="button" onclick="renderModuleForum(${Number(thread.moduleId || currentModuleId)})">← Back to discussions</button>
+                <button class="forum-back-btn" type="button" onclick="renderModuleForum(${Number(thread.moduleId || currentModuleId)})">Ã¢â€ Â Back to discussions</button>
                 <article class="forum-thread-detail">
                     <h3>${escapeWorldHtml(thread.title || 'Discussion')}</h3>
                     <span>${escapeWorldHtml(thread.user?.username || 'User')}</span>
@@ -5491,7 +5453,7 @@ function renderModuleReports(module) {
     if (isMaster) {
         container.innerHTML = `
             <div style="padding: 10px;">
-                <h3 style="font-size: 1rem; margin-bottom: 15px;">DesempenHO do Módulo</h3>
+                <h3 style="font-size: 1rem; margin-bottom: 15px;">DesempenHO do MÃƒÂ³dulo</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center;">
                         <div style="font-size: 0.7rem; color: #94a3b8;">ACESSOS</div>
@@ -5502,17 +5464,17 @@ function renderModuleReports(module) {
                         <div style="font-size: 1.5rem; font-weight: bold;">--</div>
                     </div>
                 </div>
-                <button class="upload-btn" style="width: 100%;" onclick="window.open('${AUTH_API.replace('api', '')}/dashboard', '_blank')">Ver Relatórios Completos</button>
+                <button class="upload-btn" style="width: 100%;" onclick="window.open('${AUTH_API.replace('api', '')}/dashboard', '_blank')">Ver RelatÃƒÂ³rios Completos</button>
             </div>
         `;
     } else {
         container.innerHTML = `
             <div style="padding: 20px; text-align: center;">
-                <p style="color: #94a3b8;">Seu progresso neste módulo será exibido aqui em breve.</p>
+                <p style="color: #94a3b8;">Seu progresso neste mÃƒÂ³dulo serÃƒÂ¡ exibido aqui em breve.</p>
                 <div style="margin-top: 20px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden;">
                     <div style="width: 30%; height: 100%; background: #60a5fa;"></div>
                 </div>
-                <p style="font-size: 0.75rem; margin-top: 10px; color: #60a5fa;">30% Concluído</p>
+                <p style="font-size: 0.75rem; margin-top: 10px; color: #60a5fa;">30% ConcluÃƒÂ­do</p>
             </div>
         `;
     }
@@ -5573,9 +5535,9 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
 
     if (!moduleId) {
         if (isOwner) {
-            alert('Este sinalizador ainda nÃ£o possui um mÃ³dulo vinculado. Clique com o botÃ£o direito para vincular.');
+            alert('Este sinalizador ainda nÃƒÆ’Ã‚Â£o possui um mÃƒÆ’Ã‚Â³dulo vinculado. Clique com o botÃƒÆ’Ã‚Â£o direito para vincular.');
         } else {
-            alert('Este mÃ³dulo ainda nÃ£o foi configurado pelo professor.');
+            alert('Este mÃƒÆ’Ã‚Â³dulo ainda nÃƒÆ’Ã‚Â£o foi configurado pelo professor.');
         }
         return;
     }
@@ -5605,18 +5567,18 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
         const module = await response.json();
 
         if (response.status === 403) {
-            const errorMsg = module.error || 'MÃ³dulo indisponÃ­vel ou em manutenÃ§Ã£o.';
+            const errorMsg = module.error || 'MÃƒÆ’Ã‚Â³dulo indisponÃƒÆ’Ã‚Â­vel ou em manutenÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o.';
             alert(errorMsg);
             moduleSidebar.classList.add('hidden');
             return;
         }
 
-        if (!response.ok) throw new Error(module.error || 'Erro ao carregar mÃ³dulo');
+        if (!response.ok) throw new Error(module.error || 'Erro ao carregar mÃƒÆ’Ã‚Â³dulo');
 
         currentModulePayload = module;
         currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
         moduleTitle.innerText = module.title;
-        moduleDescription.innerText = module.description || 'Sem descriÃ§Ã£o.';
+        moduleDescription.innerText = module.description || 'Sem descriÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o.';
 
         if (module.isPreview) {
             document.getElementById('sidebar-preview-banner').classList.add('active');
@@ -5670,7 +5632,7 @@ function renderModuleQuizLegacy(quizzes) {
         : 'Complete the full module quiz to register your score.';
     const scoreCopy = bestScore === null || bestScore === undefined
         ? 'No graded attempt yet.'
-        : `Best attempt: ${bestScore.toFixed(1)}%${quizGateActive ? (quizPassed ? ' • Requirement met' : ' • Requirement not met yet') : ''}`;
+        : `Best attempt: ${bestScore.toFixed(1)}%${quizGateActive ? (quizPassed ? ' Ã¢â‚¬Â¢ Requirement met' : ' Ã¢â‚¬Â¢ Requirement not met yet') : ''}`;
 
     container.innerHTML = `
         <div style="margin-bottom: 18px; padding: 14px 16px; border-radius: 14px; border: 1px solid ${quizGateActive ? 'rgba(96,165,250,0.28)' : 'rgba(255,255,255,0.08)'}; background: ${quizGateActive ? 'rgba(37,99,235,0.12)' : 'rgba(255,255,255,0.04)'};">
@@ -5803,213 +5765,239 @@ async function fetchModulePlacements() {
     }
 }
 
-// --- 4. PeerJS & P2P Audio Logic ---
+// --- 4. Jitsi Meet & Call System ---
 
-async function initPeer() {
-    // Get media access (Try video + audio first)
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: { width: 640, height: 480 }
-        });
-        localVideo.srcObject = localStream;
-        console.log('Camera and Microphone Ready');
-    } catch (err) {
-        console.warn('Camera failed, falling back to audio only + dummy track:', err);
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+/**
+ * Start a Jitsi call inside #jitsi-meet-container
+ */
+function startJitsiCall(jitsiRoomName, displayName, callLabel) {
+    if (jitsiApi) stopJitsiCall(); // Cleanup any existing instance
 
-            // Dummy track for video negotiation
-            const canvas = document.createElement('canvas');
-            canvas.width = 1; canvas.height = 1;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, 1, 1);
-            const dummyStream = canvas.captureStream();
-            const dummyTrack = dummyStream.getVideoTracks()[0];
-            localStream.addTrack(dummyTrack);
+    const containerEl = document.getElementById('jitsi-meet-container');
+    if (!containerEl) return;
 
-            console.log('Microphone Ready (Audio Only + Placeholder Video)');
-        } catch (audioErr) {
-            console.error('All media access denied:', audioErr);
-            return;
-        }
-    }
-
-    // Connect to the PeerServer running on the same host
-    const AUDIO_SERVER_HOST = window.location.hostname;
-    const AUDIO_SERVER_PORT = window.location.port || (window.location.protocol === 'https:' ? 443 : 80);
-
-    peer = new Peer({
-        host: AUDIO_SERVER_HOST,
-        port: AUDIO_SERVER_PORT,
-        path: '/peerjs',
-        secure: window.location.protocol === 'https:'
-    });
-
-    peer.on('open', (id) => {
-        console.log('PeerJS Connected, ID:', id);
-        socket.emit('setPeerId', id);
-    });
-
-    peer.on('call', (call) => {
-        if (currentCall) {
-            call.answer();
-            call.close();
-            return;
-        }
-
-        const callerName = peerIdToName[call.peer] || 'Unknown';
-        incomingCaller.innerText = callerName;
-        incomingModal.classList.remove('hidden');
-
-        btnAnswer.onclick = () => {
-            incomingModal.classList.add('hidden');
-            answerCall(call);
-        };
-
-        btnReject.onclick = () => {
-            incomingModal.classList.add('hidden');
-            call.answer();
-            call.close();
-        };
-    });
-
-    peer.on('error', (err) => {
-        console.error('Peer error:', err.type);
-    });
-}
-
-function makeCall(targetPeerId, name) {
-    if (!localStream) return alert('Microphone not detected.');
-    callingName.innerText = name;
-    audioCallLayer.classList.remove('hidden');
-
-    currentCall = peer.call(targetPeerId, localStream);
-    setupCallListeners(currentCall);
-}
-
-function answerCall(call) {
-    currentCall = call;
-    const callerName = peerIdToName[call.peer] || 'Connected';
-    callingName.innerText = callerName;
-    audioCallLayer.classList.remove('hidden');
-
-    setupCallListeners(currentCall);
-    currentCall.answer(localStream);
-}
-
-function setupCallListeners(call) {
-    if (!call) return;
-    call.on('stream', (remoteStream) => {
-        console.log("Stream remoto recebido");
-        const hasVideo = remoteStream.getVideoTracks().length > 0;
-
-        if (hasVideo) {
-            videoContainer.classList.remove('hidden');
-            activeRemoteStream = remoteStream;
-            remoteVideo.srcObject = remoteStream;
-            remoteVideo.play().catch(e => console.warn(e));
+    let finalAvatarSrc = `https://ui-avatars.com/api/?name=${displayName || localUsername || 'Guest'}&background=random`;
+    if (localProfilePicture) {
+        if (localProfilePicture.startsWith('http') || localProfilePicture.startsWith('data:')) {
+            finalAvatarSrc = localProfilePicture;
         } else {
-            videoContainer.classList.add('hidden');
+            finalAvatarSrc = `${AUTH_API || ''}${localProfilePicture}`;
         }
+    }
 
-        remoteAudio.srcObject = remoteStream;
-        setupVisualizer(remoteStream);
-
-        if (!callDurationInterval) {
-            startTimer();
+    // Use a community Jitsi server that allows anonymous access.
+    // meet.jit.si now requires Google/GitHub login for room creators.
+    // meet.ffmuc.net is run by Freifunk M\u00FCnchen and allows fully anonymous usage.
+    const domain = 'jitsi.riot.im';
+    const options = {
+        roomName: jitsiRoomName,
+        width: '100%',
+        height: '100%',
+        parentNode: containerEl,
+        userInfo: {
+            displayName: displayName || localUsername || 'Guest',
+            avatarUrl: finalAvatarSrc
+        },
+        configOverwrite: {
+            startWithAudioMuted: false,
+            startWithVideoMuted: true,
+            prejoinPageEnabled: false,
+            prejoinConfig: { enabled: false },
+            prejoinConfig: { enabled: false },
+            disableDeepLinking: true,
+            toolbarButtons: [],
+            notifications: [],
+            disableThirdPartyRequests: true,
+            enableWelcomePage: false,
+            enableLobbyChat: false,
+            hideLobbyButton: true,
+            requireDisplayName: false,
+            enableInsecureRoomNameWarning: false,
+            disableInviteFunctions: true,
+            screenshotCapture: { enabled: false }
+        },
+        interfaceConfigOverwrite: {
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            TOOLBAR_ALWAYS_VISIBLE: false,
+            FILM_STRIP_MAX_HEIGHT: 120,
+            DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+            MOBILE_APP_PROMO: false,
+            DEFAULT_BACKGROUND: '#0f172a',
+            HIDE_INVITE_MORE_HEADER: true,
+            DISABLE_RINGING: true
         }
+    };
+
+    jitsiApi = new JitsiMeetExternalAPI(domain, options);
+
+    // Show call UI (timer starts only when the conference actually connects)
+    callingName.innerText = callLabel || 'In Call...';
+    callTimer.innerText = '00:00';
+    audioCallLayer.classList.remove('hidden');
+    videoContainer.classList.remove('hidden');
+
+    // Start timer only when the conference is actually joined
+    jitsiApi.addEventListener('videoConferenceJoined', () => {
+        startTimer();
+        console.log('[Jitsi] Conference joined successfully');
     });
 
-    // Listen for track replacements from the remote peer (fixes frozen frame bugs)
-    // When the remote peer replaces their video track (e.g. screen share → webcam),
-    // the browser fires 'track' on the peerConnection, but the srcObject reference
-    // stays the same. Force a re-render by reassigning srcObject.
-    try {
-        const pc = call.peerConnection;
-        if (pc) {
-            pc.addEventListener('track', (event) => {
-                console.log('[PeerConnection] Remote track event:', event.track.kind, event.track.label);
-                if (event.track.kind === 'video') {
-                    // Force the video element to pick up the new track
-                    if (remoteVideo.srcObject) {
-                        const currentStream = remoteVideo.srcObject;
-                        remoteVideo.srcObject = null;
-                        remoteVideo.srcObject = currentStream;
-                        remoteVideo.play().catch(e => console.warn(e));
-                    }
-                    videoContainer.classList.remove('hidden');
-                }
-            });
-        }
-    } catch (e) {
-        console.warn('Could not attach track listener to peerConnection:', e);
-    }
-
-    call.on('close', () => {
-        resetAudioUI();
+    // Track mute/video state from Jitsi events
+    jitsiApi.addEventListener('audioMuteStatusChanged', (data) => {
+        btnMute.innerText = data.muted ? '\u{1F507}' : '\u{1F3A4}';
+        btnMute.style.background = data.muted ? '#ef4444' : 'rgba(255, 255, 255, 0.1)';
     });
+
+    jitsiApi.addEventListener('videoMuteStatusChanged', (data) => {
+        btnCamera.classList.toggle('active', !data.muted);
+    });
+
+    jitsiApi.addEventListener('screenSharingStatusChanged', (data) => {
+        btnScreen.classList.toggle('active', data.on);
+    });
+
+    jitsiApi.addEventListener('videoConferenceLeft', () => {
+        stopJitsiCall();
+    });
+
+    console.log(`[Jitsi] Call started in room: ${jitsiRoomName}`);
 }
 
-function setupVisualizer(stream) {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+/**
+ * Stop and cleanup the Jitsi call
+ */
+function stopJitsiCall() {
+    if (jitsiApi) {
+        try { jitsiApi.dispose(); } catch (e) { console.warn('Jitsi dispose error:', e); }
+        jitsiApi = null;
     }
-    if (audioContext.state === 'suspended') audioContext.resume();
 
-    const source = audioContext.createMediaStreamSource(stream);
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 32;
-    source.connect(analyser);
-
-    const bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
-    const bars = document.querySelectorAll('.bar');
-
-    function draw() {
-        if (!currentCall) {
-            cancelAnimationFrame(animationFrameId);
-            return;
-        }
-        animationFrameId = requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
-
-        bars.forEach((bar, index) => {
-            const val = dataArray[index] || 0;
-            const height = Math.max(5, (val / 255) * 25);
-            bar.style.height = `${height}px`;
-            bar.style.opacity = 0.3 + (val / 255) * 0.7;
-        });
-    }
-    draw();
-}
-
-function resetAudioUI() {
+    // Reset UI
     stopTimer();
     audioCallLayer.classList.add('hidden');
     audioCallLayer.classList.remove('expanded');
     audioCallLayer.classList.remove('expanded-screen');
     videoContainer.classList.add('hidden');
 
-    if (currentCall) currentCall.close();
-    currentCall = null;
+    btnExpand.innerText = '\u26F6';
+    btnCamera.classList.remove('active');
+    btnScreen.classList.remove('active');
+    btnMute.innerText = '\u{1F3A4}';
+    btnMute.style.background = 'rgba(255, 255, 255, 0.1)';
 
-    remoteAudio.srcObject = null;
-    remoteVideo.srcObject = null;
-    activeRemoteStream = null;
-
-    // Reset expand button
-    btnExpand.innerText = '⛶';
     const column = document.getElementById('left-ui-column');
     if (column) column.style.zIndex = '1100';
 
-    const bars = document.querySelectorAll('.bar');
-    bars.forEach(bar => {
-        bar.style.height = '5px';
-        bar.style.opacity = 0.3;
+    // Clear Jitsi container
+    const containerEl = document.getElementById('jitsi-meet-container');
+    if (containerEl) containerEl.innerHTML = '';
+
+    // Reset state flags and notify other side
+    if (isInGroupCall && socket) {
+        socket.emit('leaveGroupCall', currentGroupCallId);
+    }
+    if (isInDirectCall && socket) {
+        socket.emit('directCallHangup');
+    }
+
+    isInGroupCall = false;
+    isInDirectCall = false;
+    currentGroupCallId = null;
+    isGroupCreator = false;
+    pendingDirectCallJitsiRoom = null;
+
+    console.log('[Jitsi] Call ended');
+}
+
+function resetAudioUI() {
+    stopJitsiCall();
+}
+
+// ===== GROUP CALL FUNCTIONS =====
+
+function createGroupCall() {
+    if (isInGroupCall || isInDirectCall) {
+        alert('You are already in a call. Leave the current call first.');
+        return;
+    }
+    if (!socket) return;
+    socket.emit('createGroupCall');
+}
+
+function requestJoinGroup(groupId) {
+    if (isInGroupCall || isInDirectCall) {
+        alert('You are already in a call. Leave the current call first.');
+        return;
+    }
+    if (!socket) return;
+    socket.emit('requestJoinGroup', groupId);
+}
+
+function invitePlayerToGroup(targetSocketId) {
+    if (!isInGroupCall || !currentGroupCallId || !socket) return;
+    socket.emit('inviteToGroup', { groupId: currentGroupCallId, targetSocketId });
+}
+
+function closeGroupCall() {
+    if (!isGroupCreator || !currentGroupCallId || !socket) return;
+    socket.emit('closeGroupCall', currentGroupCallId);
+    stopJitsiCall();
+}
+
+// ===== DIRECT CALL FUNCTIONS (1-on-1 via Jitsi) =====
+
+function startDirectCall(targetSocketId, targetName) {
+    if (isInGroupCall || isInDirectCall) {
+        alert('You are already in a call. Leave the current call first.');
+        return;
+    }
+    if (!socket) return;
+    socket.emit('directCallOffer', { targetSocketId });
+    callingName.innerText = `Calling ${targetName}...`;
+    audioCallLayer.classList.remove('hidden');
+}
+
+// ===== RENDER GROUP CALL LIST =====
+
+function renderGroupCallList(groups) {
+    if (!groupCallList) return;
+
+    if (!groups || groups.length === 0) {
+        groupCallList.innerHTML = '<div class="group-call-empty">No active group calls</div>';
+        return;
+    }
+
+    groupCallList.innerHTML = groups.map(group => {
+        const isMember = group.members.some(m => m.socketId === (socket && socket.id));
+        const memberCount = group.members.length;
+
+        return `
+            <div class="group-call-item" id="gc-${group.id}">
+                <div class="group-call-item-info">
+                    <span class="group-call-item-name">${group.creatorName}'s Group</span>
+                    <span class="group-call-item-count">${memberCount} member${memberCount !== 1 ? 's' : ''}</span>
+                </div>
+                ${isMember
+                    ? '<span style="font-size:0.75rem; color:#10b981; font-weight:700;">In Call</span>'
+                    : `<button class="group-call-join-btn" data-group-id="${group.id}">Join</button>`
+                }
+            </div>
+        `;
+    }).join('');
+
+    // Attach event listeners (module scope doesn't expose functions to inline onclick)
+    groupCallList.querySelectorAll('.group-call-join-btn[data-group-id]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            requestJoinGroup(btn.dataset.groupId);
+        });
     });
 }
+
+// ===== BUTTON HANDLERS =====
 
 function startTimer() {
     secondsElapsed = 0;
@@ -6025,227 +6013,53 @@ function startTimer() {
 function stopTimer() {
     if (callDurationInterval) {
         clearInterval(callDurationInterval);
-        callDurationInterval = null; // CRITICAL: Reset the interval variable
+        callDurationInterval = null;
     }
 }
 
 btnHangup.onclick = () => {
-    if (currentCall) currentCall.close();
-    resetAudioUI();
+    stopJitsiCall();
 };
 
 btnMute.onclick = () => {
-    const enabled = localStream.getAudioTracks()[0].enabled;
-    localStream.getAudioTracks()[0].enabled = !enabled;
-    btnMute.innerText = !enabled ? '🎤' : '🔇';
-    btnMute.style.background = !enabled ? 'rgba(255, 255, 255, 0.1)' : '#ef4444';
+    if (jitsiApi) jitsiApi.executeCommand('toggleAudio');
 };
 
-// Helper: find the video sender on the peer connection, even if the current track is null
-function findVideoSender() {
-    if (!currentCall || !currentCall.peerConnection) return null;
-    const senders = currentCall.peerConnection.getSenders();
-    // Prefer sender with active video track
-    const withTrack = senders.find(s => s.track && s.track.kind === 'video');
-    if (withTrack) return withTrack;
-    // Fallback: sender whose track is null (video sender after track was removed/stopped)
-    const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-    const nullSender = senders.find(s => !s.track && s !== audioSender);
-    return nullSender || null;
-}
-
-btnCamera.onclick = async () => {
-    let videoTrack = localStream.getVideoTracks()[0];
-    const isDummy = videoTrack && videoTrack.label === ''; // Canvas tracks often have empty labels
-
-    if (!videoTrack || isDummy || !videoTrack.enabled) {
-        if (!videoTrack || isDummy) {
-            try {
-                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const newTrack = tempStream.getVideoTracks()[0];
-
-                if (videoTrack) localStream.removeTrack(videoTrack);
-                localStream.addTrack(newTrack);
-                localVideo.srcObject = localStream;
-                btnCamera.classList.add('active');
-                videoContainer.classList.remove('hidden');
-                if (socket) socket.emit('setStreamType', { isScreenShare: false });
-
-                const videoSender = findVideoSender();
-                if (videoSender) {
-                    videoSender.replaceTrack(newTrack);
-                } else if (currentCall && currentCall.peerConnection) {
-                    currentCall.peerConnection.addTrack(newTrack, localStream);
-                }
-            } catch (err) {
-                alert('Não foi possível acessar a câmera.');
-            }
-        } else {
-            videoTrack.enabled = true;
-            btnCamera.classList.add('active');
-            videoContainer.classList.remove('hidden');
-        }
-    } else {
-        videoTrack.enabled = false;
-        btnCamera.classList.remove('active');
-        const remoteHasVideo = currentCall && remoteVideo.srcObject && remoteVideo.srcObject.getVideoTracks().some(t => t.enabled);
-        if (!remoteHasVideo) videoContainer.classList.add('hidden');
-    }
+btnCamera.onclick = () => {
+    if (jitsiApi) jitsiApi.executeCommand('toggleVideo');
 };
 
-// Screen Sharing Logic
-let screenStream = null;
-
-btnScreen.onclick = async () => {
-    if (!screenStream) {
-        try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-            const newTrack = screenStream.getVideoTracks()[0];
-
-            newTrack.onended = () => {
-                stopScreenShare();
-            };
-
-            // Switch track
-            const currentVideoTrack = localStream.getVideoTracks()[0];
-            if (currentVideoTrack) {
-                localStream.removeTrack(currentVideoTrack);
-                currentVideoTrack.enabled = false;
-            }
-            localStream.addTrack(newTrack);
-            localVideo.srcObject = localStream;
-            btnScreen.classList.add('active');
-            btnCamera.classList.remove('active');
-            videoContainer.classList.remove('hidden');
-            if (socket) socket.emit('setStreamType', { isScreenShare: true });
-
-            const videoSender = findVideoSender();
-            if (videoSender) {
-                videoSender.replaceTrack(newTrack);
-            } else if (currentCall && currentCall.peerConnection) {
-                currentCall.peerConnection.addTrack(newTrack, localStream);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    } else {
-        stopScreenShare();
-    }
+btnScreen.onclick = () => {
+    if (jitsiApi) jitsiApi.executeCommand('toggleShareScreen');
 };
-
-async function stopScreenShare() {
-    if (screenStream) {
-        screenStream.getTracks().forEach(t => t.stop());
-        screenStream = null;
-    }
-    btnScreen.classList.remove('active');
-    if (socket) socket.emit('setStreamType', { isScreenShare: false });
-
-    // Remove the screen share track from localStream
-    const currentVideoTrack = localStream.getVideoTracks()[0];
-    if (currentVideoTrack) {
-        localStream.removeTrack(currentVideoTrack);
-    }
-
-    // Find the video sender BEFORE attempting camera restore (track may be null now)
-    const videoSender = findVideoSender();
-
-    // Try to restore the camera automatically
-    let cameraRestored = false;
-    try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const newTrack = tempStream.getVideoTracks()[0];
-        localStream.addTrack(newTrack);
-        localVideo.srcObject = localStream;
-        btnCamera.classList.add('active');
-        videoContainer.classList.remove('hidden');
-
-        // Replace the track on the peer connection so the remote sees the webcam
-        if (videoSender) {
-            await videoSender.replaceTrack(newTrack);
-            console.log('[stopScreenShare] Camera track replaced on peer connection');
-        }
-        cameraRestored = true;
-    } catch (err) {
-        console.warn('Could not restore camera after screen share:', err);
-    }
-
-    // If camera could NOT be restored, send a black dummy frame so remote doesn't see a freeze
-    if (!cameraRestored) {
-        btnCamera.classList.remove('active');
-        const canvas = document.createElement('canvas');
-        canvas.width = 2; canvas.height = 2;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, 2, 2);
-        // Use requestAnimationFrame to generate continuous frames (prevents freeze)
-        const dummyStream = canvas.captureStream(1); // 1 fps
-        const dummyTrack = dummyStream.getVideoTracks()[0];
-        localStream.addTrack(dummyTrack);
-        localVideo.srcObject = localStream;
-
-        if (videoSender) {
-            await videoSender.replaceTrack(dummyTrack);
-            console.log('[stopScreenShare] Dummy black track sent to remote');
-        }
-        videoContainer.classList.add('hidden');
-    }
-
-    // Reset any expanded state
-    audioCallLayer.classList.remove('expanded');
-    audioCallLayer.classList.remove('expanded-screen');
-    btnExpand.innerText = '⛶';
-    const column = document.getElementById('left-ui-column');
-    if (column) column.style.zIndex = '1100';
-}
 
 // Expand Video UI Logic
-// Rules:
-// 1. Expansion ALWAYS shows the REMOTE user's video as priority (never your own screen)
-// 2. If the REMOTE user is sharing their screen → fullscreen (expanded-screen)
-// 3. If it's webcam → half screen (expanded)
-// 4. If module-sidebar is open → always half screen on the right side
 btnExpand.onclick = () => {
-    // Only check if the REMOTE user is sharing screen (never prioritize local)
-    let remoteIsScreenShare = false;
-    if (currentCall) {
-        const peerId = currentCall.peer;
-        const remotePlayer = Object.values(remotePlayers).find(p => p.peerId === peerId);
-        if (remotePlayer && remotePlayer.isScreenShare) {
-            remoteIsScreenShare = true;
-        }
-    }
-
     const column = document.getElementById('left-ui-column');
     const sidebarOpen = moduleSidebar && !moduleSidebar.classList.contains('hidden');
     let isExpandedNow = false;
 
-    if (remoteIsScreenShare && !sidebarOpen) {
-        // Full screen for remote screen share (only when sidebar is closed)
+    if (!sidebarOpen) {
         isExpandedNow = audioCallLayer.classList.toggle('expanded-screen');
         audioCallLayer.classList.remove('expanded');
     } else {
-        // Half screen for webcam OR when sidebar is open (regardless of screen share)
         isExpandedNow = audioCallLayer.classList.toggle('expanded');
         audioCallLayer.classList.remove('expanded-screen');
     }
 
-    btnExpand.innerText = isExpandedNow ? '🗗' : '⛶';
+    btnExpand.innerText = isExpandedNow ? '\u{1F5D7}' : '\u26F6';
 
-    // Elevate the parent container z-index to overlap course headers (z-index 1200+)
     if (column) {
         column.style.zIndex = isExpandedNow ? '9999' : '1100';
     }
 };
 
 // --- Call Layer Position Adjustment ---
-// Repositions #left-ui-column when the module sidebar opens/closes
-// so the call modal doesn't overlap the sidebar
 function adjustCallLayerPosition(sidebarOpen) {
     const column = document.getElementById('left-ui-column');
     if (!column) return;
     if (sidebarOpen) {
-        column.style.left = '488px'; // 480px sidebar + 8px gap
+        column.style.left = '488px';
         document.body.classList.add('module-sidebar-open');
     } else {
         column.style.left = '88px';
@@ -6253,11 +6067,192 @@ function adjustCallLayerPosition(sidebarOpen) {
     }
 }
 
+// ===== SOCKET LISTENERS FOR CALLS =====
+
+function setupCallSocketListeners() {
+    if (!socket) return;
+
+    // Group call events
+    socket.on('groupCallCreated', (data) => {
+        isInGroupCall = true;
+        currentGroupCallId = data.id;
+        isGroupCreator = true;
+        startJitsiCall(data.jitsiRoomName, localUsername, `${localUsername}'s Group Call`);
+    });
+
+    socket.on('groupCallClosed', (data) => {
+        if (currentGroupCallId === data.groupId) {
+            if (jitsiApi) {
+                try { jitsiApi.dispose(); } catch (e) {}
+                jitsiApi = null;
+            }
+            stopTimer();
+            audioCallLayer.classList.add('hidden');
+            audioCallLayer.classList.remove('expanded', 'expanded-screen');
+            videoContainer.classList.add('hidden');
+            btnExpand.innerText = '\u26F6';
+            btnCamera.classList.remove('active');
+            btnScreen.classList.remove('active');
+            const containerEl = document.getElementById('jitsi-meet-container');
+            if (containerEl) containerEl.innerHTML = '';
+            const column = document.getElementById('left-ui-column');
+            if (column) column.style.zIndex = '1100';
+            isInGroupCall = false;
+            currentGroupCallId = null;
+            isGroupCreator = false;
+        }
+    });
+
+    socket.on('groupCallList', (groups) => {
+        renderGroupCallList(groups);
+    });
+
+    socket.on('joinRequest', (data) => {
+        if (joinRequesterName) joinRequesterName.innerText = data.requesterName;
+        if (joinRequestModal) joinRequestModal.classList.remove('hidden');
+
+        btnAcceptJoin.onclick = () => {
+            joinRequestModal.classList.add('hidden');
+            socket.emit('respondJoinRequest', { groupId: data.groupId, requesterId: data.requesterId, accepted: true });
+        };
+
+        btnRejectJoin.onclick = () => {
+            joinRequestModal.classList.add('hidden');
+            socket.emit('respondJoinRequest', { groupId: data.groupId, requesterId: data.requesterId, accepted: false });
+        };
+    });
+
+    socket.on('joinRequestResponse', (data) => {
+        if (data.accepted) {
+            isInGroupCall = true;
+            currentGroupCallId = data.groupId;
+            isGroupCreator = false;
+            startJitsiCall(data.jitsiRoomName, localUsername, `${data.creatorName || 'Group'}'s Group Call`);
+        } else {
+            alert('Your request to join was declined.');
+            audioCallLayer.classList.add('hidden');
+        }
+    });
+
+    socket.on('groupInvite', (data) => {
+        if (isInGroupCall || isInDirectCall) return;
+        if (inviteFromName) inviteFromName.innerText = data.inviterName;
+        if (groupInviteModal) groupInviteModal.classList.remove('hidden');
+
+        btnAcceptInvite.onclick = () => {
+            groupInviteModal.classList.add('hidden');
+            socket.emit('respondGroupInvite', { groupId: data.groupId, inviterId: data.inviterId, accepted: true });
+        };
+
+        btnRejectInvite.onclick = () => {
+            groupInviteModal.classList.add('hidden');
+            socket.emit('respondGroupInvite', { groupId: data.groupId, inviterId: data.inviterId, accepted: false });
+        };
+    });
+
+    socket.on('inviteResponse', (data) => {
+        console.log(`Invite response: ${data.responderName} ${data.accepted ? 'accepted' : 'declined'}`);
+    });
+
+    socket.on('memberJoinedGroup', (data) => {
+        console.log(`[Group] Member joined: ${data.name}`);
+    });
+
+    socket.on('memberLeftGroup', (data) => {
+        console.log(`[Group] Member left: ${data.socketId}`);
+    });
+
+    socket.on('playerCallStatusChanged', (data) => {
+        if (remotePlayers[data.id]) {
+            remotePlayers[data.id].inGroupCall = data.inGroupCall;
+        }
+        updatePlayerList();
+    });
+
+    // Direct call events
+    socket.on('directCallStarted', (data) => {
+        pendingDirectCallJitsiRoom = data.jitsiRoomName;
+        isInDirectCall = true;
+        startJitsiCall(data.jitsiRoomName, localUsername, callingName.innerText.replace('Calling ', '').replace('...', ''));
+    });
+
+    socket.on('directCallIncoming', (data) => {
+        if (isInGroupCall || isInDirectCall) return;
+        if (incomingCaller) incomingCaller.innerText = data.callerName;
+        if (incomingModal) incomingModal.classList.remove('hidden');
+        pendingDirectCallJitsiRoom = data.jitsiRoomName;
+
+        btnAnswer.onclick = () => {
+            incomingModal.classList.add('hidden');
+            isInDirectCall = true;
+            socket.emit('directCallResponse', { callerId: data.callerId, accepted: true });
+            startJitsiCall(data.jitsiRoomName, localUsername, data.callerName);
+        };
+
+        btnRejectCall.onclick = () => {
+            incomingModal.classList.add('hidden');
+            socket.emit('directCallResponse', { callerId: data.callerId, accepted: false });
+            pendingDirectCallJitsiRoom = null;
+        };
+    });
+
+    socket.on('directCallAnswered', (data) => {
+        if (!data.accepted) {
+            alert('Call was declined.');
+            stopJitsiCall();
+        }
+    });
+
+    // When the other side hangs up a direct call, stop ours too
+    socket.on('directCallHangup', () => {
+        if (isInDirectCall) {
+            console.log('[Jitsi] Other side hung up direct call');
+            // Prevent re-emitting hangup to avoid infinite loop
+            isInDirectCall = false;
+            stopJitsiCall();
+        }
+    });
+
+    // When the server rejects a call because the target is busy
+    socket.on('directCallBusy', (data) => {
+        alert(data.reason || 'This player is currently in a call.');
+        audioCallLayer.classList.add('hidden');
+    });
+}
+
+// ===== SIDEBAR TOGGLE LOGIC =====
+
+if (btnToggleGroups) {
+    btnToggleGroups.onclick = () => {
+        const isHidden = groupCallContainer.classList.toggle('hidden');
+        btnToggleGroups.classList.toggle('active', !isHidden);
+
+        // Hide player list when showing group calls
+        if (!isHidden) {
+            playerListContainer.classList.add('hidden');
+            btnTogglePlayers.classList.remove('active');
+            if (socket) socket.emit('getGroupCallList');
+        }
+    };
+}
+
+if (btnCreateGroup) {
+    btnCreateGroup.onclick = () => {
+        createGroupCall();
+    };
+}
+
 // Sidebar Toggle Logic
 if (btnTogglePlayers) {
     btnTogglePlayers.onclick = () => {
         const isHidden = playerListContainer.classList.toggle('hidden');
         btnTogglePlayers.classList.toggle('active', !isHidden);
+
+        // Hide group call list when showing players
+        if (!isHidden) {
+            groupCallContainer.classList.add('hidden');
+            btnToggleGroups.classList.remove('active');
+        }
     };
 }
 
@@ -6280,6 +6275,13 @@ function showPlayerActionMenu(username, event) {
     selectedPlayerForAction = username;
     actionMenuName.innerText = username;
 
+    // Update call button text based on current call state
+    if (isInGroupCall) {
+        btnCallPlayer.innerText = 'Invite to Group';
+    } else {
+        btnCallPlayer.innerText = 'Call';
+    }
+
     const point = {
         x: event?.clientX ?? event?.x ?? window.innerWidth / 2,
         y: event?.clientY ?? event?.y ?? window.innerHeight / 2
@@ -6298,10 +6300,33 @@ function showPlayerActionMenu(username, event) {
 }
 
 btnCallPlayer.addEventListener('click', () => {
-    if (selectedPlayerPeerId) {
-        makeCall(selectedPlayerPeerId, selectedPlayerForAction);
+    if (!selectedPlayerForAction) return;
+
+    // Find the socket id for this player
+    let targetSocketId = null;
+    for (const id in remotePlayers) {
+        if (remotePlayers[id].name === selectedPlayerForAction) {
+            targetSocketId = id;
+            break;
+        }
+    }
+
+    if (!targetSocketId) {
+        alert('Player not found.');
+        return;
+    }
+
+    const targetPlayer = remotePlayers[targetSocketId];
+    const targetInCall = targetPlayer && targetPlayer.inGroupCall;
+
+    if (isInGroupCall) {
+        // We're in a group â€” invite the player
+        invitePlayerToGroup(targetSocketId);
+    } else if (targetInCall) {
+        alert('This player is currently in a call.');
     } else {
-        alert('This player has not configured a voice channel yet.');
+        // Direct 1-on-1 call
+        startDirectCall(targetSocketId, selectedPlayerForAction);
     }
 });
 
@@ -6509,7 +6534,7 @@ async function renderGrid(assets) {
             const videoThumb = await createVideoThumbnail(`${AUTH_API}/api/documents/download/${doc.id}`);
             thumb.appendChild(videoThumb);
             const playIcon = document.createElement('div');
-            playIcon.innerHTML = '▶';
+            playIcon.innerHTML = 'Ã¢â€“Â¶';
             playIcon.style.cssText = 'position: absolute; color: white; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.5);';
             thumb.appendChild(playIcon);
         }
@@ -6560,7 +6585,7 @@ function createVideoThumbnail(url) {
         };
         video.onerror = () => {
             const div = document.createElement('div');
-            div.innerText = '🎬';
+            div.innerText = 'Ã°Å¸Å½Â¬';
             div.style.fontSize = '2rem';
             resolve(div);
         };
@@ -6639,7 +6664,7 @@ selfAssetUploadInput.onchange = async (e) => {
     const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/');
 
     if (!validTypes.includes(file.type) && !isMedia) {
-        alert('Tipo de arquivo não suportado. Use PDF, Word, Imagens ou Vídeos.');
+        alert('Tipo de arquivo nÃƒÂ£o suportado. Use PDF, Word, Imagens ou VÃƒÂ­deos.');
         return;
     }
 

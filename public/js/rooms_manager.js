@@ -13,6 +13,10 @@ function getRoomToken() {
     return localStorage.getItem('token');
 }
 
+function getCourseOwnerMasterId() {
+    return window.apiCourseData?.ownerMasterId || null;
+}
+
 async function roomApiCall(endpoint, method = 'GET', body = null) {
     const token = getRoomToken();
     if (!token) throw new Error('No token');
@@ -243,7 +247,7 @@ function renderRoomEditor() {
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h4 style="margin:0; color:#1e293b; font-size:1rem;"><i class="fas fa-users"></i> Room Members <span style="color:#94a3b8; font-weight:normal; font-size:0.85rem;">(${members.length}${room.maxMembers ? '/' + room.maxMembers : ''})</span></h4>
+                <h4 style="margin:0; color:#1e293b; font-size:1rem;"><i class="fas fa-users"></i> Room Members <span style="color:#94a3b8; font-weight:normal; font-size:0.85rem;">(${members.filter(m => m.user?.id !== getCourseOwnerMasterId()).length}${room.maxMembers ? '/' + room.maxMembers : ''})</span></h4>
             </div>
             <div id="room-members-list" style="max-height:200px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
             </div>
@@ -340,11 +344,13 @@ function renderRoomMembersLists() {
     
     const members = room.members || [];
     const memberUserIds = members.map(m => m.user?.id);
+    const ownerMasterId = getCourseOwnerMasterId();
     
     // Filter enrolled students for unlinked list
     const enrolled = window.enrolledStudentsData || [];
     
-    const unlinked = enrolled.filter(u => !memberUserIds.includes(u.id)).filter(u => 
+    // Exclude already-linked students AND the course owner (owner has implicit access)
+    const unlinked = enrolled.filter(u => !memberUserIds.includes(u.id) && u.id !== ownerMasterId).filter(u => 
         (u.username && u.username.toLowerCase().includes(query)) ||
         (u.email && u.email.toLowerCase().includes(query))
     );
@@ -370,18 +376,20 @@ function renderRoomMembersLists() {
     if (members.length === 0) {
         linkedContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px; margin:0; font-size:0.85rem;">No members yet. Link students from the list above.</p>';
     } else {
-        linkedContainer.innerHTML = members.map(m => `
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 15px; border-bottom:1px solid #e2e8f0; transition:0.1s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+        linkedContainer.innerHTML = members.map(m => {
+            const isOwner = m.user?.id === ownerMasterId;
+            return `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 15px; border-bottom:1px solid #e2e8f0; transition:0.1s;${isOwner ? ' background:#fffbeb;' : ''}" onmouseover="this.style.background='${isOwner ? '#fef3c7' : '#f1f5f9'}'" onmouseout="this.style.background='${isOwner ? '#fffbeb' : 'transparent'}'">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="${m.user?.profilePicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(m.user?.username || '?')}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
                     <div>
-                        <div style="font-weight:600; font-size:0.85rem; color:#1e293b;">${m.user?.username || 'Unknown'}</div>
+                        <div style="font-weight:600; font-size:0.85rem; color:#1e293b;">${m.user?.username || 'Unknown'}${isOwner ? ' <span style="background:#cf982e; color:white; padding:1px 6px; border-radius:8px; font-size:0.65rem; font-weight:700; margin-left:6px;">OWNER</span>' : ''}</div>
                         <div style="font-size:0.75rem; color:#94a3b8;">${m.user?.email || ''}</div>
                     </div>
                 </div>
-                <button onclick="removeRoomMember(${room.id}, ${m.user?.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; padding:4px;" title="Remove"><i class="fas fa-minus-circle"></i></button>
-            </div>
-        `).join('');
+                ${isOwner ? '' : `<button onclick="removeRoomMember(${room.id}, ${m.user?.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; padding:4px;" title="Remove"><i class="fas fa-minus-circle"></i></button>`}
+            </div>`;
+        }).join('');
     }
 }
 
