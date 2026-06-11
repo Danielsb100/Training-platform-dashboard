@@ -561,6 +561,55 @@ joinBtn.addEventListener('click', async () => {
     }
 });
 
+async function checkCurrentRoomAccess() {
+    if (!COURSE_ID_FROM_URL) return true;
+    
+    try {
+        const response = await fetch(`${AUTH_API}/api/courses/${COURSE_ID_FROM_URL}/rooms/my`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) return true;
+        const roomsData = await response.json();
+        const roomsList = roomsData.data || roomsData;
+        
+        let currentRoom = null;
+        if (ROOM_ID_FROM_URL) {
+            currentRoom = roomsList.find(r => String(r.id) === String(ROOM_ID_FROM_URL));
+        } else {
+            currentRoom = roomsList.find(r => r.isGlobal);
+        }
+        
+        if (!currentRoom) {
+            window.location.href = `/room_select.html?courseId=${COURSE_ID_FROM_URL}`;
+            return false;
+        }
+        
+        if (currentRoom.isGlobal) return true;
+        
+        if (!currentRoom.isActive) {
+            window.location.href = `/room_select.html?courseId=${COURSE_ID_FROM_URL}`;
+            return false;
+        }
+        
+        const serverDateHeader = response.headers.get('Date');
+        const now = serverDateHeader ? new Date(serverDateHeader) : new Date();
+        if (currentRoom.startsAt && now < new Date(currentRoom.startsAt)) {
+            window.location.href = `/room_select.html?courseId=${COURSE_ID_FROM_URL}`;
+            return false;
+        }
+        
+        if (currentRoom.endsAt && now > new Date(currentRoom.endsAt)) {
+            window.location.href = `/room_select.html?courseId=${COURSE_ID_FROM_URL}`;
+            return false;
+        }
+        
+        return true;
+    } catch (err) {
+        console.warn('Could not validate room access:', err);
+        return true;
+    }
+}
+
 /**
  * FunÃƒÂ§ao centralizada para entrar no mundo apÃƒÂ³s ter o token
  */
@@ -571,6 +620,11 @@ async function performJoin(token, user) {
     localUsername = user?.username || "Guest";
     localProfilePicture = user?.profilePicture || null;
     localUserRole = user?.role || 'USER';
+
+    // Validate room access and start polling
+    const canEnter = await checkCurrentRoomAccess();
+    if (!canEnter) return;
+    setInterval(checkCurrentRoomAccess, 30000);
 
     // Update Sidebar Profile Picture
     const sidebarPic = document.getElementById('sidebar-profile-pic');

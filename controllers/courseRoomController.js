@@ -124,10 +124,10 @@ module.exports = {
                 return sendError(res, { status: 403, code: 'NOT_ENROLLED', message: 'You are not enrolled in this course.' });
             }
 
-            // Owner/editors see ALL active rooms; regular students see only rooms they are a member of
+            // Owner/editors see ALL rooms; regular students see only rooms they are a member of
             const whereClause = isOwnerOrEditor
-                ? { courseId, isActive: true }
-                : { courseId, isActive: true, members: { some: { userId } } };
+                ? { courseId }
+                : { courseId, members: { some: { userId } } };
 
             const userRooms = await prisma.courseRoom.findMany({
                 where: whereClause,

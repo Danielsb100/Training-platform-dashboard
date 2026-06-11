@@ -160,6 +160,14 @@ function closeRoomEditor() {
     renderRoomsGrid();
 }
 
+function formatLocalDatetime(dateString) {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function renderRoomEditor() {
     const panel = document.getElementById('room-editor-panel');
     if (!panel) return;
@@ -218,12 +226,12 @@ function renderRoomEditor() {
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
             <div>
                 <label style="display:block; font-weight:bold; color:#475569; margin-bottom:5px; font-size:0.85rem;">Start Date <span style="color:#94a3b8; font-weight:normal;">(optional)</span></label>
-                <input type="datetime-local" id="room-edit-starts" value="${room.startsAt ? new Date(room.startsAt).toISOString().slice(0,16) : ''}"
+                <input type="datetime-local" id="room-edit-starts" value="${formatLocalDatetime(room.startsAt)}"
                     style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:0.9rem;">
             </div>
             <div>
                 <label style="display:block; font-weight:bold; color:#475569; margin-bottom:5px; font-size:0.85rem;">End Date <span style="color:#94a3b8; font-weight:normal;">(optional)</span></label>
-                <input type="datetime-local" id="room-edit-ends" value="${room.endsAt ? new Date(room.endsAt).toISOString().slice(0,16) : ''}"
+                <input type="datetime-local" id="room-edit-ends" value="${formatLocalDatetime(room.endsAt)}"
                     style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:0.9rem;">
             </div>
         </div>
@@ -262,16 +270,20 @@ function renderRoomEditor() {
 // ROOM SAVE / DELETE
 // ==========================================
 
-async function saveRoomEdits() {
-    if (!editingRoomId || !window.editingCourseId) return;
+async function saveRoomEditsLocallyAndBackend() {
+    if (!editingRoomId || !window.editingCourseId) return false;
 
     const title = document.getElementById('room-edit-title').value;
     const description = document.getElementById('room-edit-description').value;
     const thumbnailUrl = document.getElementById('room-edit-thumbnail').value;
     const maxMembers = document.getElementById('room-edit-max-members').value;
     const isActive = document.getElementById('room-edit-active').value === 'true';
-    const startsAt = document.getElementById('room-edit-starts').value || null;
-    const endsAt = document.getElementById('room-edit-ends').value || null;
+    
+    let startsAt = document.getElementById('room-edit-starts').value || null;
+    if (startsAt) startsAt = new Date(startsAt).toISOString();
+    
+    let endsAt = document.getElementById('room-edit-ends').value || null;
+    if (endsAt) endsAt = new Date(endsAt).toISOString();
 
     // Determine thumbnail: use URL field if provided, otherwise keep existing
     const room = courseRooms.find(r => r.id === editingRoomId);
@@ -284,10 +296,18 @@ async function saveRoomEdits() {
         await roomApiCall(`/api/courses/${window.editingCourseId}/rooms/${editingRoomId}`, 'PUT', {
             title, description, thumbnail, maxMembers: maxMembers || null, isActive, startsAt, endsAt
         });
-        await loadCourseRooms();
-        selectRoomForEdit(editingRoomId);
+        return true;
     } catch (err) {
         alert('Error saving room: ' + err.message);
+        return false;
+    }
+}
+
+async function saveRoomEdits() {
+    const saved = await saveRoomEditsLocallyAndBackend();
+    if (saved) {
+        await loadCourseRooms();
+        selectRoomForEdit(editingRoomId);
     }
 }
 
@@ -311,6 +331,9 @@ async function deleteRoom(roomId) {
 async function handleRoomThumbUpload(event) {
     const file = event.target.files[0];
     if (!file || !editingRoomId) return;
+
+    const saved = await saveRoomEditsLocallyAndBackend();
+    if (!saved) return;
 
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -396,6 +419,9 @@ function renderRoomMembersLists() {
 async function addRoomMember(userId) {
     if (!editingRoomId || !window.editingCourseId) return;
 
+    const saved = await saveRoomEditsLocallyAndBackend();
+    if (!saved) return;
+
     document.getElementById('room-member-search').value = '';
 
     try {
@@ -411,6 +437,9 @@ async function addRoomMember(userId) {
 
 async function removeRoomMember(roomId, userId) {
     if (!confirm('Remove this member from the room?')) return;
+
+    const saved = await saveRoomEditsLocallyAndBackend();
+    if (!saved) return;
 
     try {
         await roomApiCall(`/api/courses/${window.editingCourseId}/rooms/${roomId}/members/${userId}`, 'DELETE');
