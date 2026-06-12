@@ -727,6 +727,13 @@ body.course-world-mode #chat-input-container {
     backdrop-filter: blur(18px);
 }
 
+/* When call is active above the AI panel, shrink to fit */
+.general-ai-wrapper.call-above .general-ai-panel {
+    min-height: 0;
+    max-height: calc(100vh - 10rem);
+    overflow: hidden;
+}
+
 .general-ai-header {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -760,6 +767,10 @@ body.course-world-mode #chat-input-container {
     margin-top: auto;
     display: flex;
     flex-direction: column;
+}
+
+#chat-wrapper.hidden {
+    display: none !important;
 }
 
 @media (max-width: 900px) {
@@ -845,6 +856,53 @@ body.course-world-mode #audio-call-layer {
     left: auto;
     bottom: auto;
     pointer-events: auto;
+}
+
+/* --- Minimized Call State --- */
+#audio-call-layer.minimized .audio-call-card {
+    width: auto;
+    padding: 0.5rem 0.75rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+}
+
+#audio-call-layer.minimized .video-grid,
+#audio-call-layer.minimized #calling-name,
+#audio-call-layer.minimized .audio-visualizer {
+    display: none !important;
+}
+
+#audio-call-layer.minimized .call-timer {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+#audio-call-layer.minimized .call-actions {
+    gap: 0.4rem;
+}
+
+#audio-call-layer.minimized .call-actions button {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+}
+
+/* Minimize button glow when call is active */
+#btn-minimize-call.call-active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.85), rgba(220, 38, 38, 0.95));
+    border-color: rgba(252, 165, 165, 0.5);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    animation: callPulse 2s ease-in-out infinite;
+}
+
+@keyframes callPulse {
+    0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.7); }
 }
 
 #left-ui-column {

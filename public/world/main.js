@@ -284,6 +284,7 @@ const btnExpand = document.getElementById('btn-expand');
 const btnHangup = document.getElementById('btn-hangup');
 const btnAnswer = document.getElementById('btn-answer');
 const btnRejectCall = document.getElementById('btn-reject-call');
+const btnMinimizeCall = document.getElementById('btn-minimize-call');
 
 // Group Call DOM Elements
 const groupCallContainer = document.getElementById('group-call-container');
@@ -4072,6 +4073,7 @@ function closeGeneralAiAssistant() {
     stopGeneralAiRecording();
     generalAiWrapper?.classList.add('hidden');
     btnToggleAiAssistant?.classList.remove('active');
+    updateLeftPanelOpenState();
 }
 
 async function sendGeneralAiMessage() {
@@ -4209,6 +4211,7 @@ btnToggleAiAssistant?.addEventListener('click', () => {
     const isHidden = generalAiWrapper?.classList.contains('hidden');
     if (isHidden) {
         openGeneralAiAssistant();
+        // AI ↔ Chat are mutually exclusive
         const chatHistoryContainer = document.getElementById('chat-history-container');
         if (chatHistoryContainer && !chatHistoryContainer.classList.contains('hidden')) {
             chatHistoryContainer.classList.add('hidden');
@@ -4218,6 +4221,7 @@ btnToggleAiAssistant?.addEventListener('click', () => {
     } else {
         closeGeneralAiAssistant();
     }
+    syncPanelLayout();
 });
 
 generalAiClose?.addEventListener('click', closeGeneralAiAssistant);
@@ -5937,7 +5941,19 @@ function startJitsiCall(jitsiRoomName, displayName, callLabel) {
     callingName.innerText = callLabel || 'In Call...';
     callTimer.innerText = '00:00';
     audioCallLayer.classList.remove('hidden');
+    audioCallLayer.classList.remove('minimized');
     videoContainer.classList.remove('hidden');
+
+    // Show the minimize button in the top-right toggles
+    if (btnMinimizeCall) {
+        btnMinimizeCall.classList.remove('hidden');
+        btnMinimizeCall.classList.add('call-active');
+        btnMinimizeCall.innerText = '\u{1F5D5}';
+        btnMinimizeCall.title = 'Minimize Call';
+    }
+
+    // Sync layout — auto-minimize if chat/AI is already open
+    syncPanelLayout();
 
     // Start timer only when the conference is actually joined
     jitsiApi.addEventListener('videoConferenceJoined', () => {
@@ -5980,7 +5996,14 @@ function stopJitsiCall() {
     audioCallLayer.classList.add('hidden');
     audioCallLayer.classList.remove('expanded');
     audioCallLayer.classList.remove('expanded-screen');
+    audioCallLayer.classList.remove('minimized');
     videoContainer.classList.add('hidden');
+
+    // Hide the minimize button
+    if (btnMinimizeCall) {
+        btnMinimizeCall.classList.add('hidden');
+        btnMinimizeCall.classList.remove('call-active');
+    }
 
     btnExpand.innerText = '\u26F6';
     btnCamera.classList.remove('active');
@@ -6010,6 +6033,9 @@ function stopJitsiCall() {
     pendingDirectCallJitsiRoom = null;
 
     console.log('[Jitsi] Call ended');
+
+    // Sync layout after call ended
+    syncPanelLayout();
 }
 
 function resetAudioUI() {
@@ -6058,6 +6084,14 @@ function startDirectCall(targetSocketId, targetName) {
     socket.emit('directCallOffer', { targetSocketId });
     callingName.innerText = `Calling ${targetName}...`;
     audioCallLayer.classList.remove('hidden');
+    // Show minimize button during 'Calling...' state
+    if (btnMinimizeCall) {
+        btnMinimizeCall.classList.remove('hidden');
+        btnMinimizeCall.classList.add('call-active');
+        btnMinimizeCall.innerText = '\u{1F5D5}';
+        btnMinimizeCall.title = 'Minimize Call';
+    }
+    syncPanelLayout();
 }
 
 // ===== RENDER GROUP CALL LIST =====
@@ -6322,6 +6356,56 @@ function setupCallSocketListeners() {
 
 // ===== SIDEBAR TOGGLE LOGIC =====
 
+/**
+ * Central layout sync function.
+ * Rules:
+ *  - chat ↔ AI assistant (mutually exclusive)
+ *  - group calls ↔ player list (mutually exclusive)
+ *  - when in a call AND (chat or AI) is open → auto-minimize call, hide player list/group calls
+ *  - when in a call AND no big panel → restore call to full size
+ *  - always sync #chat-wrapper hidden state with its children
+ */
+function syncPanelLayout() {
+    const inCall = audioCallLayer && !audioCallLayer.classList.contains('hidden');
+    const chatOpen = chatHistoryContainer && !chatHistoryContainer.classList.contains('hidden');
+    const aiOpen = generalAiWrapper && !generalAiWrapper.classList.contains('hidden');
+    const hasBigPanel = chatOpen || aiOpen;
+
+    // Sync #chat-wrapper hidden state
+    const chatWrap = document.getElementById('chat-wrapper');
+    if (chatWrap) {
+        chatWrap.classList.toggle('hidden', !chatOpen);
+    }
+
+    if (inCall && hasBigPanel) {
+        // Auto-minimize call when a big panel (chat/AI) is also visible
+        audioCallLayer.classList.add('minimized');
+        // Hide player list / group calls — the call replaces them
+        playerListContainer?.classList.add('hidden');
+        groupCallContainer?.classList.add('hidden');
+        btnTogglePlayers?.classList.remove('active');
+        btnToggleGroups?.classList.remove('active');
+    } else if (inCall && !hasBigPanel) {
+        // No big panel alongside call — restore full call UI
+        audioCallLayer.classList.remove('minimized');
+    }
+
+    // Toggle call-above on AI wrapper so it shrinks to fit below the call bar
+    if (generalAiWrapper) {
+        generalAiWrapper.classList.toggle('call-above', inCall);
+    }
+
+    // Sync minimize button icon
+    if (btnMinimizeCall && inCall) {
+        const isMin = audioCallLayer.classList.contains('minimized');
+        btnMinimizeCall.innerText = isMin ? '\u{1F5D6}' : '\u{1F5D5}';
+        btnMinimizeCall.title = isMin ? 'Restore Call' : 'Minimize Call';
+    }
+}
+
+// Alias for backward compat (called from closeGeneralAiAssistant etc.)
+function updateLeftPanelOpenState() { syncPanelLayout(); }
+
 if (btnToggleGroups) {
     btnToggleGroups.onclick = () => {
         const isHidden = groupCallContainer.classList.toggle('hidden');
@@ -6333,6 +6417,7 @@ if (btnToggleGroups) {
             btnTogglePlayers.classList.remove('active');
             if (socket) socket.emit('getGroupCallList');
         }
+        syncPanelLayout();
     };
 }
 
@@ -6353,6 +6438,7 @@ if (btnTogglePlayers) {
             groupCallContainer.classList.add('hidden');
             btnToggleGroups.classList.remove('active');
         }
+        syncPanelLayout();
     };
 }
 
@@ -6362,9 +6448,21 @@ if (btnToggleChat) {
         document.getElementById('chat-input-container').classList.toggle('hidden', isHidden);
         btnToggleChat.classList.toggle('active', !isHidden);
 
+        // Chat ↔ AI assistant are mutually exclusive
         if (!isHidden && generalAiWrapper && !generalAiWrapper.classList.contains('hidden')) {
             closeGeneralAiAssistant();
         }
+        syncPanelLayout();
+    };
+}
+
+// --- Minimize Call Button ---
+if (btnMinimizeCall) {
+    btnMinimizeCall.onclick = () => {
+        if (!audioCallLayer || audioCallLayer.classList.contains('hidden')) return;
+        const isMinimized = audioCallLayer.classList.toggle('minimized');
+        btnMinimizeCall.innerText = isMinimized ? '\u{1F5D6}' : '\u{1F5D5}';
+        btnMinimizeCall.title = isMinimized ? 'Restore Call' : 'Minimize Call';
     };
 }
 
