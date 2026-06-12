@@ -673,6 +673,7 @@ const translateQuizEndpoint = async (req, res) => {
                 languageSessionId: parsedTargetSessionId,
                 title: translated.title,
                 order,
+                type: quiz.type,
                 questions: {
                     create: translated.questions.map((q, qi) => ({
                         text: q.text,

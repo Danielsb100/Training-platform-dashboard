@@ -1408,6 +1408,7 @@ body.module-sidebar-open #audio-call-layer.expanded-screen {
     align-items: center;
     gap: 10px;
     position: relative;
+    color: #ffffff;
 }
 
 .menu-item:hover {

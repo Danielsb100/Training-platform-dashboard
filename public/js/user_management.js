@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+let allUsers = [];
+
 async function loadUsers() {
     const token = localStorage.getItem('token');
     try {
@@ -59,47 +61,73 @@ async function loadUsers() {
         const data = await res.json();
         const users = data.users || data.data?.users;
         if (res.ok && users) {
-            const tableBody = document.getElementById('users-table-body');
-            tableBody.innerHTML = '';
-            
-            users.forEach(u => {
-                const assignedRoles = u.roles || [];
-                const roleDisplay = assignedRoles.length > 0 ? assignedRoles[0] : 'USER';
-                
-                tableBody.innerHTML += `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 15px 20px;">
-                            <div style="font-weight: 600; color: #1e293b;">${u.username}</div>
-                            <div style="font-size: 12px; color: #94a3b8;">ID: ${u.id}</div>
-                        </td>
-                        <td style="padding: 15px 20px; color: #64748b;">${u.email}</td>
-                        <td style="padding: 15px 20px;">
-                            <span style="background: ${u.role === 'MASTER' ? '#cf982e' : '#e2e8f0'}; color: ${u.role === 'MASTER' ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                                ${u.role}
-                            </span>
-                        </td>
-                        <td style="padding: 15px 20px;">
-                            <select onchange="changeUserRole(${u.id}, this.value)" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-                                <option value="USER" ${roleDisplay === 'USER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleNone', 'None') : 'None'}</option>
-                                <option value="STUDENT" ${roleDisplay === 'STUDENT' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleStudent', 'Student') : 'Student'}</option>
-                                <option value="TEACHER" ${roleDisplay === 'TEACHER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTeacher', 'Teacher') : 'Teacher'}</option>
-                                <option value="TUTOR" ${roleDisplay === 'TUTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTutor', 'Tutor') : 'Tutor'}</option>
-                                <option value="BUSINESS_MENTOR" ${roleDisplay === 'BUSINESS_MENTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleBusinessMentor', 'Business Mentor') : 'Business Mentor'}</option>
-                                <option value="COORDINATOR" ${roleDisplay === 'COORDINATOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleCoordinator', 'Coordinator') : 'Coordinator'}</option>
-                            </select>
-                        </td>
-                        <td style="padding: 15px 20px; text-align: right;">
-                            <button onclick="deleteUser(${u.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px;" title="${window.t ? window.t('userManagement.deleteUser', 'Delete User') : 'Delete User'}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
+            allUsers = users;
+            // Reset search input on reload
+            const searchInput = document.getElementById('user-search-input');
+            if (searchInput) searchInput.value = '';
+            renderUsersTable(allUsers);
         }
     } catch (err) {
         console.error(err);
     }
+}
+
+function renderUsersTable(users) {
+    const tableBody = document.getElementById('users-table-body');
+    tableBody.innerHTML = '';
+    
+    if (users.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="padding: 30px; text-align: center; color: #94a3b8;"><i class="fas fa-search" style="margin-right: 8px;"></i>${window.t ? window.t('userManagement.noResults', 'No users found matching your search.') : 'No users found matching your search.'}</td></tr>`;
+        return;
+    }
+
+    users.forEach(u => {
+        const assignedRoles = u.roles || [];
+        const roleDisplay = assignedRoles.length > 0 ? assignedRoles[0] : 'USER';
+        
+        tableBody.innerHTML += `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 15px 20px;">
+                    <div style="font-weight: 600; color: #1e293b;">${u.username}</div>
+                    <div style="font-size: 12px; color: #94a3b8;">ID: ${u.id}</div>
+                </td>
+                <td style="padding: 15px 20px; color: #64748b;">${u.email}</td>
+                <td style="padding: 15px 20px;">
+                    <span style="background: ${u.role === 'MASTER' ? '#cf982e' : '#e2e8f0'}; color: ${u.role === 'MASTER' ? '#fff' : '#475569'}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                        ${u.role}
+                    </span>
+                </td>
+                <td style="padding: 15px 20px;">
+                    <select onchange="changeUserRole(${u.id}, this.value)" style="padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                        <option value="USER" ${roleDisplay === 'USER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleNone', 'None') : 'None'}</option>
+                        <option value="STUDENT" ${roleDisplay === 'STUDENT' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleStudent', 'Student') : 'Student'}</option>
+                        <option value="TEACHER" ${roleDisplay === 'TEACHER' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTeacher', 'Teacher') : 'Teacher'}</option>
+                        <option value="TUTOR" ${roleDisplay === 'TUTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleTutor', 'Tutor') : 'Tutor'}</option>
+                        <option value="BUSINESS_MENTOR" ${roleDisplay === 'BUSINESS_MENTOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleBusinessMentor', 'Business Mentor') : 'Business Mentor'}</option>
+                        <option value="COORDINATOR" ${roleDisplay === 'COORDINATOR' ? 'selected' : ''}>${window.t ? window.t('userManagement.roleCoordinator', 'Coordinator') : 'Coordinator'}</option>
+                    </select>
+                </td>
+                <td style="padding: 15px 20px; text-align: right;">
+                    <button onclick="deleteUser(${u.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px;" title="${window.t ? window.t('userManagement.deleteUser', 'Delete User') : 'Delete User'}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function filterUsers(query) {
+    const q = (query || '').toLowerCase().trim();
+    if (!q) {
+        renderUsersTable(allUsers);
+        return;
+    }
+    const filtered = allUsers.filter(u => 
+        (u.username || '').toLowerCase().includes(q) || 
+        (u.email || '').toLowerCase().includes(q)
+    );
+    renderUsersTable(filtered);
 }
 
 async function changeUserRole(userId, newRole) {

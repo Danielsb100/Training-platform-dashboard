@@ -415,7 +415,7 @@ function openWorldAiTipModal(index) {
     if (!tip || !worldAiTipModal) return;
     const metadata = tip.metadata || {};
     if (worldAiTipModalTitle) worldAiTipModalTitle.textContent = tip.title || 'AI tip';
-    if (worldAiTipModalMeta) worldAiTipModalMeta.textContent = `${tip.severity || 'INFO'} Ã‚Â· ${tip.scope || 'COURSE'}${metadata.llmGenerated ? ' Ã‚Â· LLM generated' : ''}`;
+    if (worldAiTipModalMeta) worldAiTipModalMeta.textContent = `${tip.severity || 'INFO'} · ${tip.scope || 'COURSE'}${metadata.llmGenerated ? ' · LLM generated' : ''}`;
     if (worldAiTipModalSummary) worldAiTipModalSummary.textContent = tip.message || '';
     if (worldAiTipModalReason) {
         worldAiTipModalReason.textContent = tip.reason || '';
@@ -456,7 +456,7 @@ function renderWorldAiTips(payload = {}) {
         <li class="world-operations-item world-ai-tip-item" tabindex="0" role="button" data-ai-tip-index="${index}">
             <strong>${escapeWorldHtml(tip.title || 'AI tip')}</strong>
             <span>${escapeWorldHtml(tip.message || '')}</span>
-            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} Ã‚Â· ${escapeWorldHtml(tip.scope || 'COURSE')} Ã‚Â· View details</em>
+            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} · ${escapeWorldHtml(tip.scope || 'COURSE')} · View details</em>
         </li>
     `).join('');
 }
@@ -611,7 +611,7 @@ async function checkCurrentRoomAccess() {
 }
 
 /**
- * FunÃƒÂ§ao centralizada para entrar no mundo apÃƒÂ³s ter o token
+ * Funçao centralizada para entrar no mundo após ter o token
  */
 async function performJoin(token, user) {
     if (socket && socket.connected) return;
@@ -764,7 +764,7 @@ async function performJoin(token, user) {
 }
 
 /**
- * Verifica se hÃƒÂ¡ um token na URL para login automÃƒÂ¡tico
+ * Verifica se há um token na URL para login automático
  */
 async function checkAutoLogin() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -797,7 +797,7 @@ async function checkAutoLogin() {
             window.history.replaceState({}, document.title, window.location.pathname + (cleanQuery ? '?' + cleanQuery : ''));
         } catch (err) {
             console.error("Auto-login failed:", err);
-            // Token may be expired Ã¢â‚¬â€ clear it so stale tokens don't loop
+            // Token may be expired — clear it so stale tokens don't loop
             sessionStorage.removeItem('world_auth_token');
         }
     } else {
@@ -1153,9 +1153,9 @@ container.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.zoomSpeed = 0.55; // Ajustado conforme feedback do usuÃƒÂ¡rio
+controls.zoomSpeed = 0.55; // Ajustado conforme feedback do usuário
 controls.minZoom = 0.15; // Limite de recuo
-controls.maxZoom = 3.0; // Limite de avanÃƒÂ§o
+controls.maxZoom = 3.0; // Limite de avanço
 controls.enablePan = true;
 controls.screenSpacePanning = true;
 controls.panSpeed = 0.9;
@@ -1415,7 +1415,7 @@ function updateCourseRoomContext() {
         if (!currentRoom) {
             courseRoomContextRoom.textContent = 'Between rooms';
         } else {
-            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} Ã¢â‚¬â€ ${currentRoom.title}`;
+            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} — ${currentRoom.title}`;
         }
     }
 }
@@ -1555,7 +1555,7 @@ function renderCourseRoomShells(runtime) {
                 roomGroup,
                 center.x + roomSpacing / 2,
                 center.z,
-                Boolean(true), // [WORLD-LOCK] Always open passage Ã¢â‚¬â€ was: Boolean(nextModule?.unlocked)
+                Boolean(true), // [WORLD-LOCK] Always open passage — was: Boolean(nextModule?.unlocked)
                 `${colliderBaseId}_to_${nextModule.moduleId}`
             ));
         }
@@ -1614,7 +1614,7 @@ function renderCourseRoomShells(runtime) {
                 }
             });
 
-            // [WORLD-LOCK] Door blocker disabled Ã¢â‚¬â€ all rooms always accessible
+            // [WORLD-LOCK] Door blocker disabled — all rooms always accessible
             // if (nextCenter && !nextModule?.unlocked) {
             //     addDoorBlocker(roomGroup, center.x + roomSpacing / 2, center.z);
             // }
@@ -1892,7 +1892,7 @@ function updatePlayerList() {
 
         // Final fallback: if state name is Guest or Unknown, check gametag
         if ((!player.name || player.name.includes('Guest')) && gametags[id]) {
-            const tagText = gametags[id].element.innerText.replace('Ã°Å¸â€œÅ¾', '').replace('(no voice)', '').trim();
+            const tagText = gametags[id].element.innerText.replace('📞', '').replace('(no voice)', '').trim();
             if (tagText && !tagText.includes('Guest') && tagText !== 'Loading...') {
                 name = tagText;
                 player.name = name; // Update state silently
@@ -2022,14 +2022,14 @@ function addOtherPlayer(playerInfo) {
         console.warn("Player already exists, skipping addOtherPlayer:", playerInfo.id);
         return;
     }
-    // Anchor group: holds only network position/rotation Ã¢â‚¬â€ never touched visually
+    // Anchor group: holds only network position/rotation — never touched visually
     const anchorGroup = new THREE.Group();
     anchorGroup.position.set(playerInfo.position.x, playerInfo.position.y, playerInfo.position.z);
     anchorGroup.rotation.set(playerInfo.rotation.x, playerInfo.rotation.y, playerInfo.rotation.z);
     anchorGroup.userData.remotePlayerId = playerInfo.id;
     scene.add(anchorGroup);
 
-    // Avatar container: child of anchor Ã¢â‚¬â€ all visual mesh loading/centering goes here
+    // Avatar container: child of anchor — all visual mesh loading/centering goes here
     const avatarContainer = new THREE.Group();
     avatarContainer.userData.remotePlayerId = playerInfo.id;
     anchorGroup.add(avatarContainer);
@@ -2404,7 +2404,7 @@ document.getElementById('menu-catalog-models').addEventListener('click', () => {
 // Add Structures to Context Menu
 const menuCatalogStructs = document.createElement('div');
 menuCatalogStructs.className = 'menu-item';
-menuCatalogStructs.innerHTML = 'Ã°Å¸Ââ€”Ã¯Â¸Â Estruturas (Paredes/Escadas)';
+menuCatalogStructs.innerHTML = '🏗️ Estruturas (Paredes/Escadas)';
 document.getElementById('menu-ground-section').appendChild(menuCatalogStructs);
 
 menuCatalogStructs.onclick = () => {
@@ -2588,9 +2588,9 @@ function rotateObject(target, angle) {
         return;
     }
 
-    // Update AABB in wallBoxes (only for simple objects Ã¢â‚¬â€ not for those with preciseColliders)
+    // Update AABB in wallBoxes (only for simple objects — not for those with preciseColliders)
     // For objects with preciseColliders (structures), the collision meshes follow the root
-    // automatically as children Ã¢â‚¬â€ no separate update needed.
+    // automatically as children — no separate update needed.
     const hasPC = preciseColliders.some(c => c.userData.id == target.userData.id);
     if (!hasPC) {
         for (const box of wallBoxes) {
@@ -2689,7 +2689,7 @@ function handlePrimaryWorldClick(event) {
         let root = hit.object;
         while (root && root !== scene) {
             if (root.userData && root.userData.isPlacement) {
-                // [WORLD-LOCK] Lock click guard disabled Ã¢â‚¬â€ all placements are always clickable
+                // [WORLD-LOCK] Lock click guard disabled — all placements are always clickable
                 // if (root.userData.isLocked) {
                 //     alert('This module is still locked by the course path.');
                 //     return;
@@ -2963,7 +2963,7 @@ function getSurfaceHeight(xzPos) {
 
     // 2. Precise Mesh Check (Ramps, Stairs, Slopes)
     if (preciseColliders.length > 0) {
-        // Cast from Eye Level (1.8m) Ã¢â‚¬â€ ensures ray sees floor/ramp from safe height
+        // Cast from Eye Level (1.8m) — ensures ray sees floor/ramp from safe height
         const originY = (playerGroup ? playerGroup.position.y : 0) + 1.8;
         const rayOrigin = new THREE.Vector3(xzPos.x, originY, xzPos.z);
         const rayDir = new THREE.Vector3(0, -1, 0);
@@ -3234,7 +3234,7 @@ function animate() {
         scene.updateMatrixWorld(true);
 
         // Update remote players with time-based interpolation
-        const SMOOTHING_FACTOR = 8.0; // DiminuÃƒÂ­do para 8.0 para um "deslizamento" mais constante sem "teleporte"
+        const SMOOTHING_FACTOR = 8.0; // Diminuído para 8.0 para um "deslizamento" mais constante sem "teleporte"
         const alpha = 1.0 - Math.exp(-SMOOTHING_FACTOR * delta);
 
         for (const id in remotePlayers) {
@@ -3388,7 +3388,7 @@ function createPlacedModel(data) {
         model.updateMatrixWorld(true);
         const placementBox = new THREE.Box3().setFromObject(model);
         if (data.isOptimistic && checkOverlap(placementBox, data.id)) {
-            alert("NÃƒÂ£o ÃƒÂ© possÃƒÂ­vel colocar: EspaÃƒÂ§o ocupado!");
+            alert("Não é possível colocar: Espaço ocupado!");
             activeLoads.delete(data.id);
             return;
         }
@@ -3430,7 +3430,7 @@ function createPlacedModel(data) {
 
         // --- IMPORTANT CHANGE ---
         // Structures ONLY use preciseColliders (Mesh) for collision.
-        // We do NOT add them to wallBoxes (AABB) to avoid "Giant Square" 45Ã‚Â° issues.
+        // We do NOT add them to wallBoxes (AABB) to avoid "Giant Square" 45° issues.
         if (!hasCollisionMeshes && !data.isStructure) {
             const modelBox = new THREE.Box3().setFromObject(model);
             modelBox.relatedId = data.id;
@@ -3617,7 +3617,7 @@ menuPlaceModule.addEventListener('click', async () => {
 
         didInteractThisFrame = true;
     } catch (err) {
-        alert('Erro ao criar mÃƒÂ³dulo interativo: ' + err.message);
+        alert('Erro ao criar módulo interativo: ' + err.message);
     }
 });
 
@@ -3625,7 +3625,7 @@ document.getElementById('menu-delete-placement').addEventListener('click', async
     const id = contextMenuTarget.userData.id;
     closeContextMenu();
 
-    if (!confirm('Excluir este mÃƒÂ³dulo interativo?')) return;
+    if (!confirm('Excluir este módulo interativo?')) return;
 
     try {
         const response = await fetch(`${AUTH_API}/world/placements/${id}`, {
@@ -3655,13 +3655,13 @@ document.getElementById('menu-assign-module').addEventListener('click', async ()
         const modules = await response.json();
 
         if (modules.length === 0) {
-            alert('VocÃƒÂª nÃƒÂ£o possui mÃƒÂ³dulos para vincular. Crie um no Dashboard!');
+            alert('Você não possui módulos para vincular. Crie um no Dashboard!');
             return;
         }
 
         // Show a simple prompt/selection for now (MVP)
         const moduleList = modules.map((m, i) => `${i + 1}. ${m.title} (${m.status})`).join('\n');
-        const choice = prompt(`Escolha o mÃƒÂ³dulo para vincular:\n\n${moduleList}\n\nDigite o nÃƒÂºmero:`);
+        const choice = prompt(`Escolha o módulo para vincular:\n\n${moduleList}\n\nDigite o número:`);
 
         const idx = parseInt(choice) - 1;
         if (isNaN(idx) || !modules[idx]) return;
@@ -3688,9 +3688,9 @@ document.getElementById('menu-assign-module').addEventListener('click', async ()
             moduleTitle: selectedModule.title,
             status: selectedModule.status
         });
-        alert(`MÃƒÂ³dulo "${selectedModule.title}" vinculado com sucesso!`);
+        alert(`Módulo "${selectedModule.title}" vinculado com sucesso!`);
     } catch (err) {
-        alert('Erro ao vincular mÃƒÂ³dulo: ' + err.message);
+        alert('Erro ao vincular módulo: ' + err.message);
     }
 });
 
@@ -4241,9 +4241,9 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
 
     if (!moduleId) {
         if (isOwner) {
-            alert('Este sinalizador ainda nÃƒÂ£o possui um mÃƒÂ³dulo vinculado. Clique com o botÃƒÂ£o direito para vincular.');
+            alert('Este sinalizador ainda não possui um módulo vinculado. Clique com o botão direito para vincular.');
         } else {
-            alert('Este mÃƒÂ³dulo ainda nÃƒÂ£o foi configurado pelo professor.');
+            alert('Este módulo ainda não foi configurado pelo professor.');
         }
         return;
     }
@@ -4313,6 +4313,16 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
             return q.languageSessionId === activeSessionId;
         });
 
+        // Fallback: if no entry test in current language session, use the base module's entry test
+        const hasEntryTestInSession = filteredQuizzes.some(q => q.type === 'ENTRY_TEST');
+        if (!hasEntryTestInSession && activeSessionId !== null) {
+            const baseEntryTests = (module.quizzes || []).filter(q => !q.languageSessionId && q.type === 'ENTRY_TEST');
+            if (baseEntryTests.length > 0) {
+                filteredQuizzes.push(...baseEntryTests);
+                filteredQuizzes.sort((a, b) => (a.order || 0) - (b.order || 0));
+            }
+        }
+
         // Store globally so getModuleMaterialGroups/refreshModuleProgressSurfaces use filtered data
         _filteredModuleVideos = filteredVideos;
         _filteredModuleQuizzes = filteredQuizzes;
@@ -4355,7 +4365,7 @@ function createPlacementBadge(parentGroup) {
         const { status, moduleTitle } = parentGroup.userData;
         const isMaster = localUserRole === 'MASTER' || localUserRole === 'ADMIN';
 
-        let label = moduleTitle || (isMaster ? 'Sem MÃƒÂ³dulo' : 'Interativo');
+        let label = moduleTitle || (isMaster ? 'Sem Módulo' : 'Interativo');
         let color = '#3b82f6'; // Default blue
 
         if (status === 'DRAFT') {
@@ -4555,7 +4565,7 @@ function buildModuleMaterialProgressSection(module = currentModulePayload) {
             label: item.type === 'video' ? 'Video' : item.type === 'document' ? 'Material' : 'Quiz',
             accent: item.viewed ? '#34d399' : '#94a3b8',
             title: item.title,
-            caption: `${item.viewed ? 'Ã¢Å“â€œ ' + (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : 'Ã¢â€”â€¹ ' + (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed')}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` Ã‚Â· Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
+            caption: `${item.viewed ? '\u2713 ' + (window.t ? window.t('world.viewed', 'Viewed') : 'Viewed') : '\u25CB ' + (window.t ? window.t('world.notViewed', 'Not viewed') : 'Not viewed')}${item.type === 'quiz' && item.bestScore !== null && item.bestScore !== undefined ? ` \u00b7 Best ${Number(item.bestScore).toFixed(1)}%` : ''}`,
             actionLabel: item.type === 'video' ? (window.t ? window.t('world.open', 'Open') : 'Open') : item.type === 'document' ? (window.t ? window.t('world.open', 'Open') : 'Open') : (window.t ? window.t('world.goToQuiz', 'Go to quiz') : 'Go to quiz'),
             onClick: () => {
                 if (item.type === 'video') openModuleVideoAsset(item.source);
@@ -4925,7 +4935,7 @@ function renderModuleVideos(videos) {
         }
 
         const playIcon = document.createElement('div');
-        playIcon.innerHTML = 'Ã¢â€“Â¶';
+        playIcon.innerHTML = '&#9654;';
         playIcon.style.cssText = 'position: absolute; color: white; font-size: 3rem; filter: drop-shadow(0 0 8px rgba(0,0,0,0.8)); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; text-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 10;';
         thumb.appendChild(playIcon);
 
@@ -4948,7 +4958,7 @@ function playModuleVideo(video) {
     }
 
     if (!url) {
-        alert("URL do vÃƒÂ­deo invÃƒÂ¡lido.");
+        alert("URL do vídeo inválido.");
         return;
     }
 
@@ -5046,7 +5056,7 @@ function renderModuleDocs(docs) {
             li.style.borderRadius = '8px';
             li.innerHTML = `
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #ff4444; font-weight:bold;">Ã°Å¸â€œâ€ž PDF</span>
+                    <span style="color: #ff4444; font-weight:bold;">📄 PDF</span>
                     <span>${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
@@ -5064,7 +5074,7 @@ function renderModuleDocs(docs) {
             li.style.borderRadius = '8px';
             li.innerHTML = `
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #4488ff; font-weight:bold;">Ã°Å¸â€œÂ Word</span>
+                    <span style="color: #4488ff; font-weight:bold;">📃 Word</span>
                     <span>${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
@@ -5186,13 +5196,18 @@ async function renderModuleQuiz(quizzes) {
                 <span style="width:10px; height:10px; border-radius:50%; background:${statusColor}; display:inline-block;"></span>
                 <strong style="color:#1e293b; font-size:0.88rem;">${statusLabel}</strong>
             </div>
-            ${!entryTestPassed ? '<span style="font-size:0.78rem; color:#92400e;">' + _tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation') + '</span>' : '<span style="font-size:0.78rem; color:#065f46;">Ã¢Å“â€œ</span>'}
+            ${!entryTestPassed ? '<span style="font-size:0.78rem; color:#92400e;">' + _tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation') + '</span>' : '<span style="font-size:0.78rem; color:#065f46;">✓</span>'}
         `;
         container.appendChild(headerDiv);
     }
 
-    // --- Render each quiz ---
-    (quizzes || []).forEach((quiz) => {
+    // --- Render each quiz (entry tests first) ---
+    const sortedQuizzes = [...(quizzes || [])].sort((a, b) => {
+        if (a.type === 'ENTRY_TEST' && b.type !== 'ENTRY_TEST') return -1;
+        if (a.type !== 'ENTRY_TEST' && b.type === 'ENTRY_TEST') return 1;
+        return (a.order || 0) - (b.order || 0);
+    });
+    sortedQuizzes.forEach((quiz) => {
         const isEntryTest = quiz.type === 'ENTRY_TEST';
         const isFinalEval = !isEntryTest;
         const isLocked = isFinalEval && !entryTestPassed;
@@ -5220,7 +5235,7 @@ async function renderModuleQuiz(quizzes) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,245,249,0.88); backdrop-filter:blur(2px); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; gap:8px;';
             overlay.innerHTML = `
-                <span style="font-size:2rem;">Ã°Å¸â€â€™</span>
+                <span style="font-size:2rem;">🔒</span>
                 <strong style="color:#334155; font-size:0.92rem;">${_tc('world.finalEvalLocked', 'Final Evaluation Locked')}</strong>
                 <span style="color:#64748b; font-size:0.8rem; text-align:center; max-width:260px;">${_tc('world.completeEntryFirst', 'Complete the entry test to unlock the final evaluation')}</span>
             `;
@@ -5275,7 +5290,7 @@ async function renderModuleQuiz(quizzes) {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${authToken}`
                         },
-                        body: JSON.stringify({ answers, source: 'MULTIPLAYER_WORLD', courseId: window.__courseWorldContext?.courseId || null })
+                        body: JSON.stringify({ answers, quizId: quiz.id, source: 'MULTIPLAYER_WORLD', courseId: window.__courseWorldContext?.courseId || null })
                     });
                     const result = await res.json();
                     if (!res.ok) throw new Error(result.error || 'Erro ao enviar');
@@ -5322,8 +5337,8 @@ function renderForumThreadList(container, moduleId, threads) {
             <button class="forum-thread-card" type="button" onclick="openModuleForumThread(${Number(thread.id)})">
                 <div>
                     <strong>${escapeWorldHtml(thread.title || 'Untitled discussion')}</strong>
-                    <p>${escapeWorldHtml(thread.content || '').slice(0, 140)}${String(thread.content || '').length > 140 ? 'Ã¢â‚¬Â¦' : ''}</p>
-                    <span>${escapeWorldHtml(thread.user?.username || 'User')} Ã¢â‚¬Â¢ ${Number(thread._count?.replies || 0)} repl${Number(thread._count?.replies || 0) === 1 ? 'y' : 'ies'}</span>
+                    <p>${escapeWorldHtml(thread.content || '').slice(0, 140)}${String(thread.content || '').length > 140 ? '…' : ''}</p>
+                    <span>${escapeWorldHtml(thread.user?.username || 'User')} • ${Number(thread._count?.replies || 0)} repl${Number(thread._count?.replies || 0) === 1 ? 'y' : 'ies'}</span>
                 </div>
             </button>
         `).join('')
@@ -5438,7 +5453,7 @@ async function openModuleForumThread(threadId) {
 
         container.innerHTML = `
             <div class="module-forum-panel">
-                <button class="forum-back-btn" type="button" onclick="renderModuleForum(${Number(thread.moduleId || currentModuleId)})">Ã¢â€ Â Back to discussions</button>
+                <button class="forum-back-btn" type="button" onclick="renderModuleForum(${Number(thread.moduleId || currentModuleId)})">← Back to discussions</button>
                 <article class="forum-thread-detail">
                     <h3>${escapeWorldHtml(thread.title || 'Discussion')}</h3>
                     <span>${escapeWorldHtml(thread.user?.username || 'User')}</span>
@@ -5507,7 +5522,7 @@ function renderModuleReports(module) {
     if (isMaster) {
         container.innerHTML = `
             <div style="padding: 10px;">
-                <h3 style="font-size: 1rem; margin-bottom: 15px;">DesempenHO do MÃƒÂ³dulo</h3>
+                <h3 style="font-size: 1rem; margin-bottom: 15px;">DesempenHO do Módulo</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center;">
                         <div style="font-size: 0.7rem; color: #94a3b8;">ACESSOS</div>
@@ -5518,17 +5533,17 @@ function renderModuleReports(module) {
                         <div style="font-size: 1.5rem; font-weight: bold;">--</div>
                     </div>
                 </div>
-                <button class="upload-btn" style="width: 100%;" onclick="window.open('${AUTH_API.replace('api', '')}/dashboard', '_blank')">Ver RelatÃƒÂ³rios Completos</button>
+                <button class="upload-btn" style="width: 100%;" onclick="window.open('${AUTH_API.replace('api', '')}/dashboard', '_blank')">Ver Relatórios Completos</button>
             </div>
         `;
     } else {
         container.innerHTML = `
             <div style="padding: 20px; text-align: center;">
-                <p style="color: #94a3b8;">Seu progresso neste mÃƒÂ³dulo serÃƒÂ¡ exibido aqui em breve.</p>
+                <p style="color: #94a3b8;">Seu progresso neste módulo será exibido aqui em breve.</p>
                 <div style="margin-top: 20px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden;">
                     <div style="width: 30%; height: 100%; background: #60a5fa;"></div>
                 </div>
-                <p style="font-size: 0.75rem; margin-top: 10px; color: #60a5fa;">30% ConcluÃƒÂ­do</p>
+                <p style="font-size: 0.75rem; margin-top: 10px; color: #60a5fa;">30% Concluído</p>
             </div>
         `;
     }
@@ -5589,9 +5604,9 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
 
     if (!moduleId) {
         if (isOwner) {
-            alert('Este sinalizador ainda nÃƒÆ’Ã‚Â£o possui um mÃƒÆ’Ã‚Â³dulo vinculado. Clique com o botÃƒÆ’Ã‚Â£o direito para vincular.');
+            alert('Este sinalizador ainda não possui um módulo vinculado. Clique com o botão direito para vincular.');
         } else {
-            alert('Este mÃƒÆ’Ã‚Â³dulo ainda nÃƒÆ’Ã‚Â£o foi configurado pelo professor.');
+            alert('Este módulo ainda não foi configurado pelo professor.');
         }
         return;
     }
@@ -5621,27 +5636,58 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
         const module = await response.json();
 
         if (response.status === 403) {
-            const errorMsg = module.error || 'MÃƒÆ’Ã‚Â³dulo indisponÃƒÆ’Ã‚Â­vel ou em manutenÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o.';
+            const errorMsg = module.error || 'Módulo indisponível ou em manutenção.';
             alert(errorMsg);
             moduleSidebar.classList.add('hidden');
             return;
         }
 
-        if (!response.ok) throw new Error(module.error || 'Erro ao carregar mÃƒÆ’Ã‚Â³dulo');
+        if (!response.ok) throw new Error(module.error || 'Erro ao carregar módulo');
 
         currentModulePayload = module;
         currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
         moduleTitle.innerText = module.title;
-        moduleDescription.innerText = module.description || 'Sem descriÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o.';
+        moduleDescription.innerText = module.description || 'Sem descrição.';
 
         if (module.isPreview) {
             document.getElementById('sidebar-preview-banner').classList.add('active');
         }
 
-        renderModuleGeneral(module);
-        renderModuleVideos(module.videos);
+        // --- Language Session Filtering (same logic as openModuleSidebar) ---
+        let legacyActiveSessionId = null;
+        if (userLocale && module.languageSessions && module.languageSessions.length > 0) {
+            const matchingSession = module.languageSessions.find(s => s.locale === userLocale);
+            if (matchingSession) {
+                legacyActiveSessionId = matchingSession.id;
+            }
+        }
+
+        const legacyFilteredVideos = (module.videos || []).filter(v => {
+            if (legacyActiveSessionId === null) return !v.languageSessionId;
+            return v.languageSessionId === legacyActiveSessionId;
+        });
+        const legacyFilteredQuizzes = (module.quizzes || []).filter(q => {
+            if (legacyActiveSessionId === null) return !q.languageSessionId;
+            return q.languageSessionId === legacyActiveSessionId;
+        });
+
+        // Fallback: if no entry test in current language session, use base module entry test
+        const legacyHasEntryTest = legacyFilteredQuizzes.some(q => q.type === 'ENTRY_TEST');
+        if (!legacyHasEntryTest && legacyActiveSessionId !== null) {
+            const baseEntryTests = (module.quizzes || []).filter(q => !q.languageSessionId && q.type === 'ENTRY_TEST');
+            if (baseEntryTests.length > 0) {
+                legacyFilteredQuizzes.push(...baseEntryTests);
+                legacyFilteredQuizzes.sort((a, b) => (a.order || 0) - (b.order || 0));
+            }
+        }
+
+        _filteredModuleVideos = legacyFilteredVideos;
+        _filteredModuleQuizzes = legacyFilteredQuizzes;
+
+        renderModuleGeneral(module, legacyFilteredVideos, legacyFilteredQuizzes);
+        renderModuleVideos(legacyFilteredVideos);
         renderModuleDocs(module.documents);
-        renderModuleQuiz(module.quizzes);
+        renderModuleQuiz(legacyFilteredQuizzes);
         renderModuleForum(moduleId);
         renderModuleReports(module);
 
@@ -5686,7 +5732,7 @@ function renderModuleQuizLegacy(quizzes) {
         : 'Complete the full module quiz to register your score.';
     const scoreCopy = bestScore === null || bestScore === undefined
         ? 'No graded attempt yet.'
-        : `Best attempt: ${bestScore.toFixed(1)}%${quizGateActive ? (quizPassed ? ' Ã¢â‚¬Â¢ Requirement met' : ' Ã¢â‚¬Â¢ Requirement not met yet') : ''}`;
+        : `Best attempt: ${bestScore.toFixed(1)}%${quizGateActive ? (quizPassed ? ' • Requirement met' : ' • Requirement not met yet') : ''}`;
 
     container.innerHTML = `
         <div style="margin-bottom: 18px; padding: 14px 16px; border-radius: 14px; border: 1px solid ${quizGateActive ? 'rgba(96,165,250,0.28)' : 'rgba(255,255,255,0.08)'}; background: ${quizGateActive ? 'rgba(37,99,235,0.12)' : 'rgba(255,255,255,0.04)'};">
@@ -6588,7 +6634,7 @@ async function renderGrid(assets) {
             const videoThumb = await createVideoThumbnail(`${AUTH_API}/api/documents/download/${doc.id}`);
             thumb.appendChild(videoThumb);
             const playIcon = document.createElement('div');
-            playIcon.innerHTML = 'Ã¢â€“Â¶';
+            playIcon.innerHTML = '&#9654;';
             playIcon.style.cssText = 'position: absolute; color: white; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.5);';
             thumb.appendChild(playIcon);
         }
@@ -6639,7 +6685,7 @@ function createVideoThumbnail(url) {
         };
         video.onerror = () => {
             const div = document.createElement('div');
-            div.innerText = 'Ã°Å¸Å½Â¬';
+            div.innerText = '🎬';
             div.style.fontSize = '2rem';
             resolve(div);
         };
@@ -6718,7 +6764,7 @@ selfAssetUploadInput.onchange = async (e) => {
     const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/');
 
     if (!validTypes.includes(file.type) && !isMedia) {
-        alert('Tipo de arquivo nÃƒÂ£o suportado. Use PDF, Word, Imagens ou VÃƒÂ­deos.');
+        alert('Tipo de arquivo não suportado. Use PDF, Word, Imagens ou Vídeos.');
         return;
     }
 
