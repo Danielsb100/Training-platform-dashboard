@@ -356,8 +356,8 @@ function renderWorldOperationsSummary(summary) {
         return;
     }
 
-    worldOperationsUnread.textContent = `${summary.counts.unread} unread`;
-    worldOperationsUrgent.textContent = `${summary.counts.urgent} urgent`;
+    worldOperationsUnread.textContent = `${summary.counts.unread} ${window.t ? window.t('world.unreadLabel', 'unread') : 'unread'}`;
+    worldOperationsUrgent.textContent = `${summary.counts.urgent} ${window.t ? window.t('world.urgentLabel', 'urgent') : 'urgent'}`;
     if (worldOperationsLink) {
         worldOperationsLink.href = `${AUTH_API}/dashboard.html`;
     }
@@ -369,7 +369,7 @@ function renderWorldOperationsSummary(summary) {
     ].slice(0, 3);
 
     if (!highlightedItems.length) {
-        worldOperationsList.innerHTML = '<li class="world-operations-empty">No pending items right now.</li>';
+        worldOperationsList.innerHTML = `<li class="world-operations-empty">${window.t ? window.t('world.noPendingItems', 'No pending items right now.') : 'No pending items right now.'}</li>`;
         return;
     }
 
@@ -443,12 +443,12 @@ function renderWorldAiTips(payload = {}) {
     if (!worldAiTipsList) return;
     const tips = Array.isArray(payload.tips) ? payload.tips : [];
     const counts = payload.severityCounts || {};
-    if (worldAiTipsTotal) worldAiTipsTotal.textContent = `${tips.length} tip${tips.length === 1 ? '' : 's'}`;
-    if (worldAiTipsAttention) worldAiTipsAttention.textContent = `${(counts.WARNING || 0) + (counts.CRITICAL || 0)} attention`;
+    if (worldAiTipsTotal) worldAiTipsTotal.textContent = `${tips.length} ${window.t ? window.t('world.tipsLabel', 'tips') : 'tips'}`;
+    if (worldAiTipsAttention) worldAiTipsAttention.textContent = `${(counts.WARNING || 0) + (counts.CRITICAL || 0)} ${window.t ? window.t('world.attentionLabel', 'attention') : 'attention'}`;
 
     if (!tips.length) {
         currentWorldAiTips = [];
-        worldAiTipsList.innerHTML = '<li class="world-operations-empty">No AI tips right now. Keep studying and this card will surface signals.</li>';
+        worldAiTipsList.innerHTML = `<li class="world-operations-empty">${window.t ? window.t('world.noAiTipsRightNow', 'No AI tips right now. Keep studying and this card will surface signals.') : 'No AI tips right now. Keep studying and this card will surface signals.'}</li>`;
         return;
     }
 
@@ -457,7 +457,7 @@ function renderWorldAiTips(payload = {}) {
         <li class="world-operations-item world-ai-tip-item" tabindex="0" role="button" data-ai-tip-index="${index}">
             <strong>${escapeWorldHtml(tip.title || 'AI tip')}</strong>
             <span>${escapeWorldHtml(tip.message || '')}</span>
-            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} · ${escapeWorldHtml(tip.scope || 'COURSE')} · View details</em>
+            <em class="world-ai-tip-meta">${escapeWorldHtml(tip.severity || 'INFO')} · ${escapeWorldHtml(tip.scope || 'COURSE')} · ${window.t ? window.t('world.viewDetails', 'View details') : 'View details'}</em>
         </li>
     `).join('');
 }
@@ -469,7 +469,7 @@ async function refreshWorldAiTips({ showLoading = false, refresh = true } = {}) 
     if (currentModuleId) params.set('moduleId', currentModuleId);
 
     try {
-        if (showLoading) worldAiTipsList.innerHTML = '<li class="world-operations-empty">Refreshing AI tips...</li>';
+        if (showLoading) worldAiTipsList.innerHTML = `<li class="world-operations-empty">${window.t ? window.t('world.refreshingAiTips', 'Refreshing AI tips...') : 'Refreshing AI tips...'}</li>`;
         const response = await fetch(`${AUTH_API}/api/ai-tips/me?${params.toString()}`, {
             headers: { Authorization: `Bearer ${authToken}` }
         });
@@ -478,7 +478,7 @@ async function refreshWorldAiTips({ showLoading = false, refresh = true } = {}) 
         renderWorldAiTips(payload);
     } catch (error) {
         console.warn('Could not load world AI tips:', error);
-        worldAiTipsList.innerHTML = '<li class="world-operations-empty">Could not load AI tips yet.</li>';
+        worldAiTipsList.innerHTML = `<li class="world-operations-empty">${window.t ? window.t('world.couldNotLoadAiTips', 'Could not load AI tips yet.') : 'Could not load AI tips yet.'}</li>`;
     }
 }
 
@@ -533,13 +533,13 @@ joinBtn.addEventListener('click', async () => {
     const password = passwordInput.value.trim();
 
     if (!email || !password) {
-        loginError.innerText = "Please enter email and password";
+        loginError.innerText = window.t ? window.t('world.pleaseEnterEmailPassword', 'Please enter email and password') : 'Please enter email and password';
         loginError.classList.remove('hidden');
         return;
     }
 
     joinBtn.disabled = true;
-    joinBtn.innerText = "Connecting...";
+    joinBtn.innerText = window.t ? window.t('world.connecting', 'Connecting...') : 'Connecting...';
     loginError.classList.add('hidden');
 
     try {
@@ -558,7 +558,7 @@ joinBtn.addEventListener('click', async () => {
         loginError.innerText = err.message;
         loginError.classList.remove('hidden');
         joinBtn.disabled = false;
-        joinBtn.innerText = "Enter the World";
+        joinBtn.innerText = window.t ? window.t('world.enterTheWorld', 'Enter the World') : 'Enter the World';
     }
 });
 
@@ -642,7 +642,7 @@ async function performJoin(token, user) {
 
         // Proper Dashboard route
         sidebarPic.onclick = () => {
-            if (window.confirm('Go back to profile?')) {
+            if (window.confirm(window.t ? window.t('world.goBackToProfile', 'Go back to profile?') : 'Go back to profile?')) {
                 let profileUrl = AUTH_API.replace('/api', '') + '/profile.html';
                 if (!profileUrl || profileUrl.startsWith('/profile.html')) {
                     profileUrl = '/profile.html';
@@ -774,7 +774,7 @@ async function checkAutoLogin() {
     if (token) {
         console.log("Auto-login token detected. Verifying...");
         joinBtn.disabled = true;
-        joinBtn.innerText = "Auto-Authenticating...";
+        joinBtn.innerText = window.t ? window.t('world.autoAuthenticating', 'Auto-Authenticating...') : 'Auto-Authenticating...';
 
         try {
             const response = await fetch(`/auth/verify`, {
@@ -833,13 +833,13 @@ async function handleRegister() {
     const password = regPasswordInput.value;
 
     if (!username || !email || !password) {
-        registerError.innerText = 'Preencha todos os campos.';
+        registerError.innerText = window.t ? window.t('world.fillAllFields', 'Please fill in all fields.') : 'Please fill in all fields.';
         return;
     }
 
     try {
         registerBtn.disabled = true;
-        registerBtn.innerText = 'Criando conta...';
+        registerBtn.innerText = window.t ? window.t('world.creatingAccount', 'Creating account...') : 'Creating account...';
 
         const response = await fetch(`${AUTH_API}/api/auth/register`, {
             method: 'POST',
@@ -848,10 +848,10 @@ async function handleRegister() {
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Erro no registro');
+        if (!response.ok) throw new Error(data.error || (window.t ? window.t('world.registrationError', 'Registration error') : 'Registration error'));
 
         // Post-register: clear inputs and switch to login with a success message
-        alert('Account created successfully! Log in to enter.');
+        alert(window.t ? window.t('world.accountCreatedSuccessfullyLogIn', 'Account created successfully! Log in to enter.') : 'Account created successfully! Log in to enter.');
         regUsernameInput.value = '';
         regEmailInput.value = '';
         regPasswordInput.value = '';
@@ -861,7 +861,7 @@ async function handleRegister() {
         registerError.innerText = err.message;
     } finally {
         registerBtn.disabled = false;
-        registerBtn.innerText = 'Sign Up';
+        registerBtn.innerText = window.t ? window.t('world.signUp', 'Sign Up') : 'Sign Up';
     }
 }
 
@@ -1092,9 +1092,9 @@ closeCatalogBtn.addEventListener('click', () => catalogOverlay.classList.add('hi
 function renderCatalog(type, onSelect) {
     catalogGrid.innerHTML = '';
 
-    if (type === 'characters') catalogTitle.innerText = 'Escolher Avatar';
-    else if (type === 'structures') catalogTitle.innerText = 'Elementos de Estrutura';
-    else catalogTitle.innerText = 'Object Catalog';
+    if (type === 'characters') catalogTitle.innerText = window.t ? window.t('world.chooseAvatar', 'Choose Avatar') : 'Choose Avatar';
+    else if (type === 'structures') catalogTitle.innerText = window.t ? window.t('world.structureElements', 'Structure Elements') : 'Structure Elements';
+    else catalogTitle.innerText = window.t ? window.t('world.catalog', 'Object Catalog') : 'Object Catalog';
 
     catalogData[type].forEach(item => {
         const div = document.createElement('div');
@@ -1412,11 +1412,11 @@ function updateCourseRoomContext() {
     // Update DOM elements only if they exist (optional top-left card)
     if (courseRoomContextCard && courseRoomContextCourse && courseRoomContextRoom) {
         courseRoomContextCard.classList.remove('hidden');
-        courseRoomContextCourse.textContent = runtime.title || 'Course world';
+        courseRoomContextCourse.textContent = runtime.title || (window.t ? window.t('world.courseWorldLabel', 'Course world') : 'Course world');
         if (!currentRoom) {
-            courseRoomContextRoom.textContent = 'Between rooms';
+            courseRoomContextRoom.textContent = window.t ? window.t('world.betweenRooms', 'Between rooms') : 'Between rooms';
         } else {
-            courseRoomContextRoom.textContent = `Room Module ${currentRoom.index + 1} — ${currentRoom.title}`;
+            courseRoomContextRoom.textContent = `${window.t ? window.t('world.roomModuleLabel', 'Room Module') : 'Room Module'} ${currentRoom.index + 1} — ${currentRoom.title}`;
         }
     }
 }
@@ -3788,7 +3788,7 @@ function setModuleAssistantStatus(message = '', type = '') {
 function updateModuleAssistantControls() {
     if (moduleAssistantSend) {
         moduleAssistantSend.disabled = moduleAssistantLoading || !currentModuleId;
-        moduleAssistantSend.innerText = moduleAssistantLoading ? 'Sending...' : 'Send';
+        moduleAssistantSend.innerText = moduleAssistantLoading ? (window.t ? window.t('world.sending', 'Sending...') : 'Sending...') : (window.t ? window.t('world.send', 'Send') : 'Send');
     }
 
     if (moduleAssistantInput) {
@@ -3798,7 +3798,7 @@ function updateModuleAssistantControls() {
     if (moduleAssistantVoice) {
         const isRecording = moduleAssistantRecorder && moduleAssistantRecorder.state === 'recording';
         moduleAssistantVoice.disabled = moduleAssistantLoading || !currentModuleId;
-        moduleAssistantVoice.innerText = isRecording ? 'Stop' : 'Record';
+        moduleAssistantVoice.innerText = isRecording ? (window.t ? window.t('world.stop', 'Stop') : 'Stop') : (window.t ? window.t('world.record', 'Record') : 'Record');
     }
 
     if (moduleAssistantSpeak) {
@@ -4028,13 +4028,13 @@ function getLastGeneralAiText() {
 function updateGeneralAiControls() {
     if (generalAiSend) {
         generalAiSend.disabled = generalAiLoading;
-        generalAiSend.innerText = generalAiLoading ? 'Sending...' : 'Send';
+        generalAiSend.innerText = generalAiLoading ? (window.t ? window.t('world.sending', 'Sending...') : 'Sending...') : (window.t ? window.t('world.send', 'Send') : 'Send');
     }
     if (generalAiInput) generalAiInput.disabled = generalAiLoading;
     if (generalAiVoice) {
         const isRecording = generalAiRecorder && generalAiRecorder.state === 'recording';
         generalAiVoice.disabled = generalAiLoading;
-        generalAiVoice.innerText = isRecording ? 'Stop' : 'Record';
+        generalAiVoice.innerText = isRecording ? (window.t ? window.t('world.stop', 'Stop') : 'Stop') : (window.t ? window.t('world.record', 'Record') : 'Record');
     }
     if (generalAiSpeak) {
         generalAiSpeak.disabled = !generalAiLastAudio?.audioBase64 && !getLastGeneralAiText();
@@ -4259,7 +4259,7 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
     stopModuleAssistantRecording();
 
     // Reset UI
-    moduleTitle.innerText = 'Loading...';
+    moduleTitle.innerText = window.t ? window.t('world.loading', 'Loading...') : 'Loading...';
     moduleDescription.innerText = '';
     if (moduleGeneralShortcuts) moduleGeneralShortcuts.innerHTML = '';
     if (moduleGeneralAssets) moduleGeneralAssets.innerHTML = '';
@@ -4682,7 +4682,7 @@ function buildModuleGeneralItem({ label, accent, title, caption, actionLabel, on
     const action = document.createElement('button');
     action.type = 'button';
     action.className = 'btn-open';
-    action.innerText = actionLabel || 'Open';
+    action.innerText = actionLabel || (window.t ? window.t('world.open', 'Open') : 'Open');
     action.onclick = onClick;
 
     item.appendChild(meta);
@@ -5621,7 +5621,7 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
     currentModulePayload = null;
     currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
 
-    moduleTitle.innerText = 'Loading...';
+    moduleTitle.innerText = window.t ? window.t('world.loading', 'Loading...') : 'Loading...';
     moduleDescription.innerText = '';
     if (moduleGeneralShortcuts) moduleGeneralShortcuts.innerHTML = '';
     if (moduleGeneralAssets) moduleGeneralAssets.innerHTML = '';
@@ -5640,18 +5640,18 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
         const module = await response.json();
 
         if (response.status === 403) {
-            const errorMsg = module.error || 'Módulo indisponível ou em manutenção.';
+            const errorMsg = module.error || (window.t ? window.t('world.moduleUnavailable', 'Module unavailable or under maintenance.') : 'Module unavailable or under maintenance.');
             alert(errorMsg);
             moduleSidebar.classList.add('hidden');
             return;
         }
 
-        if (!response.ok) throw new Error(module.error || 'Erro ao carregar módulo');
+        if (!response.ok) throw new Error(module.error || (window.t ? window.t('world.errorLoadModule', 'Error loading module') : 'Error loading module'));
 
         currentModulePayload = module;
         currentModuleRuntimeState = getActiveCourseRuntimeModule(courseModuleId, moduleId);
         moduleTitle.innerText = module.title;
-        moduleDescription.innerText = module.description || 'Sem descrição.';
+        moduleDescription.innerText = module.description || (window.t ? window.t('world.noDescription', 'No description.') : 'No description.');
 
         if (module.isPreview) {
             document.getElementById('sidebar-preview-banner').classList.add('active');
@@ -5790,7 +5790,7 @@ function renderModuleQuizLegacy(quizzes) {
     });
 
     submitBtn.classList.remove('hidden');
-    submitBtn.innerText = 'Submit Full Quiz';
+    submitBtn.innerText = window.t ? window.t('world.submitFullQuiz', 'Submit Full Quiz') : 'Submit Full Quiz';
     submitBtn.disabled = false;
     submitBtn.onclick = async () => {
         const answers = [];
@@ -5807,13 +5807,13 @@ function renderModuleQuizLegacy(quizzes) {
         });
 
         if (answers.length < totalQuestions) {
-            alert('Answer every question before submitting the full quiz.');
+            alert(window.t ? window.t('world.answerEveryQuestionBeforeSubmitting', 'Answer every question before submitting the full quiz.') : 'Answer every question before submitting the full quiz.');
             return;
         }
 
         try {
             submitBtn.disabled = true;
-            submitBtn.innerText = 'Submitting...';
+            submitBtn.innerText = window.t ? window.t('world.submitting', 'Submitting...') : 'Submitting...';
             const res = await fetch(`${AUTH_API}/modules/${currentModuleId}/quiz/submit`, {
                 method: 'POST',
                 headers: {
@@ -5827,7 +5827,7 @@ function renderModuleQuizLegacy(quizzes) {
                 })
             });
             const result = await res.json();
-            if (!res.ok) throw new Error(result.error || 'Erro ao enviar');
+            if (!res.ok) throw new Error(result.error || (window.t ? window.t('world.errorSubmittingQuiz', 'Error submitting quiz: ') : 'Error submitting quiz'));
 
             updateRuntimeModuleFromQuizSubmission(result.score);
             await refreshCourseWorldRuntime();
@@ -5835,10 +5835,10 @@ function renderModuleQuizLegacy(quizzes) {
             renderModuleQuiz(quizzes);
             alert(`Quiz submitted. Score: ${result.score.toFixed(1)}%`);
         } catch (err) {
-            alert('Erro ao enviar quiz: ' + err.message);
+            alert((window.t ? window.t('world.errorSubmittingQuiz', 'Error submitting quiz: ') : 'Error submitting quiz: ') + err.message);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerText = 'Submit Full Quiz';
+            submitBtn.innerText = window.t ? window.t('world.submitFullQuiz', 'Submit Full Quiz') : 'Submit Full Quiz';
         }
     };
 }
@@ -6077,12 +6077,12 @@ function closeGroupCall() {
 
 function startDirectCall(targetSocketId, targetName) {
     if (isInGroupCall || isInDirectCall) {
-        alert('You are already in a call. Leave the current call first.');
+        alert(window.t ? window.t('world.youAreAlreadyInA', 'You are already in a call. Leave the current call first.') : 'You are already in a call. Leave the current call first.');
         return;
     }
     if (!socket) return;
     socket.emit('directCallOffer', { targetSocketId });
-    callingName.innerText = `Calling ${targetName}...`;
+    callingName.innerText = (window.t ? window.t('world.callingPlayer', 'Calling {name}...') : 'Calling {name}...').replace('{name}', targetName);
     audioCallLayer.classList.remove('hidden');
     // Show minimize button during 'Calling...' state
     if (btnMinimizeCall) {
@@ -6100,7 +6100,7 @@ function renderGroupCallList(groups) {
     if (!groupCallList) return;
 
     if (!groups || groups.length === 0) {
-        groupCallList.innerHTML = '<div class="group-call-empty">No active group calls</div>';
+        groupCallList.innerHTML = `<div class="group-call-empty">${window.t ? window.t('world.noActiveGroupCalls', 'No active group calls') : 'No active group calls'}</div>`;
         return;
     }
 
@@ -6475,9 +6475,9 @@ function showPlayerActionMenu(username, event) {
 
     // Update call button text based on current call state
     if (isInGroupCall) {
-        btnCallPlayer.innerText = 'Invite to Group';
+        btnCallPlayer.innerText = window.t ? window.t('world.inviteToGroup', 'Invite to Group') : 'Invite to Group';
     } else {
-        btnCallPlayer.innerText = 'Call';
+        btnCallPlayer.innerText = window.t ? window.t('world.call', 'Call') : 'Call';
     }
 
     const point = {
@@ -6620,7 +6620,7 @@ tabBtns.forEach(btn => {
 });
 
 async function showSelfAssetModal() {
-    modalUsernameSpan.innerText = `${localUsername} (My Profile)`;
+    modalUsernameSpan.innerText = `${localUsername} ${window.t ? window.t('world.myProfile', '(My Profile)') : '(My Profile)'}`;
     isSelfModal = true;
     currentAssetTab = 'image';
 
@@ -6862,7 +6862,7 @@ selfAssetUploadInput.onchange = async (e) => {
     const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/');
 
     if (!validTypes.includes(file.type) && !isMedia) {
-        alert('Tipo de arquivo não suportado. Use PDF, Word, Imagens ou Vídeos.');
+        alert(window.t ? window.t('world.unsupportedFileType', 'Unsupported file type. Use PDF, Word, Images or Videos.') : 'Unsupported file type. Use PDF, Word, Images or Videos.');
         return;
     }
 
@@ -6871,7 +6871,7 @@ selfAssetUploadInput.onchange = async (e) => {
 
     try {
         btnUploadAsset.disabled = true;
-        btnUploadAsset.innerText = 'Enviando...';
+        btnUploadAsset.innerText = window.t ? window.t('world.uploading', 'Uploading...') : 'Uploading...';
 
         const response = await fetch(`${AUTH_API}/api/documents/upload`, {
             method: 'POST',
@@ -6880,20 +6880,20 @@ selfAssetUploadInput.onchange = async (e) => {
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Erro no upload');
+        if (!response.ok) throw new Error(data.error || (window.t ? window.t('world.uploadError', 'Upload error') : 'Upload error'));
 
         loadSelfAssets();
     } catch (err) {
-        alert('Erro ao enviar: ' + err.message);
+        alert((window.t ? window.t('world.uploadErrorMsg', 'Upload error: ') : 'Upload error: ') + err.message);
     } finally {
         btnUploadAsset.disabled = false;
-        btnUploadAsset.innerText = 'Upload File';
+        btnUploadAsset.innerText = window.t ? window.t('world.uploadFile', 'Upload File') : 'Upload File';
         selfAssetUploadInput.value = ''; // Reset
     }
 };
 
 window.deleteSelfAsset = async (id) => {
-    if (!confirm('Tem certeza que deseja deletar este arquivo?')) return;
+    if (!confirm(window.t ? window.t('world.deleteFileConfirm', 'Are you sure you want to delete this file?') : 'Are you sure you want to delete this file?')) return;
 
     try {
         const response = await fetch(`${AUTH_API}/api/documents/${id}`, {

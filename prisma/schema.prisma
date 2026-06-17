@@ -540,6 +540,33 @@ model LandingPage {
   updatedAt     DateTime @updatedAt
   course        Course?  @relation("CourseLandingPage", fields: [courseId], references: [id])
   master        User     @relation("MasterLandingPages", fields: [ownerMasterId], references: [id], onDelete: Cascade)
+  translations  LandingPageTranslation[]
+}
+
+model LandingPageTranslation {
+  id            Int         @id @default(autoincrement())
+  landingPageId Int
+  locale        String
+  compiledHtml  String      @db.Text
+  isStale       Boolean     @default(false)
+  translatedAt  DateTime    @default(now())
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@unique([landingPageId, locale])
+  @@index([landingPageId])
+}
+
+model TranslationCache {
+  id         Int      @id @default(autoincrement())
+  sourceHash String
+  sourceText String   @db.Text
+  sourceLang String   @default("en")
+  targetLang String
+  targetText String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@unique([sourceHash, targetLang])
+  @@index([sourceHash])
 }
 
 model AiKnowledgeBaseConnection {

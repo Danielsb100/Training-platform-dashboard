@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { translateLandingPage, markTranslationsStale, getTranslatedHtml } = require('../services/translationService');
 
 function getEffectiveUserRoles(user) {
   return new Set([
@@ -112,11 +113,23 @@ async function getLandingPageByCourseId(req, res) {
         // Return the full page for viewers and editors
         return res.json(page);
     } else {
+        // Check if a translated version is requested
+        const locale = req.query.lang || req.headers['accept-language']?.split(',')[0]?.trim() || 'en-US';
+        let finalHtml = page.compiledHtml;
+
+        // Try to serve a translated version
+        if (locale && locale !== 'en-US') {
+            const translatedHtml = await getTranslatedHtml(page.id, locale);
+            if (translatedHtml) {
+                finalHtml = translatedHtml;
+            }
+        }
+
         // Return only the compiled version for regular viewers
         return res.json({
             id: page.id,
             title: page.title,
-            compiledHtml: page.compiledHtml,
+            compiledHtml: finalHtml,
             compiledCss: page.compiledCss,
             courseId: page.courseId
         });
@@ -152,6 +165,13 @@ async function createLandingPage(req, res) {
         courseId: courseId ? Number(courseId) : null
       }
     });
+
+    // Trigger async translation in background (don't block the response)
+    if (compiledHtml) {
+      translateLandingPage(landingPage.id, compiledHtml).catch(err => {
+        console.error('[LandingPage] Background translation failed:', err.message);
+      });
+    }
 
     return res.status(201).json(landingPage);
   } catch (error) {
@@ -197,6 +217,14 @@ async function updateLandingPage(req, res) {
         courseId: courseId === null ? null : (courseId ? Number(courseId) : existing.courseId)
       }
     });
+
+    // If compiledHtml was updated, re-translate in background
+    if (compiledHtml !== undefined && compiledHtml !== existing.compiledHtml) {
+      markTranslationsStale(id).catch(() => {});
+      translateLandingPage(id, compiledHtml).catch(err => {
+        console.error('[LandingPage] Background re-translation failed:', err.message);
+      });
+    }
 
     return res.json(updated);
   } catch (error) {

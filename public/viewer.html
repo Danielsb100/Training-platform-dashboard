@@ -161,12 +161,12 @@
     <div id="page-content">
         <!-- Content will be injected here -->
         <div style="display:flex; justify-content:center; align-items:center; height:100vh; color:white;">
-            <h2>Loading page...</h2>
+            <h2 data-i18n="viewer.loadingPage">Loading page...</h2>
         </div>
     </div>
 
     <div id="access-training-cta" style="display: none; background: #0f172a; padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
-        <button id="btn-access-training" style="background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+        <button id="btn-access-training" style="background: linear-gradient(90deg, #cf982e, #b8860b); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" data-i18n="viewer.accessTheExercise">
             Access the Exercise
         </button>
     </div>
@@ -333,7 +333,8 @@
                 }
             });
 
-            fetch(`/api/landing-pages/course/${pageId}`)
+            const userLang = localStorage.getItem('i18n_lang') || navigator.language || 'en-US';
+            fetch(`/api/landing-pages/course/${pageId}?lang=${encodeURIComponent(userLang)}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error('API_ERROR');
@@ -510,5 +511,6 @@
             }
         });
     </script>
+    <script src="js/i18n.js"></script>
 </body>
 </html>

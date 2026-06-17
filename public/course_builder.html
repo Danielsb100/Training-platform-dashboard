@@ -229,7 +229,7 @@
     <div class="main-container">
         <div>
             <button class="main-section-btn" onclick="openStudentSection()" style="margin-left: 5vw;">
-                <p id="student-section-p">Course Editor Section</p>
+                <p id="student-section-p" data-i18n="courseBuilder.courseEditorSection">Course Editor Section</p>
             </button>
         </div>
         <section class="main-section">
@@ -436,7 +436,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
                     <div>
                         <h3 style="margin:0; color:#1e293b; font-size:1.3rem;"><i class="fas fa-cube" style="color:#497aa7; margin-right:8px;"></i>3D World Rooms</h3>
-                        <p style="margin:5px 0 0 0; color:#64748b; font-size:0.85rem;">Create and manage isolated rooms for the 3D multiplayer environment.</p>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:0.85rem;" data-i18n="courseBuilder.createAndManageIsolatedRooms">Create and manage isolated rooms for the 3D multiplayer environment.</p>
                     </div>
                     <button onclick="createNewRoom()"
                         style="padding:10px 20px; background:#497aa7; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s; white-space:nowrap;"
@@ -452,7 +452,7 @@
                 <div id="rooms-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
                     <div style="text-align:center; padding:40px 20px; color:#94a3b8; grid-column: 1 / -1;">
                         <i class="fas fa-door-open" style="font-size:3rem; margin-bottom:15px; opacity:0.4;"></i>
-                        <p style="margin:0; font-size:0.95rem;">Loading rooms...</p>
+                        <p style="margin:0; font-size:0.95rem;" data-i18n="courseBuilder.loadingRooms">Loading rooms...</p>
                     </div>
                 </div>
 
@@ -473,10 +473,10 @@
                 style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;"><i
                     class="fas fa-times"></i></button>
             <h2 style="color:#1e293b; margin-top:0;" data-i18n="courseBuilder.courseModules">Course Modules</h2>
-            <p style="color:#64748b;">Manage the exclusive modules of this course track.</p>
+            <p style="color:#64748b;" data-i18n="courseBuilder.manageTheExclusiveModulesOf">Manage the exclusive modules of this course track.</p>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h4 style="margin:0; font-size:1.1rem; color:#1e293b;">Modules Linked to this Course</h4>
+                <h4 style="margin:0; font-size:1.1rem; color:#1e293b;" data-i18n="courseBuilder.modulesLinkedToThisCourse">Modules Linked to this Course</h4>
                 <button onclick="openModuleEditor()"
                     style="padding: 10px 20px; background: #497aa7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+
                     Create New Module</button>
@@ -498,7 +498,7 @@
             style="width:90%; max-width:1000px; position:relative; border-radius:12px; overflow:hidden; background:black; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
             <div
                 style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:15px 20px;">
-                <h3 id="video-player-title" style="margin:0; color:white; font-size:1.1rem;">Watch Video</h3>
+                <h3 id="video-player-title" style="margin:0; color:white; font-size:1.1rem;" data-i18n="courseBuilder.watchVideo">Watch Video</h3>
                 <button onclick="closeVideoPlayer()"
                     style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><i
                         class="fas fa-times"></i></button>
@@ -610,7 +610,7 @@
                                     style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;">
                                     <option value="DRAFT"> <span data-i18n="courseBuilder.draft">Draft</span> </option>
                                     <option value="PUBLISHED" data-i18n="courseBuilder.published">Published</option>
-                                    <option value="ARCHIVED">Archived</option>
+                                    <option value="ARCHIVED" data-i18n="courseBuilder.archived">Archived</option>
                                 </select>
                             </div>
                             <div style="display: flex; gap: 15px; margin-top: 20px;">
@@ -648,7 +648,7 @@
                                 <select id="m-titleFont"
                                     style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom: 15px;"
                                     onchange="updateCoverPreview()">
-                                    <option value="inherit">Default Font</option>
+                                    <option value="inherit" data-i18n="courseBuilder.defaultFont">Default Font</option>
                                     <option value="'Inter', sans-serif">Inter</option>
                                     <option value="'Roboto', sans-serif">Roboto</option>
                                     <option value="'Outfit', sans-serif">Outfit</option>
@@ -666,14 +666,14 @@
 
                             <div class="form-group">
                                 <label
-                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Preview</label>
+                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;" data-i18n="courseBuilder.preview">Preview</label>
                                 <div id="cover-preview-box"
                                     style="width: 100%; aspect-ratio: 1; border-radius: 16px; background-color: #1e293b; background-size: cover; background-position: center; margin-bottom: 15px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 20px;">
                                     <div
                                         style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; inset: 0;">
                                     </div>
                                     <h3 id="cover-preview-title"
-                                        style="position: relative; z-index: 10; margin: 0; font-size: 1.5rem; color: #ffffff; font-family: inherit;">
+                                        style="position: relative; z-index: 10; margin: 0; font-size: 1.5rem; color: #ffffff; font-family: inherit;" data-i18n="courseBuilder.previewTitle">
                                         Preview Title</h3>
                                 </div>
                             </div>
@@ -687,19 +687,19 @@
                     <div class="module-tab-pane" id="pane-videos" style="display: none;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
-                            <h3 style="margin:0; color:#1e293b;">Module Videos</h3>
+                            <h3 style="margin:0; color:#1e293b;" data-i18n="courseBuilder.moduleVideos">Module Videos</h3>
                             <button onclick="showAddVideoForm()"
                                 style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
                                     class="fas fa-video"></i> + Video</button>
                         </div>
                         <div id="v-list" style="display: flex; flex-direction: column; gap: 15px;">
-                            <p style="color: #64748b; text-align: center;">No video added.</p>
+                            <p style="color: #64748b; text-align: center;" data-i18n="courseBuilder.noVideoAdded">No video added.</p>
                         </div>
 
                         <!-- Form Add Vídeo -->
                         <div id="add-video-form"
                             style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px;">
-                            <h4 style="margin-top: 0;">New Video</h4>
+                            <h4 style="margin-top: 0;" data-i18n="courseBuilder.newVideo">New Video</h4>
 
                             <label style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Title and
                                 Description</label>
@@ -736,7 +736,7 @@
                                     style="padding: 10px 15px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Save
                                     Video</button>
                                 <button onclick="hideAddVideoForm()"
-                                    style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                                    style="padding: 10px 15px; background: #e2e8f0; color: #1e293b; border: none; border-radius: 6px; cursor: pointer;" data-i18n="courseBuilder.cancel">Cancel</button>
                             </div>
                         </div>
                     </div>
@@ -745,18 +745,18 @@
                     <div class="module-tab-pane" id="pane-docs" style="display: none;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-wrap:wrap; gap:10px;">
-                            <h3 style="margin:0; color:#1e293b;">Support Materials</h3>
+                            <h3 style="margin:0; color:#1e293b;" data-i18n="courseBuilder.supportMaterials">Support Materials</h3>
                             <div style="display:flex; gap:8px;">
                                 <button class="doc-filter-btn active" data-filter="all" onclick="setDocFilter('all')"
-                                    style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#1e293b;">All</button>
+                                    style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#1e293b;" data-i18n="courseBuilder.all">All</button>
                                 <button class="doc-filter-btn" data-filter="pdf" onclick="setDocFilter('pdf')"
                                     style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PDF</button>
                                 <button class="doc-filter-btn" data-filter="word" onclick="setDocFilter('word')"
-                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Word</button>
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;" data-i18n="courseBuilder.word">Word</button>
                                 <button class="doc-filter-btn" data-filter="image" onclick="setDocFilter('image')"
-                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">Images</button>
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;" data-i18n="courseBuilder.images">Images</button>
                                 <button class="doc-filter-btn" data-filter="ppt" onclick="setDocFilter('ppt')"
-                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;">PowerPoint</button>
+                                    style="background:transparent; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; color:#64748b;" data-i18n="courseBuilder.powerpoint">PowerPoint</button>
                             </div>
                             <button id="btn-add-doc" onclick="document.getElementById('doc-upload-input').click()"
                                 style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
@@ -766,7 +766,7 @@
                             style="display: none;" onchange="handleDocUpload(event)">
 
                         <div id="d-list" style="display: flex; flex-direction: column; gap: 15px;">
-                            <p style="color: #64748b; text-align: center;">No document added.</p>
+                            <p style="color: #64748b; text-align: center;" data-i18n="courseBuilder.noDocumentAdded">No document added.</p>
                         </div>
 
                         <div id="d-grid"
@@ -778,7 +778,7 @@
                     <div class="module-tab-pane" id="pane-quiz" style="display: none;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
-                            <h3 style="margin:0; color:#1e293b;">Quiz Manager</h3>
+                            <h3 style="margin:0; color:#1e293b;" data-i18n="courseBuilder.quizManager">Quiz Manager</h3>
                             <div style="display:flex; gap:10px;">
                                 <button onclick="showCreateQuizForm()"
                                     style="background:white; border:1px solid #cbd5e1; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer; color:#497aa7;"><i
@@ -789,7 +789,7 @@
                             </div>
                         </div>
                         <div id="q-list">
-                            <p style="color: #64748b; text-align: center;">No questions in the quiz.</p>
+                            <p style="color: #64748b; text-align: center;" data-i18n="courseBuilder.noQuestionsInTheQuiz">No questions in the quiz.</p>
                         </div>
 
                         <div style="margin-top: 20px; display: none; gap: 10px; justify-content: center;">
@@ -799,10 +799,10 @@
                         <!-- Form Manual Quiz -->
                         <div id="manual-quiz-form"
                             style="display: none; background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                            <h4 style="margin-top: 0; color: #1e293b;">New Question</h4>
+                            <h4 style="margin-top: 0; color: #1e293b;" data-i18n="courseBuilder.newQuestion">New Question</h4>
                             <div class="form-group">
                                 <label
-                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;">Question</label>
+                                    style="display:block; margin-bottom:5px; color:#475569; font-weight:bold;" data-i18n="courseBuilder.question">Question</label>
                                 <textarea id="manual-q-text" rows="2" placeholder="Type the question here..."
                                     style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:15px; font-family:inherit;"></textarea>
                             </div>
@@ -864,9 +864,9 @@
                                         Level</label>
                                     <select id="ai-q-difficulty"
                                         style="width:100%; padding:10px; border:1px solid #d8b4fe; border-radius:6px;">
-                                        <option value="easy">Easy</option>
-                                        <option value="medium" selected>Medium</option>
-                                        <option value="hard">Hard</option>
+                                        <option value="easy" data-i18n="courseBuilder.easy">Easy</option>
+                                        <option value="medium" selected data-i18n="courseBuilder.medium">Medium</option>
+                                        <option value="hard" data-i18n="courseBuilder.hard">Hard</option>
                                     </select>
                                 </div>
                             </div>
