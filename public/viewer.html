@@ -333,8 +333,7 @@
                 }
             });
 
-            const userLang = localStorage.getItem('i18n_lang') || navigator.language || 'en-US';
-            fetch(`/api/landing-pages/course/${pageId}?lang=${encodeURIComponent(userLang)}`)
+            fetch(`/api/landing-pages/course/${pageId}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error('API_ERROR');
