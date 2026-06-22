@@ -263,6 +263,21 @@
                     const redirectUrl = urlParams.get('redirect');
                     
                     if (redirectUrl && isValidRedirect(redirectUrl)) {
+                        // Smart redirect: if heading to a course landing page, check enrollment first
+                        const viewerMatch = redirectUrl.match(/^\/viewer\.html\?id=(\d+)/);
+                        if (viewerMatch) {
+                            const courseId = viewerMatch[1];
+                            try {
+                                const checkRes = await fetch('/courses/' + courseId, {
+                                    headers: { 'Authorization': 'Bearer ' + result.token }
+                                });
+                                if (checkRes.ok) {
+                                    // User is enrolled — skip landing page, go directly to course
+                                    window.location.href = '/course_content.html?id=' + courseId;
+                                    return;
+                                }
+                            } catch (e) { /* ignore, fall through to normal redirect */ }
+                        }
                         window.location.href = redirectUrl;
                     } else {
                         window.location.href = '/marketplace.html';

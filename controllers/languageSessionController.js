@@ -33,7 +33,7 @@ const createSession = async (req, res) => {
             data: {
                 moduleId,
                 locale: locale.trim(),
-                isDefault: sessionCount === 0
+                isDefault: false
             }
         });
 
@@ -50,7 +50,7 @@ const getSessions = async (req, res) => {
         const sessions = await prisma.moduleLanguageSession.findMany({
             where: { moduleId },
             include: {
-                _count: { select: { videos: true, quizzes: true } }
+                _count: { select: { videos: true, quizzes: true, documents: true } }
             },
             orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
         });
@@ -80,8 +80,8 @@ const deleteSession = async (req, res) => {
             return res.status(404).json({ error: 'Language session not found' });
         }
 
-        // Documents are shared across all sessions — not touched here.
-        // Only delete videos and quizzes belonging to this session.
+        // Documents belonging to this session will have languageSessionId set to null (onDelete: SetNull)
+        // which moves them back to the base session. Videos and quizzes are explicitly deleted.
         await prisma.$transaction(async (tx) => {
             // Delete videos belonging to this session
             for (const video of session.videos) {
@@ -314,7 +314,7 @@ const copyFrom = async (req, res) => {
 const swapLocale = async (req, res) => {
     try {
         const moduleId = parseInt(req.params.id);
-        const sessionId = parseInt(req.params.sessionId);
+        const sessionIdRaw = req.params.sessionId;
         const { targetLocale } = req.body;
 
         if (!targetLocale) {
@@ -327,6 +327,80 @@ const swapLocale = async (req, res) => {
             return res.status(authErr.statusCode || 403).json({ error: authErr.message });
         }
 
+        // --- Handle 'base' session swap ---
+        if (sessionIdRaw === 'base') {
+            // The "base" tab shows content with languageSessionId = null.
+            // The default session (isDefault=true) determines the FLAG shown on the base tab.
+            // When swapping: just update which session is marked as default (no content moves).
+            const defaultSession = await prisma.moduleLanguageSession.findFirst({
+                where: { moduleId, isDefault: true }
+            });
+
+            if (defaultSession) {
+                if (defaultSession.locale === targetLocale) {
+                    return res.json({ message: 'Locale already matches' });
+                }
+
+                // Check if a session with the targetLocale already exists
+                const existingSession = await prisma.moduleLanguageSession.findUnique({
+                    where: { moduleId_locale: { moduleId, locale: targetLocale } }
+                });
+
+                await prisma.$transaction(async (tx) => {
+                    if (existingSession) {
+                        const tempLocale = `temp_${Date.now()}`;
+                        await tx.moduleLanguageSession.update({
+                            where: { id: defaultSession.id },
+                            data: { locale: tempLocale }
+                        });
+                        await tx.moduleLanguageSession.update({
+                            where: { id: existingSession.id },
+                            data: { locale: defaultSession.locale }
+                        });
+                        await tx.moduleLanguageSession.update({
+                            where: { id: defaultSession.id },
+                            data: { locale: targetLocale }
+                        });
+                    } else {
+                        await tx.moduleLanguageSession.update({
+                            where: { id: defaultSession.id },
+                            data: { locale: targetLocale }
+                        });
+                    }
+                });
+            } else {
+                // No default session exists yet — create one with the target locale
+                // Check if a session with the targetLocale already exists
+                const existingSession = await prisma.moduleLanguageSession.findUnique({
+                    where: { moduleId_locale: { moduleId, locale: targetLocale } }
+                });
+                if (existingSession) {
+                    // Target locale already exists as a normal session.
+                    // To swap base with it, we need to create the default session with the OLD base locale (en-US),
+                    // and change the existing session to the new target locale?
+                    // Wait, the existing session IS the target locale.
+                    // So we change the existing session to en-US, and create default as target.
+                    await prisma.$transaction(async (tx) => {
+                        await tx.moduleLanguageSession.update({
+                            where: { id: existingSession.id },
+                            data: { locale: 'en-US' } // Fallback old base locale
+                        });
+                        await tx.moduleLanguageSession.create({
+                            data: { moduleId, locale: targetLocale.trim(), isDefault: true }
+                        });
+                    });
+                } else {
+                    await prisma.moduleLanguageSession.create({
+                        data: { moduleId, locale: targetLocale.trim(), isDefault: true }
+                    });
+                }
+            }
+
+            return res.json({ message: 'Base locale swapped successfully' });
+        }
+
+        // --- Normal session swap ---
+        const sessionId = parseInt(sessionIdRaw);
         const currentSession = await prisma.moduleLanguageSession.findUnique({
             where: { id: sessionId }
         });

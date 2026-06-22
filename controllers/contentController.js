@@ -164,7 +164,7 @@ const addDocument = async (req, res) => {
 const updateDocument = async (req, res) => {
     try {
         const { documentId } = req.params;
-        const { title, order } = req.body;
+        const { title, order, languageSessionId } = req.body;
 
         const modDoc = await prisma.moduleDocument.findUnique({ 
             where: { id: parseInt(documentId) },
@@ -178,9 +178,16 @@ const updateDocument = async (req, res) => {
             return res.status(authErr.statusCode || 403).json({ error: authErr.message || 'Unauthorized' });
         }
 
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (order !== undefined) updateData.order = parseInt(order);
+        if (languageSessionId !== undefined) {
+            updateData.languageSessionId = languageSessionId !== null ? parseInt(languageSessionId) : null;
+        }
+
         const updated = await prisma.moduleDocument.update({
             where: { id: parseInt(documentId) },
-            data: { title, order: parseInt(order) }
+            data: updateData
         });
         queueAiKnowledgeRefresh('training content updated');
         res.json({ ...updated, aiKnowledgeSyncQueued: true });

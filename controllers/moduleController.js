@@ -34,7 +34,8 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             title: d.title,
             order: d.order,
             documentId: d.documentId,
-            type: d.document ? d.document.type : 'application/octet-stream'
+            type: d.document ? d.document.type : 'application/octet-stream',
+            languageSessionId: d.languageSessionId || null
         })).sort((a, b) => a.order - b.order),
         quizzes: (module.quizzes || []).map(qz => ({
             id: qz.id,
@@ -196,7 +197,7 @@ const getModuleById = async (req, res) => {
                 },
                 languageSessions: {
                     include: {
-                        _count: { select: { videos: true, quizzes: true } }
+                        _count: { select: { videos: true, quizzes: true, documents: true } }
                     },
                     orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
                 },

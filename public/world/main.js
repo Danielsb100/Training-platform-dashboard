@@ -4298,19 +4298,33 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
 
         // --- Language Session Filtering ---
         // Determine the active language session based on user's locale preference
+        // Priority: 1) exact locale match, 2) English session if exists, 3) base (null)
         let activeSessionId = null;
-        if (userLocale && module.languageSessions && module.languageSessions.length > 0) {
-            const matchingSession = module.languageSessions.find(s => s.locale === userLocale);
-            if (matchingSession) {
-                activeSessionId = matchingSession.id;
+        const currentLocale = userLocale || 'en-US';
+
+        // Try exact locale match first
+        const exactSession = (module.languageSessions || []).find(s => s.locale === currentLocale);
+        if (exactSession) {
+            activeSessionId = exactSession.isDefault ? null : exactSession.id;
+        } else {
+            // Fallback to English if exact locale doesn't exist
+            if (currentLocale !== 'en-US') {
+                const englishSession = (module.languageSessions || []).find(s => s.locale === 'en-US');
+                if (englishSession) {
+                    activeSessionId = englishSession.isDefault ? null : englishSession.id;
+                }
+                // If no English session either, activeSessionId stays null (base content)
             }
-            // If no matching session, activeSessionId stays null (shows base/default content)
         }
 
-        // Filter videos and quizzes by language session (documents are global, not filtered)
+        // Filter videos, quizzes, AND documents by language session
         const filteredVideos = (module.videos || []).filter(v => {
             if (activeSessionId === null) return !v.languageSessionId;
             return v.languageSessionId === activeSessionId;
+        });
+        const filteredDocs = (module.documents || []).filter(d => {
+            if (activeSessionId === null) return !d.languageSessionId;
+            return d.languageSessionId === activeSessionId;
         });
         const filteredQuizzes = (module.quizzes || []).filter(q => {
             if (activeSessionId === null) return !q.languageSessionId;
@@ -4329,11 +4343,12 @@ async function openModuleSidebar(placementId, moduleId, courseModuleId = null) {
 
         // Store globally so getModuleMaterialGroups/refreshModuleProgressSurfaces use filtered data
         _filteredModuleVideos = filteredVideos;
+        _filteredModuleDocs = filteredDocs;
         _filteredModuleQuizzes = filteredQuizzes;
 
-        renderModuleGeneral(module, filteredVideos, filteredQuizzes);
+        renderModuleGeneral(module, filteredVideos, filteredQuizzes, filteredDocs);
         renderModuleVideos(filteredVideos);
-        renderModuleDocs(module.documents);
+        renderModuleDocs(filteredDocs);
         renderModuleQuiz(filteredQuizzes);
         renderModuleForum(moduleId);
         renderModuleReports(module);
@@ -4478,12 +4493,13 @@ function trackModuleDocumentDownload(doc) {
 
 // Filtered content arrays (set during openModuleSidebar language filtering)
 let _filteredModuleVideos = null;
+let _filteredModuleDocs = null;
 let _filteredModuleQuizzes = null;
 
 function getModuleMaterialGroups(module = currentModulePayload) {
     return {
         videos: _filteredModuleVideos !== null ? _filteredModuleVideos : (Array.isArray(module?.videos) ? module.videos : []),
-        documents: Array.isArray(module?.documents) ? module.documents : [],
+        documents: _filteredModuleDocs !== null ? _filteredModuleDocs : (Array.isArray(module?.documents) ? module.documents : []),
         quizzes: _filteredModuleQuizzes !== null ? _filteredModuleQuizzes : (Array.isArray(module?.quizzes) ? module.quizzes : [])
     };
 }
@@ -4501,9 +4517,10 @@ function refreshModuleProgressSurfaces() {
     if (!currentModulePayload) return;
     const videos = _filteredModuleVideos !== null ? _filteredModuleVideos : (currentModulePayload.videos || []);
     const quizzes = _filteredModuleQuizzes !== null ? _filteredModuleQuizzes : (currentModulePayload.quizzes || []);
-    renderModuleGeneral(currentModulePayload, videos, quizzes);
+    const docs = _filteredModuleDocs !== null ? _filteredModuleDocs : (currentModulePayload.documents || []);
+    renderModuleGeneral(currentModulePayload, videos, quizzes, docs);
     renderModuleVideos(videos);
-    renderModuleDocs(currentModulePayload.documents || []);
+    renderModuleDocs(docs);
     renderModuleQuiz(quizzes);
 }
 
@@ -4728,11 +4745,11 @@ function buildModuleGeneralSection(title, helperText, items, actionLabel, onActi
     return section;
 }
 
-function renderModuleGeneral(module, filteredVideos, filteredQuizzes) {
+function renderModuleGeneral(module, filteredVideos, filteredQuizzes, filteredDocs) {
     if (!moduleGeneralShortcuts || !moduleGeneralAssets) return;
 
     const videos = Array.isArray(filteredVideos) ? filteredVideos : (Array.isArray(module.videos) ? module.videos : []);
-    const documents = Array.isArray(module.documents) ? module.documents : [];
+    const documents = Array.isArray(filteredDocs) ? filteredDocs : (Array.isArray(module.documents) ? module.documents : []);
     const quizzes = Array.isArray(filteredQuizzes) ? filteredQuizzes : (Array.isArray(module.quizzes) ? module.quizzes : []);
 
     moduleGeneralShortcuts.innerHTML = '';
@@ -5658,17 +5675,27 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
         }
 
         // --- Language Session Filtering (same logic as openModuleSidebar) ---
+        // Priority: 1) exact locale match, 2) English session if exists, 3) base (null)
         let legacyActiveSessionId = null;
         if (userLocale && module.languageSessions && module.languageSessions.length > 0) {
             const matchingSession = module.languageSessions.find(s => s.locale === userLocale);
             if (matchingSession) {
                 legacyActiveSessionId = matchingSession.id;
+            } else {
+                const englishSession = module.languageSessions.find(s => s.locale === 'en-US');
+                if (englishSession) {
+                    legacyActiveSessionId = englishSession.id;
+                }
             }
         }
 
         const legacyFilteredVideos = (module.videos || []).filter(v => {
             if (legacyActiveSessionId === null) return !v.languageSessionId;
             return v.languageSessionId === legacyActiveSessionId;
+        });
+        const legacyFilteredDocs = (module.documents || []).filter(d => {
+            if (legacyActiveSessionId === null) return !d.languageSessionId;
+            return d.languageSessionId === legacyActiveSessionId;
         });
         const legacyFilteredQuizzes = (module.quizzes || []).filter(q => {
             if (legacyActiveSessionId === null) return !q.languageSessionId;
@@ -5686,11 +5713,12 @@ async function openModuleSidebarLegacy(placementId, moduleId, courseModuleId = n
         }
 
         _filteredModuleVideos = legacyFilteredVideos;
+        _filteredModuleDocs = legacyFilteredDocs;
         _filteredModuleQuizzes = legacyFilteredQuizzes;
 
-        renderModuleGeneral(module, legacyFilteredVideos, legacyFilteredQuizzes);
+        renderModuleGeneral(module, legacyFilteredVideos, legacyFilteredQuizzes, legacyFilteredDocs);
         renderModuleVideos(legacyFilteredVideos);
-        renderModuleDocs(module.documents);
+        renderModuleDocs(legacyFilteredDocs);
         renderModuleQuiz(legacyFilteredQuizzes);
         renderModuleForum(moduleId);
         renderModuleReports(module);

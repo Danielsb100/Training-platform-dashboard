@@ -195,10 +195,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (userLocale) {
                 const matchSession = languageSessions.find(s => s.locale === userLocale);
                 if (matchSession) {
-                    activeSessionId = matchSession.id;
+                    activeSessionId = matchSession.isDefault ? null : matchSession.id;
+                } else {
+                    // No exact match — try English as fallback
+                    const englishSession = languageSessions.find(s => s.locale === 'en-US');
+                    if (englishSession) {
+                        activeSessionId = englishSession.isDefault ? null : englishSession.id;
+                    }
+                    // If no English session either, activeSessionId stays null (base content)
                 }
             }
-            // If no match found, activeSessionId stays null => base content
         }
 
         // Filter content by session
@@ -213,7 +219,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         videos = filterBySession(moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
-        documents = (moduleData.documents || []).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order); // Documents are shared globally — no session filter
+        // Documents are now filtered by session like videos and quizzes (exclusive, no fallback)
+        documents = (moduleData.documents || []).filter(d => {
+            if (activeSessionId === null) return !d.languageSessionId;
+            return d.languageSessionId === activeSessionId;
+        }).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order);
         let quizzesRaw = moduleData.quizzes || [];
         quizzes = filterBySession(quizzesRaw).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
         

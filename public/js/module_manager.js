@@ -12,31 +12,32 @@ async function apiCall(endpoint, method = 'GET', body = null, isFormData = false
         throw new Error('No token');
     }
 
-    const headers = {
-        'Authorization': `Bearer ${token}`
-    };
+    const maxRetries = method === 'GET' ? 2 : 1;
+    let lastError;
 
-    if (!isFormData) {
-        headers['Content-Type'] = 'application/json';
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            const headers = { 'Authorization': `Bearer ${token}` };
+            if (!isFormData) headers['Content-Type'] = 'application/json';
+
+            const options = { method, headers };
+            if (body) options.body = isFormData ? body : JSON.stringify(body);
+
+            const res = await fetch(`${API_URL}${endpoint}`, options);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.message || 'Request error');
+            return data.data || data;
+        } catch (err) {
+            lastError = err;
+            const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError';
+            if (isNetworkError && attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+                continue;
+            }
+            throw err;
+        }
     }
-
-    const options = {
-        method,
-        headers
-    };
-
-    if (body) {
-        options.body = isFormData ? body : JSON.stringify(body);
-    }
-
-    const res = await fetch(`${API_URL}${endpoint}`, options);
-    const data = await res.json();
-
-    if (!res.ok) {
-        throw new Error(data.error || data.message || 'Request error');
-    }
-
-    return data.data || data;
+    throw lastError;
 }
 
 // ==========================================
@@ -379,15 +380,16 @@ async function loadModuleData(id) {
         }
         renderLanguageSessionTabs();
 
-        // Filter content by current session (videos and quizzes only — documents are shared globally)
+        // Filter content by current session (videos, quizzes, AND documents)
         const filteredVideos = filterBySession(module.videos || []);
+        const filteredDocs = filterBySession(module.documents || []);
         const filteredQuizzes = filterBySession(module.quizzes || (module.quiz ? [module.quiz] : []));
 
         // Videos
         renderVideos(filteredVideos);
 
-        // Docs (shared across all sessions — no filtering)
-        renderDocs(module.documents || []);
+        // Docs (filtered by session like videos and quizzes)
+        renderDocs(filteredDocs);
 
         // Quizzes
         renderQuizzes(filteredQuizzes);
@@ -451,7 +453,13 @@ function renderLanguageSessionTabs() {
         editorDiv.appendChild(flagsContainer);
     }
 
-    // Always show English (Implicit Base)
+    // Determine base locale: use the default session's locale if it exists, otherwise fallback to 'en-US'
+    const defaultSession = moduleLanguageSessions.find(s => s.isDefault);
+    const baseLocale = defaultSession ? defaultSession.locale : 'en-US';
+    const baseFlag = LOCALE_FLAG_IMG[baseLocale] || LOCALE_FLAG_IMG['en-US'];
+    const baseLabel = LOCALE_LABELS[baseLocale] || baseLocale;
+
+    // Always show Base (default language tab)
     const isDefaultActive = currentLanguageSessionId === null;
     let flagsHtml = `
         <div onclick="switchLanguageSession(null)" 
@@ -461,12 +469,13 @@ function renderLanguageSessionTabs() {
                     ${isDefaultActive ? 'border-top: 3px solid #cf982e; height: 38px; z-index:2;' : 'opacity:0.8;'}"
              onmouseover="if(!${isDefaultActive}) this.style.opacity='1';"
              onmouseout="if(!${isDefaultActive}) this.style.opacity='0.8';"
-             title="English (Default)">
-            <img src="${LOCALE_FLAG_IMG['en-US']}" alt="EN" style="width:30px; height:auto; border-radius:2px; object-fit:cover;">
+             title="${baseLabel} (Default)">
+            <img src="${baseFlag}" alt="${baseLabel}" style="width:30px; height:auto; border-radius:2px; object-fit:cover;">
         </div>
     `;
 
     moduleLanguageSessions.forEach(session => {
+        if (session.isDefault) return; // Skip base metadata session
         const flagImg = LOCALE_FLAG_IMG[session.locale] || LOCALE_FLAG_IMG['en-US'];
         const label = LOCALE_LABELS[session.locale] || session.locale;
         const isActive = currentLanguageSessionId === session.id;
@@ -506,9 +515,11 @@ function renderLanguageSessionTabs() {
     }
 
     // Determine current language details
-    const currentLocale = currentLanguageSessionId === null ? 'en-US' : (moduleLanguageSessions.find(s => s.id === currentLanguageSessionId)?.locale || 'en-US');
+    const currentLocale = currentLanguageSessionId === null
+        ? (moduleLanguageSessions.find(s => s.isDefault)?.locale || 'en-US')
+        : (moduleLanguageSessions.find(s => s.id === currentLanguageSessionId)?.locale || 'en-US');
     const currentLabel = LOCALE_LABELS[currentLocale] || currentLocale;
-    const currentFlag = LOCALE_FLAG_IMG[currentLocale];
+    const currentFlag = LOCALE_FLAG_IMG[currentLocale] || LOCALE_FLAG_IMG['en-US'];
 
     let actionHtml = `
         <div style="display:flex; align-items:center; gap:8px;">
@@ -546,7 +557,7 @@ function switchLanguageSession(sessionId) {
     if (window.currentModuleData) {
         const module = window.currentModuleData;
         renderVideos(filterBySession(module.videos || []));
-        renderDocs(module.documents || []); // Documents are shared globally — no session filter
+        renderDocs(filterBySession(module.documents || []));
         renderQuizzes(filterBySession(module.quizzes || []));
     }
 }
@@ -645,7 +656,9 @@ function showSwapLanguageModal() {
     modal.id = 'lang-picker-modal';
     modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.2); padding:20px; min-width:300px; max-height:80vh; overflow-y:auto;';
 
-    const currentLocale = currentLanguageSessionId === null ? 'en-US' : moduleLanguageSessions.find(s => s.id === currentLanguageSessionId).locale;
+    const currentLocale = currentLanguageSessionId === null
+        ? (moduleLanguageSessions.find(s => s.isDefault)?.locale || 'en-US')
+        : moduleLanguageSessions.find(s => s.id === currentLanguageSessionId).locale;
 
     let html = `<div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:1.1rem;">Change Session Language</div>`;
     html += `<div style="margin-bottom:15px; color:#64748b; font-size:0.85rem;">Select the new language for this session. If it already exists, they will be swapped.</div>`;
@@ -716,10 +729,11 @@ function showCopyFromModal() {
     const dd = document.getElementById('session-options-dropdown');
     if (dd) dd.remove();
 
-    // Source can be English (null) or any existing session, EXCEPT the current one
+    // Source can be Base (null) or any existing session, EXCEPT the current one
     const sources = [];
     if (currentLanguageSessionId !== null) {
-        sources.push({ id: null, locale: 'en-US' });
+        const defaultSess = moduleLanguageSessions.find(s => s.isDefault);
+        sources.push({ id: null, locale: defaultSess ? defaultSess.locale : 'en-US' });
     }
     moduleLanguageSessions.forEach(s => {
         if (s.id !== currentLanguageSessionId) {
@@ -772,15 +786,15 @@ function closeLangModal() {
 
 async function executeSwap(targetLocale) {
     if (!editingModuleId) return;
-    if (currentLanguageSessionId === null) {
-        alert("The base (English) session cannot be swapped directly yet. Please swap from the target session instead.");
-        closeLangModal();
-        return;
-    }
     closeLangModal();
 
     try {
-        await apiCall(`/modules/${editingModuleId}/language-sessions/${currentLanguageSessionId}/swap-locale`, 'PATCH', { targetLocale });
+        if (currentLanguageSessionId === null) {
+            // Swapping the base session — use dedicated endpoint
+            await apiCall(`/modules/${editingModuleId}/language-sessions/base/swap-locale`, 'PATCH', { targetLocale });
+        } else {
+            await apiCall(`/modules/${editingModuleId}/language-sessions/${currentLanguageSessionId}/swap-locale`, 'PATCH', { targetLocale });
+        }
         await loadModuleData(editingModuleId);
     } catch (error) {
         alert('Error swapping language: ' + error.message);
@@ -1413,9 +1427,9 @@ async function handleDocUpload(e) {
             const docRes = await apiCall('/api/documents/upload', 'POST', formData, true);
             const docId = docRes.id;
 
-            // 2. Vincular o Documento ao Módulo
-            // Documents are shared globally across all language sessions — never send languageSessionId
+            // 2. Vincular o Documento ao Módulo (with language session if active)
             const docLinkBody = { documentId: docId, title: file.name };
+            if (currentLanguageSessionId) docLinkBody.languageSessionId = currentLanguageSessionId;
             await apiCall(`/modules/${editingModuleId}/documents`, 'POST', docLinkBody);
         }
 
@@ -1948,7 +1962,7 @@ function renderQuizzes(quizzes) {
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button onclick="showManualQuizForm(${quiz.id})" style="padding: 8px 12px; background: #cf982e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-plus"></i> Question</button>
                         <button onclick="showGenerateAiQuizForm()" style="padding: 8px 12px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fas fa-magic"></i> Generate with AI</button>
-                        ${currentLanguageSessionId ? `<button onclick="translateQuizToSession(${quiz.id})" style="padding: 8px 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;" title="Translate this quiz using AI"><i class="fas fa-language"></i> Translate Quiz</button>` : ''}
+                        <button onclick="translateQuizToSession(${quiz.id})" style="padding: 8px 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;" title="Translate this quiz using AI"><i class="fas fa-language"></i> Translate Quiz</button>
                         <button onclick="deleteQuiz(${quiz.id})" style="padding: 8px 12px; background: transparent; color: #ef4444; border: none; cursor: pointer;" title="Delete Entire Quiz"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -2035,13 +2049,25 @@ async function deleteQuestion(questionId) {
 
 // --- TRANSLATE QUIZ ---
 async function translateQuizToSession(quizId) {
-    if (!editingModuleId || !currentLanguageSessionId) return;
+    if (!editingModuleId) return;
 
-    const session = moduleLanguageSessions.find(s => s.id === currentLanguageSessionId);
-    if (!session) return;
+    // Determine target locale for translation
+    let targetLocale, targetLabel, targetSessionId;
+    if (currentLanguageSessionId) {
+        const session = moduleLanguageSessions.find(s => s.id === currentLanguageSessionId);
+        if (!session) return;
+        targetLocale = session.locale;
+        targetLabel = LOCALE_LABELS[session.locale] || session.locale;
+        targetSessionId = currentLanguageSessionId;
+    } else {
+        // Base session: use the default session's locale
+        const defaultSession = moduleLanguageSessions.find(s => s.isDefault);
+        targetLocale = defaultSession ? defaultSession.locale : 'en-US';
+        targetLabel = LOCALE_LABELS[targetLocale] || targetLocale;
+        targetSessionId = null; // base
+    }
 
-    const label = LOCALE_LABELS[session.locale] || session.locale;
-    if (!confirm(`Translate this quiz to ${label} using AI?\nA new translated quiz will be created in this language session.`)) return;
+    if (!confirm(`Translate this quiz to ${targetLabel} using AI?\nA new translated quiz will be created in this language session.`)) return;
 
     try {
         const btn = event.target.closest('button');
@@ -2051,11 +2077,11 @@ async function translateQuizToSession(quizId) {
         }
 
         await apiCall(`/modules/${editingModuleId}/quizzes/${quizId}/translate`, 'POST', {
-            targetLocale: session.locale,
-            targetSessionId: currentLanguageSessionId
+            targetLocale: targetLocale,
+            targetSessionId: targetSessionId
         });
 
-        alert(`Quiz translated to ${label} successfully!`);
+        alert(`Quiz translated to ${targetLabel} successfully!`);
         loadModuleData(editingModuleId);
     } catch (error) {
         alert('Error translating quiz: ' + error.message);
