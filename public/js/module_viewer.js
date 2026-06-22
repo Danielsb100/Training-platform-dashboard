@@ -407,11 +407,116 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>`;
     }
     
+    // --- Progress Tracking Helpers ---
+    function buildViewedPill(viewed) {
+        const label = viewed
+            ? (window.t ? window.t('moduleViewer.viewed', 'Viewed') : 'Viewed')
+            : (window.t ? window.t('moduleViewer.notViewed', 'Not viewed') : 'Not viewed');
+        const color = viewed ? '#16a34a' : '#94a3b8';
+        const bg = viewed ? 'rgba(22,163,74,0.1)' : 'rgba(148,163,184,0.1)';
+        const border = viewed ? 'rgba(22,163,74,0.35)' : 'rgba(148,163,184,0.3)';
+        const icon = viewed ? '<i class="fas fa-check" style="font-size:0.7rem;"></i> ' : '';
+        return `<span style="font-size:0.75rem; border-radius:999px; padding:3px 10px; color:${color}; border:1px solid ${border}; background:${bg}; white-space:nowrap; font-weight:600;">${icon}${label}</span>`;
+    }
+
+    function buildQuizStatusPill(quiz) {
+        if (!quiz.submitted) return '';
+        const score = quiz.bestScore !== null ? Math.round(quiz.bestScore) : 0;
+        const color = score >= 80 ? '#16a34a' : score >= 60 ? '#f59e0b' : '#ef4444';
+        return `<span style="font-size:0.75rem; border-radius:999px; padding:3px 10px; color:${color}; border:1px solid ${color}33; background:${color}15; white-space:nowrap; font-weight:600;"><i class="fas fa-check" style="font-size:0.7rem;"></i> ${score}%</span>`;
+    }
+
+    async function trackVideoViewed(videoIndex) {
+        const v = videos[videoIndex];
+        if (!v || v.viewed) return; // Already viewed
+        try {
+            await fetch(`/modules/${moduleId}/videos/${v.id}/progress`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ progress: 100, source: 'DASHBOARD' })
+            });
+            v.viewed = true;
+            v.progress = 100;
+            renderHubs(); // Re-render to show updated pill
+            maybeAutoCompleteModule();
+        } catch (e) {
+            console.warn('Failed to track video progress:', e);
+        }
+    }
+
+    async function maybeAutoCompleteModule() {
+        if (!courseId || !moduleId) return;
+        
+        // Check: all videos in session viewed?
+        const allVideosViewed = videos.length === 0 || videos.every(v => v.viewed);
+        // Check: all final evaluation quizzes submitted?
+        const allQuizzesSubmitted = finalEvaluations.length === 0 || finalEvaluations.every(q => q.submitted);
+        
+        if (!allVideosViewed || !allQuizzesSubmitted) return;
+        
+        // All conditions met — try to auto-complete
+        try {
+            const res = await fetch(`/courses/${courseId}/modules/${moduleId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ source: 'DASHBOARD' })
+            });
+            if (res.ok) {
+                const result = await res.json();
+                showCompletionBanner(true, result.progressPercent);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                // Module blocked by quiz requirement — show feedback
+                if (res.status === 403 && errData.error) {
+                    showCompletionBanner(false, null, errData.error);
+                }
+            }
+        } catch (e) {
+            console.warn('Auto-complete failed:', e);
+        }
+    }
+
+    function showCompletionBanner(success, progressPercent, blockedMessage) {
+        // Remove any existing banner
+        const existing = document.getElementById('module-completion-banner');
+        if (existing) existing.remove();
+
+        const banner = document.createElement('div');
+        banner.id = 'module-completion-banner';
+        
+        if (success) {
+            banner.innerHTML = `
+                <div style="background:linear-gradient(135deg, #16a34a, #15803d); color:white; padding:16px 24px; border-radius:12px; margin-bottom:20px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 15px rgba(22,163,74,0.3); animation: fadeIn 0.4s ease;">
+                    <i class="fas fa-check-circle" style="font-size:1.5rem;"></i>
+                    <div>
+                        <strong style="font-size:1.05rem;">${window.t ? window.t('moduleViewer.moduleCompleted', 'Module Completed!') : 'Module Completed!'}</strong>
+                        <p style="margin:4px 0 0; opacity:0.9; font-size:0.9rem;">${window.t ? window.t('moduleViewer.progressUpdated', 'Your course progress has been updated.') : 'Your course progress has been updated.'} ${progressPercent !== null ? `(${progressPercent}%)` : ''}</p>
+                    </div>
+                </div>`;
+        } else {
+            banner.innerHTML = `
+                <div style="background:linear-gradient(135deg, #f59e0b, #d97706); color:white; padding:16px 24px; border-radius:12px; margin-bottom:20px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 15px rgba(245,158,11,0.3); animation: fadeIn 0.4s ease;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:1.5rem;"></i>
+                    <div>
+                        <strong style="font-size:1.05rem;">${window.t ? window.t('moduleViewer.completionBlocked', 'Module Not Yet Complete') : 'Module Not Yet Complete'}</strong>
+                        <p style="margin:4px 0 0; opacity:0.9; font-size:0.9rem;">${blockedMessage || ''}</p>
+                    </div>
+                </div>`;
+        }
+
+        const viewerMain = document.getElementById('viewer-main');
+        if (viewerMain) viewerMain.prepend(banner);
+
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => { if (banner.parentNode) banner.remove(); }, 8000);
+    }
+
     function renderHubs() {
         // --- Videos Grid ---
         const videosGrid = document.getElementById('videos-grid');
         videosGrid.innerHTML = videos.length ? videos.map((v, i) => {
             const thumbHtml = getVideoThumbnailHtml(v);
+            const viewedPill = buildViewedPill(v.viewed);
             
             return `
             <div class="card" onclick="openPlayer('video', ${i})">
@@ -421,7 +526,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="card-body">
                     <div class="card-title">${escapeHtml(v.title)}</div>
-                    <div class="card-meta"><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</div>
+                    <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center;"><span><i class="fas fa-video"></i> ${window.t ? window.t('moduleViewer.videoLesson', 'Video Lesson') : 'Video Lesson'}</span> ${viewedPill}</div>
                 </div>
             </div>`;
         }).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noVideos', 'No videos available in this module.') : 'No videos available in this module.') + '</p>';
@@ -450,14 +555,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const quizzesList = document.getElementById('quizzes-list');
         quizzesList.innerHTML = finalEvaluations.length ? finalEvaluations.map((q) => {
             const globalIdx = quizzes.indexOf(q);
+            const quizPill = buildQuizStatusPill(q);
             return `
             <div class="list-item" onclick="openPlayer('quiz', ${globalIdx})">
                 <div class="list-icon" style="color:#cf9c33; background:rgba(207, 156, 51, 0.2);"><i class="fas fa-question-circle"></i></div>
                 <div class="list-content">
-                    <div class="list-title">${q.title}</div>
-                    <p class="list-desc">${q.questions ? q.questions.length : 0} ${window.t ? window.t('moduleViewer.questionsAssessment', 'Questions') : 'Questions'} • ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}</p>
+                    <div class="list-title" style="display:flex; align-items:center; gap:8px;">${q.title} ${quizPill}</div>
+                    <p class="list-desc">${q.questions ? q.questions.length : 0} ${window.t ? window.t('moduleViewer.questionsAssessment', 'Questions') : 'Questions'} • ${window.t ? window.t('moduleViewer.practicalAssessment', 'Practical Assessment') : 'Practical Assessment'}${q.attemptCount > 0 ? ' • ' + q.attemptCount + ' ' + (window.t ? window.t('moduleViewer.attempts', 'attempt(s)') : 'attempt(s)') : ''}</p>
                 </div>
-                <div class="list-action"><i class="fas fa-pencil-alt"></i>${window.t ? window.t('moduleViewer.start', 'Start') : 'Start'}</div>
+                <div class="list-action"><i class="fas fa-pencil-alt"></i>${q.submitted ? (window.t ? window.t('moduleViewer.retake', 'Retake') : 'Retake') : (window.t ? window.t('moduleViewer.start', 'Start') : 'Start')}</div>
             </div>`;
         }).join('') : '<p style="color:#94a3b8;">' + (window.t ? window.t('moduleViewer.noQuizzes', 'No quizzes available in this module.') : 'No quizzes available in this module.') + '</p>';
         
@@ -735,6 +841,9 @@ btnBackHub.addEventListener('click', () => {
             const v = videos[index];
             const title = escapeHtml(v.title);
             playerTitle.textContent = v.title;
+            
+            // Track video as viewed when opened
+            trackVideoViewed(index);
             const videoInfo = parseVideoUrl(v.url);
 
             if (videoInfo.type === 'sharepoint') {
@@ -1044,6 +1153,18 @@ btnBackHub.addEventListener('click', () => {
                 entryTestPassed = true;
                 updateFinalEvaluationLock();
             }
+            
+            // Mark quiz as submitted and update UI
+            item.submitted = true;
+            item.attemptCount = (item.attemptCount || 0) + 1;
+            item.bestScore = item.bestScore !== null && item.bestScore !== undefined
+                ? Math.max(item.bestScore, result.score)
+                : result.score;
+            renderHubs();
+            updateFinalEvaluationLock();
+            
+            // Check if module can now be auto-completed
+            maybeAutoCompleteModule();
             
         } catch (error) {
             console.error(error);

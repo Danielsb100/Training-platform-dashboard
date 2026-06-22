@@ -9,6 +9,33 @@ const assetStorage = createLocalAssetStorage({ rootDir: env.upload.storageDir })
  */
 const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId = null) => {
     const isOwner = userId === module.ownerMasterId;
+
+    // Build video progress lookup from included data
+    const videoProgressMap = new Map();
+    if (module.videos) {
+        for (const v of module.videos) {
+            if (v.progress && v.progress.length > 0) {
+                const userProgress = v.progress.find(p => p.userId === userId);
+                if (userProgress) {
+                    videoProgressMap.set(v.id, { completed: userProgress.completed, progress: userProgress.progress });
+                }
+            }
+        }
+    }
+
+    // Build quiz submission lookup from included data
+    const quizSubmissionMap = new Map();
+    if (module.quizzes) {
+        for (const qz of module.quizzes) {
+            if (qz.submissions && qz.submissions.length > 0) {
+                const userSubs = qz.submissions.filter(s => s.userId === userId);
+                if (userSubs.length > 0) {
+                    const bestScore = Math.max(...userSubs.map(s => s.score));
+                    quizSubmissionMap.set(qz.id, { submitted: true, attemptCount: userSubs.length, bestScore });
+                }
+            }
+        }
+    }
     
     // Base data
     const formatted = {
@@ -22,13 +49,18 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
         status: module.status,
         createdAt: module.createdAt,
         updatedAt: module.updatedAt,
-        videos: (module.videos || []).map(v => ({
-            id: v.id,
-            title: v.title,
-            url: v.url,
-            order: v.order,
-            languageSessionId: v.languageSessionId || null
-        })).sort((a, b) => a.order - b.order),
+        videos: (module.videos || []).map(v => {
+            const prog = videoProgressMap.get(v.id);
+            return {
+                id: v.id,
+                title: v.title,
+                url: v.url,
+                order: v.order,
+                languageSessionId: v.languageSessionId || null,
+                viewed: prog ? prog.completed : false,
+                progress: prog ? prog.progress : 0
+            };
+        }).sort((a, b) => a.order - b.order),
         documents: (module.documents || []).map(d => ({
             id: d.id,
             title: d.title,
@@ -37,23 +69,29 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             type: d.document ? d.document.type : 'application/octet-stream',
             languageSessionId: d.languageSessionId || null
         })).sort((a, b) => a.order - b.order),
-        quizzes: (module.quizzes || []).map(qz => ({
-            id: qz.id,
-            title: qz.title,
-            order: qz.order,
-            type: qz.type || 'FINAL_EVALUATION',
-            languageSessionId: qz.languageSessionId || null,
-            questions: (qz.questions || []).map(q => ({
-                id: q.id,
-                text: q.text,
-                order: q.order,
-                options: (q.options || []).map(o => ({
-                    id: o.id,
-                    text: o.text,
-                    ...(format === 'edit' && (userRole === 'MASTER' || userRole === 'ADMIN') ? { isCorrect: o.isCorrect } : {})
-                }))
-            })).sort((a, b) => a.order - b.order)
-        })).sort((a, b) => a.order - b.order),
+        quizzes: (module.quizzes || []).map(qz => {
+            const sub = quizSubmissionMap.get(qz.id);
+            return {
+                id: qz.id,
+                title: qz.title,
+                order: qz.order,
+                type: qz.type || 'FINAL_EVALUATION',
+                languageSessionId: qz.languageSessionId || null,
+                submitted: sub ? sub.submitted : false,
+                attemptCount: sub ? sub.attemptCount : 0,
+                bestScore: sub ? sub.bestScore : null,
+                questions: (qz.questions || []).map(q => ({
+                    id: q.id,
+                    text: q.text,
+                    order: q.order,
+                    options: (q.options || []).map(o => ({
+                        id: o.id,
+                        text: o.text,
+                        ...(format === 'edit' && (userRole === 'MASTER' || userRole === 'ADMIN') ? { isCorrect: o.isCorrect } : {})
+                    }))
+                })).sort((a, b) => a.order - b.order)
+            };
+        }).sort((a, b) => a.order - b.order),
         languageSessions: (module.languageSessions || []).map(ls => ({
             id: ls.id,
             locale: ls.locale,
@@ -185,15 +223,23 @@ const getAllPublishedModules = async (req, res) => {
 const getModuleById = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user ? req.user.id : null;
         const module = await prisma.trainingModule.findUnique({
             where: { id: parseInt(id) },
             include: {
-                videos: true,
+                videos: {
+                    include: {
+                        progress: userId ? { where: { userId } } : false
+                    }
+                },
                 documents: {
                     include: { document: true }
                 },
                 quizzes: {
-                    include: { questions: { include: { options: true } } }
+                    include: {
+                        questions: { include: { options: true } },
+                        submissions: userId ? { where: { userId } } : false
+                    }
                 },
                 languageSessions: {
                     include: {

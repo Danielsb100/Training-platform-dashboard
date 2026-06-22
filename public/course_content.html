@@ -43,6 +43,17 @@
         .module-card.module-card-locked .module-desc { opacity: 1; transform: none; -webkit-line-clamp: 3; }
         .module-status-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 999px; background: rgba(15,23,42,0.82); border: 1px solid rgba(255,255,255,0.24); color: #f8fafc; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; backdrop-filter: blur(4px); }
         .module-status-badge.waiting { background: rgba(207,156,51,0.92); color: #111827; border-color: rgba(255,255,255,0.35); }
+        .module-status-badge.completed { background: rgba(22,163,74,0.92); color: white; border-color: rgba(255,255,255,0.35); }
+        
+        /* Progress Bar */
+        .course-progress-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px 28px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+        .progress-info { flex: 1; min-width: 200px; }
+        .progress-info h4 { margin: 0 0 6px; color: #1e293b; font-size: 1rem; font-weight: 700; }
+        .progress-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
+        .progress-bar-wrap { flex: 2; min-width: 200px; }
+        .progress-bar-track { height: 12px; background: #e2e8f0; border-radius: 999px; overflow: hidden; position: relative; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #44749f, #cf9c33); border-radius: 999px; transition: width 1s ease-out; min-width: 0; }
+        .progress-percent { font-size: 1.4rem; font-weight: 800; color: #cf9c33; min-width: 60px; text-align: right; }
         
         /* Custom Design Container */
         #custom-design-container { width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
@@ -103,6 +114,9 @@
 
                 // Handle modules format from DB or Local
                 const rawModules = course.modules || (course.courseModules ? course.courseModules.map(cm => cm.module) : []);
+                const progressPercent = course.progressPercent || 0;
+                const completedCount = course.completedCount || 0;
+                const totalModules = rawModules.length;
                 const modules = rawModules.map((m, i) => {
                     const status = m.moduleStatus || m.status || 'DRAFT';
                     return {
@@ -115,11 +129,28 @@
                         status,
                         isPublished: status === 'PUBLISHED',
                         isLockedForStudent: !isOwnerOrEditor && status !== 'PUBLISHED',
+                        completed: m.completed || false,
                         videos: m.videos || [],
                         documents: m.documents || [],
                         quizzes: m.quizzes || []
                     };
                 });
+
+                // Build progress bar HTML
+                const progressBarHTML = !isOwnerOrEditor ? `
+                    <div class="course-progress-card">
+                        <div class="progress-info">
+                            <h4><i class="fas fa-chart-line" style="color:#cf9c33; margin-right:8px;"></i>Course Progress</h4>
+                            <p>${completedCount} / ${totalModules} modules completed</p>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" style="width: 0%" id="progress-bar-fill"></div>
+                            </div>
+                        </div>
+                        <div class="progress-percent">${progressPercent}%</div>
+                    </div>
+                ` : '';
 
                 let modulesHTML = '';
                 if (modules.length === 0) {
@@ -138,12 +169,18 @@
                         const clickHandler = m.isLockedForStudent
                             ? `event.preventDefault(); event.stopPropagation();`
                             : `window.location.href='module_viewer.html?moduleId=${m.id}&courseId=${course.id}'`;
-                        const statusBadge = m.isLockedForStudent
-                            ? `<div class="module-status-badge waiting"><i class="fas fa-clock"></i> ${lockedMessage}</div>`
-                            : (!m.isPublished && isOwnerOrEditor ? `<div class="module-status-badge"><i class="fas fa-eye-slash"></i> Draft</div>` : '');
+                        
+                        let statusBadge = '';
+                        if (m.completed && !m.isLockedForStudent) {
+                            statusBadge = `<div class="module-status-badge completed"><i class="fas fa-check-circle"></i> Module Finished</div>`;
+                        } else if (m.isLockedForStudent) {
+                            statusBadge = `<div class="module-status-badge waiting"><i class="fas fa-clock"></i> ${lockedMessage}</div>`;
+                        } else if (!m.isPublished && isOwnerOrEditor) {
+                            statusBadge = `<div class="module-status-badge"><i class="fas fa-eye-slash"></i> Draft</div>`;
+                        }
 
                         modulesHTML += `
-                            <div class="${cardClass}" onclick="${clickHandler}" aria-disabled="${m.isLockedForStudent ? 'true' : 'false'}" title="${m.isLockedForStudent ? lockedMessage : 'Open module'}">
+                            <div class="${cardClass}" onclick="${clickHandler}" aria-disabled="${m.isLockedForStudent ? 'true' : 'false'}" title="${m.isLockedForStudent ? lockedMessage : (m.completed ? 'Module Finished ✓' : 'Open module')}">
                                 <div class="module-cover" style="background-image: url('${m.coverImage}');"></div>
                                 <div class="module-overlay">
                                     ${statusBadge}
@@ -188,15 +225,7 @@
                         coursesPlaceholder.style.padding = '0';
                         coursesPlaceholder.style.border = 'none';
                         coursesPlaceholder.style.background = 'transparent';
-                        coursesPlaceholder.innerHTML = modulesHTML;
-                        
-                        // Setup placeholders for AI fetching
-                        const statsBlock = tempDiv.querySelector('.stat-block h3');
-                        if (statsBlock) {
-                            statsBlock.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                            const p = statsBlock.nextElementSibling;
-                            if (p) p.innerText = 'Calculating AI Insights...';
-                        }
+                        coursesPlaceholder.innerHTML = progressBarHTML + modulesHTML;
                         
                         finalHtml = tempDiv.innerHTML;
                     } else {
@@ -225,6 +254,39 @@
                         }
                     }
                     
+                    // Try to find the progress boxes immediately and update them with real data
+                    // The custom template might have different classes, so we look for elements containing '0%' or 'Course progress'
+                    const allH3s = Array.from(tempDiv.querySelectorAll('h3, h2, h4, h1, span, div.text-2xl, div.text-3xl'));
+                    const percentEl = allH3s.find(el => el.textContent && el.textContent.trim() === '0%');
+                    if (percentEl) {
+                        percentEl.textContent = progressPercent + '%';
+                        // If it's the progress card, also update the "Completed modules" text if we can find it
+                        const parent = percentEl.parentElement;
+                        if (parent) {
+                            const descEl = Array.from(parent.querySelectorAll('p, span, div')).find(el => el.textContent && el.textContent.toLowerCase().includes('completed'));
+                            if (descEl) {
+                                descEl.textContent = `${completedCount} / ${totalModules} Módulos Concluídos`;
+                            }
+                        }
+                    }
+
+                    // Setup placeholders for AI fetching (only for tips/tasks)
+                    const statBlocks = Array.from(tempDiv.querySelectorAll('.stat-block h3'));
+                    if (statBlocks.length > 0) {
+                        // If they do have stat-blocks, we can safely update the first one with progress just in case
+                        statBlocks[0].innerHTML = `${progressPercent}%`;
+                        const p = statBlocks[0].nextElementSibling;
+                        if (p) p.innerText = `${completedCount} / ${totalModules} Módulos Concluídos`;
+                        
+                        if (statBlocks.length > 1) {
+                            statBlocks[1].innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            const p2 = statBlocks[1].nextElementSibling;
+                            if (p2) p2.innerText = 'Calculating AI Insights...';
+                        }
+                    }
+                    
+                    finalHtml = tempDiv.innerHTML;
+
                     container.innerHTML = `
                         <div id="custom-design-container">
                             <div style="position: absolute; left: 20px; top: 20px; z-index: 100;">
@@ -266,6 +328,7 @@
                                         <h2 style="color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                                             <i class="fas fa-layer-group" style="color: #cf9c33;"></i> Course Modules
                                         </h2>
+                                        ${progressBarHTML}
                                         ${modulesHTML}
                                     </div>
                                     
@@ -335,21 +398,8 @@
                     fetch(`/api/courses/${courseId}/insights`, { headers: { 'Authorization': `Bearer ${token}` } })
                     .then(res => res.json())
                     .then(insights => {
-                        // Update Performance Dashboard
-                        const statBlocks = document.querySelectorAll('#custom-design-container .stat-block');
-                        if (statBlocks.length > 0 && insights.stats) {
-                            statBlocks[0].innerHTML = `
-                                <h3 style="margin:0; font-size:1.8rem; color:#cf9c33;">${insights.stats.completedModules}</h3>
-                                <p style="margin:5px 0 0 0; font-size:0.9rem; opacity:0.8;">Módulos Concluídos</p>
-                            `;
-                        }
-                        if (statBlocks.length > 1 && insights.stats) {
-                            statBlocks[1].innerHTML = `
-                                <h3 style="margin:0; font-size:1.8rem; color:#cf9c33;">${insights.stats.averageScore}</h3>
-                                <p style="margin:5px 0 0 0; font-size:0.9rem; opacity:0.8;">Média de Notas - ${insights.stats.status}</p>
-                            `;
-                        }
-
+                        // We already updated the progress stats above using local data, so we only update tasks/news here.
+                        
                         // Update tasks list if it exists
                         const tasksList = document.querySelector('#custom-design-container #ai-tasks-list');
                         if (tasksList && insights.reminders) {
@@ -378,6 +428,12 @@
                     })
                     .catch(err => console.error("Failed to fetch AI Insights", err));
                 }
+
+                // Animate progress bar fill
+                setTimeout(() => {
+                    const fillEl = document.getElementById('progress-bar-fill');
+                    if (fillEl) fillEl.style.width = progressPercent + '%';
+                }, 100);
             })
             .catch(err => {
                 // Tenta carregar do localStorage como fallback para testes antigos
