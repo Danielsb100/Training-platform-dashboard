@@ -903,11 +903,13 @@ async function selfEnroll(req, res) {
   try {
     const courseId = Number(req.params.id);
     const userId = req.user.id;
+    console.log(`[selfEnroll] START — courseId=${courseId}, userId=${userId}, username=${req.user.username}`);
 
     const course = await prisma.course.findUnique({ where: { id: courseId }, include: { editors: true } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
     }
+    console.log(`[selfEnroll] Course found: "${course.title}", status=${course.status}, ownerMasterId=${course.ownerMasterId}`);
 
     if (course.status !== 'PUBLISHED') {
       return res.status(403).json({ error: 'Cannot subscribe to an unpublished course.' });
@@ -917,6 +919,7 @@ async function selfEnroll(req, res) {
     const existingEnrollment = await prisma.enrollment.findUnique({
       where: { courseId_userId: { courseId, userId } }
     });
+    console.log(`[selfEnroll] Existing enrollment:`, existingEnrollment ? `status=${existingEnrollment.status}` : 'none');
 
     if (existingEnrollment) {
       if (existingEnrollment.status === 'PENDING') {
@@ -928,59 +931,81 @@ async function selfEnroll(req, res) {
     }
 
     // Create enrollment as PENDING (request)
+    console.log(`[selfEnroll] Creating PENDING enrollment...`);
     const enrollment = await prisma.enrollment.upsert({
       where: { courseId_userId: { courseId, userId } },
       update: { status: 'PENDING' },
       create: { courseId, userId, status: 'PENDING' }
     });
+    console.log(`[selfEnroll] Enrollment upserted OK — id=${enrollment.id}`);
 
     if (enrollment) {
       // Notify the student that the request was sent
-      await createEnrollmentNotification({
-        recipientUserId: userId,
-        title: `Enrollment request sent for ${course.title}`,
-        message: `Your enrollment request for ${course.title} has been submitted. The instructor will review it shortly.`,
-        actorUserId: userId,
-        sourceEntityType: 'Course',
-        sourceEntityId: course.id,
-        actionUrl: `/viewer.html?id=${course.id}`
-      });
-
-      // Notify the course owner
-      if (course.ownerMasterId && course.ownerMasterId !== userId) {
-        await createEnrollmentRequestNotification({
-          recipientUserId: course.ownerMasterId,
-          title: `${req.user.username} requested to join ${course.title}`,
-          message: `${req.user.username} is requesting enrollment in your course. Review the request in Course Builder.`,
+      console.log(`[selfEnroll] Sending student notification to userId=${userId}...`);
+      try {
+        await createEnrollmentNotification({
+          recipientUserId: userId,
+          title: `Enrollment request sent for ${course.title}`,
+          message: `Your enrollment request for ${course.title} has been submitted. The instructor will review it shortly.`,
           actorUserId: userId,
           sourceEntityType: 'Course',
           sourceEntityId: course.id,
-          actionUrl: `/course_builder.html?id=${course.id}`
+          actionUrl: `/viewer.html?id=${course.id}`
         });
+        console.log(`[selfEnroll] Student notification sent OK`);
+      } catch (notifErr) {
+        console.error(`[selfEnroll] FAILED to send student notification:`, notifErr.message, notifErr.stack);
+        // Don't re-throw — enrollment was already created, notification is non-critical
+      }
+
+      // Notify the course owner
+      if (course.ownerMasterId && course.ownerMasterId !== userId) {
+        console.log(`[selfEnroll] Sending owner notification to ownerMasterId=${course.ownerMasterId}...`);
+        try {
+          await createEnrollmentRequestNotification({
+            recipientUserId: course.ownerMasterId,
+            title: `${req.user.username} requested to join ${course.title}`,
+            message: `${req.user.username} is requesting enrollment in your course. Review the request in Course Builder.`,
+            actorUserId: userId,
+            sourceEntityType: 'Course',
+            sourceEntityId: course.id,
+            actionUrl: `/course_builder.html?id=${course.id}`
+          });
+          console.log(`[selfEnroll] Owner notification sent OK`);
+        } catch (notifErr) {
+          console.error(`[selfEnroll] FAILED to send owner notification:`, notifErr.message, notifErr.stack);
+        }
       }
 
       // Notify co-editors
       if (course.editors && course.editors.length > 0) {
         for (const editor of course.editors) {
           if (editor.userId !== userId && editor.userId !== course.ownerMasterId) {
-            await createEnrollmentRequestNotification({
-              recipientUserId: editor.userId,
-              title: `${req.user.username} requested to join ${course.title}`,
-              message: `${req.user.username} is requesting enrollment. Review the request in Course Builder.`,
-              actorUserId: userId,
-              sourceEntityType: 'Course',
-              sourceEntityId: course.id,
-              actionUrl: `/course_builder.html?id=${course.id}`
-            });
+            console.log(`[selfEnroll] Sending editor notification to editorUserId=${editor.userId}...`);
+            try {
+              await createEnrollmentRequestNotification({
+                recipientUserId: editor.userId,
+                title: `${req.user.username} requested to join ${course.title}`,
+                message: `${req.user.username} is requesting enrollment. Review the request in Course Builder.`,
+                actorUserId: userId,
+                sourceEntityType: 'Course',
+                sourceEntityId: course.id,
+                actionUrl: `/course_builder.html?id=${course.id}`
+              });
+              console.log(`[selfEnroll] Editor notification sent OK`);
+            } catch (notifErr) {
+              console.error(`[selfEnroll] FAILED to send editor notification:`, notifErr.message, notifErr.stack);
+            }
           }
         }
       }
     }
 
+    console.log(`[selfEnroll] SUCCESS — returning enrollment id=${enrollment.id}`);
     return res.status(201).json(enrollment);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Failed to subscribe to course.' });
+    console.error(`[selfEnroll] FATAL ERROR:`, error.message, error.stack);
+    return res.status(500).json({ error: 'Failed to subscribe to course.', details: error.message });
   }
 }
 

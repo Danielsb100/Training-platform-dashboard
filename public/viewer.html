@@ -464,7 +464,10 @@
                             });
 
                             if (!res.ok) {
-                                throw new Error('Request failed');
+                                let errBody = {};
+                                try { errBody = await res.json(); } catch(e) {}
+                                const errMsg = errBody.details || errBody.error || ('HTTP ' + res.status);
+                                throw new Error(errMsg);
                             }
 
                             const data = await res.json();
@@ -503,7 +506,7 @@
                             console.error('Enrollment request failed:', err);
                             requestBtn.disabled = false;
                             requestBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i>Request Enrollment';
-                            alert('Failed to send enrollment request. Please try again.');
+                            alert('Failed to send enrollment request: ' + err.message);
                         }
                     });
                 }
