@@ -219,11 +219,16 @@ app.use(
     etag: true,
     lastModified: true,
     setHeaders: (res, filePath) => {
-      if (/\.(glb|gltf|png|jpg|jpeg|gif|webp|svg|css|js|woff|woff2)$/i.test(filePath)) {
-        // Cache assets for 1 year
+      // 1. Heavy static assets (3D models, fonts, images) -> cache for 1 year
+      if (/\.(glb|gltf|png|jpg|jpeg|gif|webp|svg|woff|woff2)$/i.test(filePath)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      } else {
-        // Do not cache HTML to ensure fresh entry points
+      } 
+      // 2. JavaScript and CSS -> cache but MUST revalidate with server (ETag) to ensure latest code
+      else if (/\.(css|js)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, no-cache');
+      } 
+      // 3. HTML files -> strictly no caching
+      else {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
