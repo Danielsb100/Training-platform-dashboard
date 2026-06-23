@@ -100,7 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
             catalogueGrid.insertAdjacentHTML('beforeend', descHTML);
         }
 
-        filteredProjects.forEach(project => {
+        const activeProjects = filteredProjects.filter(p => p.status !== 'Past Project');
+        const pastProjects = filteredProjects.filter(p => p.status === 'Past Project');
+
+        let contentHTML = '';
+
+        function getProjectCardHTML(project) {
             let statusClass = 'status-soon';
             if (project.status === 'Active Project') statusClass = 'status-active';
             if (project.status === 'Past Project') statusClass = 'status-past';
@@ -125,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 logoHTML = `<img src="${project.logo_file}" alt="${project.project_name} logo" class="project-logo-img" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px;" onerror="this.onerror=null; this.outerHTML='<div class=\\'project-logo-ph\\'><i class=\\'fas fa-image\\'></i></div>';">`;
             }
 
-            const cardHTML = `
+            return `
                 <div class="project-card fade-target">
                     <div class="project-header">
                         ${logoHTML}
@@ -141,8 +146,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-            catalogueGrid.insertAdjacentHTML('beforeend', cardHTML);
-        });
+        }
+
+        if (activeProjects.length > 0) {
+            contentHTML += `
+                <div class="projects-section-title fade-target" style="grid-column: 1 / -1; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid #eaeaea; padding-bottom: 10px;">
+                    <h3 style="font-size: 1.3rem; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0; font-family: 'Inter', sans-serif;">
+                        <i class="fas fa-bolt" style="color: #D4AF37; font-size: 1.1rem;"></i> Active Projects
+                    </h3>
+                </div>
+            `;
+            activeProjects.forEach(project => {
+                contentHTML += getProjectCardHTML(project);
+            });
+        }
+
+        if (pastProjects.length > 0) {
+            contentHTML += `
+                <div class="projects-section-title fade-target" style="grid-column: 1 / -1; margin-top: 2rem; margin-bottom: 0.5rem; border-bottom: 1px solid #eaeaea; padding-bottom: 10px;">
+                    <h3 style="font-size: 1.3rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0; font-family: 'Inter', sans-serif;">
+                        <i class="fas fa-archive" style="color: #94a3b8; font-size: 1.1rem;"></i> Past Projects
+                    </h3>
+                </div>
+            `;
+            pastProjects.forEach(project => {
+                contentHTML += getProjectCardHTML(project);
+            });
+        }
+
+        catalogueGrid.insertAdjacentHTML('beforeend', contentHTML);
 
         // Re-trigger fade in for new elements
         catalogueGrid.querySelectorAll('.fade-target').forEach(el => {
