@@ -657,6 +657,7 @@
         "noDocsFilter": "Δεν βρέθηκαν έγγραφα για αυτό το φίλτρο.",
         "genericDocument": "Γενικό Έγγραφο",
         "interactivePdf": "Διαδραστικό αρχείο PDF",
+        "mandatory": "Υποχρεωτικό",
         "textDocument": "Έγγραφο Κειμένου",
         "loadingImage": "Φόρτωση εικόνας...",
         "downloadOriginal": "Λήψη Αρχικού",

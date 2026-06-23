@@ -657,6 +657,7 @@
         "noDocsFilter": "Для этого фильтра не найдено ни одного документа.",
         "genericDocument": "Общий документ",
         "interactivePdf": "Интерактивный PDF-файл",
+        "mandatory": "Обязательный",
         "textDocument": "Текстовый документ",
         "loadingImage": "Загрузка изображения...",
         "downloadOriginal": "Скачать оригинал",

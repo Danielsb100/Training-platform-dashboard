@@ -5059,9 +5059,14 @@ function renderModuleDocs(docs) {
     wordList.innerHTML = '';
     imgGrid.innerHTML = '';
 
-    docs.forEach(d => {
+    // Sort mandatory docs to top
+    const sortedDocs = [...docs].sort((a, b) => (b.isMandatory ? 1 : 0) - (a.isMandatory ? 1 : 0));
+
+    sortedDocs.forEach(d => {
         const ext = d.title ? d.title.split('.').pop().toLowerCase() : '';
         const tType = (d.type || '').toLowerCase();
+        const isMandatory = Boolean(d.isMandatory);
+        const mandatoryTag = isMandatory ? `<span style="background:#f59e0b; color:#1e293b; font-size:0.65rem; font-weight:700; padding:1px 6px; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em;">★ MANDATORY</span>` : '';
 
         const isPdf = tType === 'application/pdf' || ext === 'pdf';
         const isWord = tType.includes('word') || tType.includes('officedocument.wordprocessingml') || ['doc', 'docx'].includes(ext);
@@ -5073,15 +5078,19 @@ function renderModuleDocs(docs) {
             li.style.justifyContent = 'space-between';
             li.style.alignItems = 'center';
             li.style.padding = '0.5rem';
-            li.style.background = 'rgba(255,255,255,0.05)';
+            li.style.background = isMandatory ? 'rgba(63,63,70,0.8)' : 'rgba(255,255,255,0.05)';
             li.style.borderRadius = '8px';
+            if (isMandatory) li.style.border = '1px solid #d97706';
             li.innerHTML = `
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #ff4444; font-weight:bold;">📄 PDF</span>
-                    <span>${d.title}</span>
+                <div style="display: flex; gap: 10px; align-items: center; overflow: hidden; flex-grow: 1; padding-right: 15px;">
+                    <span style="color: #ff4444; font-weight:bold; flex-shrink: 0;">📄 PDF</span>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
-                <button class="btn-sm" style="background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Download</button>
+                <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+                    ${mandatoryTag}
+                    <button class="btn-sm" style="background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Download</button>
+                </div>
             `;
             li.querySelector('button').onclick = () => downloadModuleDocumentAsset(d);
             pdfList.appendChild(li);
@@ -5091,15 +5100,19 @@ function renderModuleDocs(docs) {
             li.style.justifyContent = 'space-between';
             li.style.alignItems = 'center';
             li.style.padding = '0.5rem';
-            li.style.background = 'rgba(255,255,255,0.05)';
+            li.style.background = isMandatory ? 'rgba(63,63,70,0.8)' : 'rgba(255,255,255,0.05)';
             li.style.borderRadius = '8px';
+            if (isMandatory) li.style.border = '1px solid #d97706';
             li.innerHTML = `
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="color: #4488ff; font-weight:bold;">📃 Word</span>
-                    <span>${d.title}</span>
+                <div style="display: flex; gap: 10px; align-items: center; overflow: hidden; flex-grow: 1; padding-right: 15px;">
+                    <span style="color: #4488ff; font-weight:bold; flex-shrink: 0;">📃 Word</span>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${d.title}</span>
                     ${buildViewedStatusPill(Boolean(d.viewed))}
                 </div>
-                <button class="btn-sm" style="background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Download</button>
+                <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+                    ${mandatoryTag}
+                    <button class="btn-sm" style="background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">Download</button>
+                </div>
             `;
             li.querySelector('button').onclick = () => downloadModuleDocumentAsset(d);
             wordList.appendChild(li);

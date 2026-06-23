@@ -657,6 +657,7 @@
         "noDocsFilter": "Keine Dokumente für diesen Filter gefunden.",
         "genericDocument": "Allgemeines Dokument",
         "interactivePdf": "Interaktive PDF-Datei",
+        "mandatory": "Pflichtdokument",
         "textDocument": "Textdokument",
         "loadingImage": "Bild Lädt...",
         "downloadOriginal": "Original Herunterladen",

@@ -657,6 +657,7 @@
         "noDocsFilter": "Niciun document găsit pentru acest filtru.",
         "genericDocument": "Document Generic",
         "interactivePdf": "Fișier PDF Interactiv",
+        "mandatory": "Obligatoriu",
         "textDocument": "Document Text",
         "loadingImage": "Se Încarcă Imaginea...",
         "downloadOriginal": "Descarcă Originalul",

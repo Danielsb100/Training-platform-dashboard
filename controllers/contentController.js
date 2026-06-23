@@ -133,7 +133,7 @@ const deleteVideo = async (req, res) => {
 const addDocument = async (req, res) => {
     try {
         const { id } = req.params; // moduleId
-        const { title, documentId, order, languageSessionId } = req.body;
+        const { title, documentId, order, languageSessionId, isMandatory } = req.body;
 
         const module = await prisma.trainingModule.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!module) return res.status(404).json({ error: 'Module not found' });
@@ -150,7 +150,8 @@ const addDocument = async (req, res) => {
                 documentId: parseInt(documentId),
                 title,
                 order: parseInt(order) || 0,
-                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null
+                languageSessionId: languageSessionId ? parseInt(languageSessionId) : null,
+                isMandatory: Boolean(isMandatory)
             }
         });
         console.log(`[DEBUG] ModuleDocument created:`, doc.id);
@@ -164,7 +165,7 @@ const addDocument = async (req, res) => {
 const updateDocument = async (req, res) => {
     try {
         const { documentId } = req.params;
-        const { title, order, languageSessionId } = req.body;
+        const { title, order, languageSessionId, isMandatory } = req.body;
 
         const modDoc = await prisma.moduleDocument.findUnique({ 
             where: { id: parseInt(documentId) },
@@ -184,6 +185,7 @@ const updateDocument = async (req, res) => {
         if (languageSessionId !== undefined) {
             updateData.languageSessionId = languageSessionId !== null ? parseInt(languageSessionId) : null;
         }
+        if (isMandatory !== undefined) updateData.isMandatory = Boolean(isMandatory);
 
         const updated = await prisma.moduleDocument.update({
             where: { id: parseInt(documentId) },

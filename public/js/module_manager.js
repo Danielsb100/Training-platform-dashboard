@@ -1521,6 +1521,15 @@ async function deleteDoc(docId) {
     }
 }
 
+async function toggleDocMandatory(docId, currentState) {
+    try {
+        await apiCall(`/modules/${editingModuleId}/documents/${docId}`, 'PUT', { isMandatory: !currentState });
+        loadModuleData(editingModuleId);
+    } catch (error) {
+        alert('Error toggling mandatory: ' + error.message);
+    }
+}
+
 window.currentDocFilter = 'all';
 
 function setDocFilter(filter) {
@@ -1587,7 +1596,10 @@ function renderDocs(docs) {
     let itemsToRenderGrid = [];
 
     if (filter === 'all') {
-        itemsToRenderList = [...pdfs, ...words, ...ppts, ...others];
+        const allList = [...pdfs, ...words, ...ppts, ...others];
+        // Sort mandatory docs to top
+        allList.sort((a, b) => (b.isMandatory ? 1 : 0) - (a.isMandatory ? 1 : 0));
+        itemsToRenderList = allList;
         itemsToRenderGrid = images;
     } else if (filter === 'pdf') {
         itemsToRenderList = pdfs;
@@ -1617,16 +1629,23 @@ function renderDocs(docs) {
                 if (stringToTest.endsWith('.pdf')) { icon = 'fas fa-file-pdf'; color = '#ef4444'; }
                 else if (stringToTest.endsWith('.doc') || stringToTest.endsWith('.docx')) { icon = 'fas fa-file-word'; color = '#2563eb'; }
                 else if (stringToTest.endsWith('.ppt') || stringToTest.endsWith('.pptx')) { icon = 'fas fa-file-powerpoint'; color = '#d97706'; }
+                const isMandatory = Boolean(d.isMandatory);
+                const mandatoryBg = isMandatory ? '#3f3f46' : '#f8fafc';
+                const mandatoryBorder = isMandatory ? '#52525b' : '#e2e8f0';
+                const mandatoryTextColor = isMandatory ? '#fafafa' : '#1e293b';
+                const mandatoryTag = isMandatory ? `<span style="background:#f59e0b; color:#1e293b; font-size:0.7rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap;">Mandatory</span>` : '';
 
                 return `
-                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 15px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <i class="${icon}" style="color: ${color}; font-size:1.2rem;"></i>
-                            <strong style="color:#1e293b; font-size:0.95rem;">${name}</strong>
+                    <div style="background:${mandatoryBg}; border:1px solid ${mandatoryBorder}; border-radius:8px; padding:12px 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px; overflow:hidden; flex-grow:1; padding-right:15px;">
+                            <i class="${icon}" style="color: ${isMandatory ? '#fbbf24' : color}; font-size:1.2rem; flex-shrink:0;"></i>
+                            <strong style="color:${mandatoryTextColor}; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</strong>
                         </div>
-                        <div style="display:flex; gap:10px;">
-                            <a href="${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}" target="_blank" style="color:#10b981; background:#d1fae5; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Download File"><i class="fas fa-download"></i></a>
-                            <button onclick="deleteDoc(${d.id})" style="background:#fee2e2; border:none; color:#ef4444; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="Remove"><i class="fas fa-trash"></i></button>
+                        <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+                            ${mandatoryTag}
+                            <button onclick="toggleDocMandatory(${d.id}, ${isMandatory})" style="background:${isMandatory ? '#fef3c7' : '#f1f5f9'}; border:none; color:${isMandatory ? '#d97706' : '#94a3b8'}; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="${isMandatory ? 'Remove mandatory' : 'Mark as mandatory'}"><i class="fas fa-star"></i></button>
+                            <a href="${API_URL}/api/documents/download/${d.documentId || d.id}?token=${getAuthToken()}" target="_blank" style="color:${isMandatory ? '#34d399' : '#10b981'}; background:${isMandatory ? 'rgba(209,250,229,0.2)' : '#d1fae5'}; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Download File"><i class="fas fa-download"></i></a>
+                            <button onclick="deleteDoc(${d.id})" style="background:${isMandatory ? 'rgba(254,226,226,0.2)' : '#fee2e2'}; border:none; color:#ef4444; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="Remove"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;

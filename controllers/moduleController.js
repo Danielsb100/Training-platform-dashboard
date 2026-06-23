@@ -67,7 +67,8 @@ const formatModuleData = (module, format = 'runtime', userRole = 'USER', userId 
             order: d.order,
             documentId: d.documentId,
             type: d.document ? d.document.type : 'application/octet-stream',
-            languageSessionId: d.languageSessionId || null
+            languageSessionId: d.languageSessionId || null,
+            isMandatory: Boolean(d.isMandatory)
         })).sort((a, b) => a.order - b.order),
         quizzes: (module.quizzes || []).map(qz => {
             const sub = quizSubmissionMap.get(qz.id);

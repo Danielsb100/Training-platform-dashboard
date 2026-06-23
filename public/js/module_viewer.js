@@ -677,7 +677,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.classList.toggle('active', btn.dataset.type === filter);
         });
 
-        const filteredDocs = documents.filter(d => filter === 'all' || getDocType(d.title) === filter);
+        let filteredDocs;
+        if (filter === 'mandatory') {
+            filteredDocs = documents.filter(d => d.isMandatory);
+        } else {
+            filteredDocs = documents.filter(d => filter === 'all' || getDocType(d.title) === filter);
+        }
+
+        // Sort mandatory docs to top when in 'all' view
+        if (filter === 'all') {
+            filteredDocs.sort((a, b) => (b.isMandatory ? 1 : 0) - (a.isMandatory ? 1 : 0));
+        }
 
         if (filteredDocs.length === 0) {
             container.innerHTML = '<p style="color:#94a3b8; padding-top:20px;">' + (window.t ? window.t('moduleViewer.noDocsFilter', 'No documents found for this filter.') : 'No documents found for this filter.') + '</p>';
@@ -693,23 +703,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         filteredDocs.forEach(d => {
             const type = getDocType(d.title);
             const originalIndex = documents.indexOf(d);
-            
+            const isMandatory = Boolean(d.isMandatory);
+            const mandatoryTagText = window.t ? window.t('moduleViewer.mandatory', 'Mandatory') : 'Mandatory';
+            const gridMandatoryTag = isMandatory
+                ? `<div style="position:absolute; top:8px; right:8px; background:#f59e0b; color:#1e293b; font-size:0.6rem; font-weight:700; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.04em; z-index:10; box-shadow:0 2px 4px rgba(0,0,0,0.2);">★ ${mandatoryTagText}</div>`
+                : '';
+            const listMandatoryTag = isMandatory
+                ? `<span style="background:#f59e0b; color:#1e293b; font-size:0.65rem; font-weight:700; padding:4px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; margin-right:10px;">★ ${mandatoryTagText}</span>`
+                : '';
             if (type === 'image' || type === 'ppt') {
                 const icon = type === 'image' ? 'fa-image' : 'fa-file-powerpoint';
                 const color = type === 'image' ? '#10b981' : '#f97316';
                 
                 let thumbContent = `<i class="fas ${icon}" style="color: ${color}"></i>`;
                 if (type === 'image') {
-                    // Try to load actual thumbnail if inline view is available
-                    // Use fetch to bypass auth limits, or keep icon if it fails
                     thumbContent = `<div class="auth-img-thumb" data-url="/api/documents/download/${d.documentId}?inline=true" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"><i class="fas fa-spinner fa-spin" style="color: #cbd5e1;"></i></div>`;
                 }
 
                 gridItems.push(`
-                    <div class="doc-grid-item" onclick="openPlayer('document', ${originalIndex})">
+                    <div class="doc-grid-item" onclick="openPlayer('document', ${originalIndex})" style="position:relative; ${isMandatory ? 'border: 2px solid #d97706; background: #3f3f46;' : ''}">
+                        ${gridMandatoryTag}
                         <div class="doc-grid-thumb">${thumbContent}</div>
-                        <div class="doc-grid-body">
-                            <div class="doc-grid-title">${escapeHtml(d.title)}</div>
+                        <div class="doc-grid-body" style="${isMandatory ? 'background:#3f3f46; color:#fafafa;' : ''}">
+                            <div class="doc-grid-title" style="${isMandatory ? 'color:#fafafa;' : ''}">${escapeHtml(d.title)}</div>
                             <div class="doc-grid-meta">
                                 <span><i class="fas ${icon}"></i> ${type.toUpperCase()}</span>
                                 <i class="fas fa-eye" style="color:#cf9c33;"></i>
@@ -725,14 +741,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (type === 'pdf') { icon = 'fa-file-pdf'; color = '#ef4444'; desc = (window.t ? window.t('moduleViewer.interactivePdf', 'Interactive PDF File') : 'Interactive PDF File'); }
                 if (type === 'word') { icon = 'fa-file-word'; color = '#3b82f6'; desc = (window.t ? window.t('moduleViewer.textDocument', 'Text Document') : 'Text Document'); }
 
+                const listBg = isMandatory ? '#3f3f46' : '#f8fafc';
+                const listBorder = isMandatory ? '#52525b' : '#e2e8f0';
+                const titleColor = isMandatory ? '#fafafa' : '';
+                const descColor = isMandatory ? '#a1a1aa' : '';
+
                 listItems.push(`
-                    <div class="list-item">
-                        <div class="list-icon" style="color:${color}; background:#f0f9ff;"><i class="fas ${icon}"></i></div>
+                    <div class="list-item" style="background:${listBg}; border-color:${listBorder};">
+                        <div class="list-icon" style="color:${isMandatory ? '#fbbf24' : color}; background:${isMandatory ? 'rgba(251,191,36,0.15)' : '#f0f9ff'};"><i class="fas ${icon}"></i></div>
                         <div class="list-content" style="cursor:pointer;" onclick="openPlayer('document', ${originalIndex})">
-                            <div class="list-title">${escapeHtml(d.title)}</div>
-                            <p class="list-desc">${desc}</p>
+                            <div class="list-title" style="${titleColor ? 'color:' + titleColor + ';' : ''}">${escapeHtml(d.title)}</div>
+                            <p class="list-desc" style="${descColor ? 'color:' + descColor + ';' : ''}">${desc}</p>
                         </div>
-                        <div class="list-action">
+                        <div class="list-action" style="display:flex; align-items:center;">
+                            ${listMandatoryTag}
                             <button class="btn-action-icon" title="View" onclick="openPlayer('document', ${originalIndex})">
                                 <i class="fas fa-eye"></i>
                             </button>
