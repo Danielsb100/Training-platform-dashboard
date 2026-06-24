@@ -36,20 +36,7 @@ const AVA_PROJECTS = [
         link_type: "external",
         notes: "Training route not confirmed yet. Do not show an Access Training button."
     },
-    {
-        family: "security",
-        project_name: "OSINT RADAR",
-        project_slug: "osint-radar",
-        logo_file: "assets/ava/projects/security-border-migration/osint-radar/logo.png",
-        short_description: "OSINT RADAR focuses on disrupting migrant smuggling by strengthening the capacity of law enforcement and judicial authorities to target online and Digital-as-a-Service activities of criminal networks.",
-        status: "Active Project",
-        primary_cta_label: "Visit Official Website",
-        primary_cta_url: "https://www.osintradar-project.eu/",
-        secondary_cta_label: "",
-        secondary_cta_url: "",
-        link_type: "external",
-        notes: "Training route not confirmed yet. Do not show an Access Training button."
-    },
+
     {
         family: "security",
         project_name: "PHYGITAL-OC",
