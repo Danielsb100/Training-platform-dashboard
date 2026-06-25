@@ -323,6 +323,92 @@
                     </div>
                 </div>
 
+                <!-- Certificate Editor Modal -->
+                <div id="certificate-editor-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:5000; align-items:center; justify-content:center; padding:20px;">
+                    <div style="background:white; width:95%; max-width:900px; border-radius:16px; max-height:90vh; overflow-y:auto; box-shadow:0 25px 60px rgba(0,0,0,0.4); position:relative;">
+                        <!-- Header -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:25px 30px; border-bottom:1px solid #e2e8f0; position:sticky; top:0; background:white; z-index:10; border-radius:16px 16px 0 0;">
+                            <div>
+                                <h2 style="margin:0; color:#1e293b; font-size:1.5rem; display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-certificate" style="color:#c9a84c;"></i> Certificate Editor
+                                </h2>
+                                <p style="margin:4px 0 0 0; color:#64748b; font-size:0.9rem;">Design and issue certificates for your students.</p>
+                            </div>
+                            <button onclick="closeCertificateModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; padding:5px;"><i class="fas fa-times"></i></button>
+                        </div>
+
+                        <div style="padding:30px; display:grid; grid-template-columns:1fr 1fr; gap:30px;">
+                            <!-- Left: Form -->
+                            <div>
+                                <div style="margin-bottom:18px;">
+                                    <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:6px; font-size:0.95rem;">Certificate Title</label>
+                                    <input type="text" id="cert-title-input" placeholder="CERTIFICATE" style="width:100%; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:1rem; font-family:inherit;" oninput="updateCertificatePreview()">
+                                </div>
+                                <div style="margin-bottom:18px;">
+                                    <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:6px; font-size:0.95rem;">Subtitle</label>
+                                    <input type="text" id="cert-subtitle-input" placeholder="OF ATTENDANCE" style="width:100%; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:1rem; font-family:inherit;" oninput="updateCertificatePreview()">
+                                </div>
+                                <div style="margin-bottom:18px;">
+                                    <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:6px; font-size:0.95rem;">Description Text</label>
+                                    <p style="margin:0 0 6px 0; color:#94a3b8; font-size:0.8rem;">Use <code>{studentName}</code> for the student's name, and <code>{courseName}</code> for the course title.</p>
+                                    <textarea id="cert-body-input" rows="5" placeholder="has successfully completed the training program {courseName}..." style="width:100%; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.95rem; font-family:inherit; resize:vertical;" oninput="updateCertificatePreview()"></textarea>
+                                </div>
+                                <div style="margin-bottom:18px;">
+                                    <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:6px; font-size:0.95rem;">Project Logo</label>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <label for="cert-logo-file" style="padding:10px 14px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-size:0.9rem; font-weight:600; color:#475569;"><i class="fas fa-upload" style="margin-right:6px;"></i>Upload Image</label>
+                                        <input type="file" id="cert-logo-file" accept="image/*" style="display:none;" onchange="handleCertLogoUpload(event)">
+                                        <span id="cert-logo-filename" style="font-size:0.85rem; color:#64748b;">No file selected</span>
+                                    </div>
+                                    <input type="hidden" id="cert-logo-input">
+                                </div>
+                                <div style="margin-bottom:22px; display:flex; align-items:center; gap:12px; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                                    <input type="checkbox" id="cert-auto-issue" style="width:18px; height:18px; cursor:pointer;">
+                                    <label for="cert-auto-issue" style="color:#1e293b; font-weight:600; cursor:pointer; font-size:0.9rem;">Auto-issue when student completes 100% of the course</label>
+                                </div>
+                                <div style="display:flex; gap:10px;">
+                                    <button id="cert-save-btn" onclick="saveCertificateTemplate()" style="flex:1; padding:12px; background:#c9a84c; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer; transition:0.2s;"><i class="fas fa-save" style="margin-right:6px;"></i>Save Template</button>
+                                    <button onclick="deleteCertificateTemplate()" style="padding:12px 16px; background:white; color:#ef4444; border:1px solid #ef4444; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s;" title="Delete Template"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Right: Preview -->
+                            <div>
+                                <label style="display:block; font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:0.95rem;"><i class="fas fa-eye" style="color:#497aa7; margin-right:6px;"></i>Live Preview</label>
+                                <div id="cert-preview-container" style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:10px; padding:15px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Issue Section -->
+                        <div style="padding:0 30px 30px 30px;">
+                            <div style="border-top:1px solid #e2e8f0; padding-top:25px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                    <h3 style="margin:0; color:#1e293b; font-size:1.15rem;"><i class="fas fa-paper-plane" style="color:#c9a84c; margin-right:8px;"></i>Issued Certificates</h3>
+                                    <button id="cert-bulk-issue-btn" onclick="issueBulkCertificates()" style="padding:8px 18px; background:#1e293b; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem;"><i class="fas fa-paper-plane"></i> Issue to All Eligible</button>
+                                </div>
+                                <div id="cert-issued-list" style="display:flex; flex-direction:column; gap:10px; max-height:200px; overflow-y:auto;">
+                                    <p style="color:#94a3b8; text-align:center; font-size:0.9rem;">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificate Section -->
+                <div class="card" style="border-color: #e8d48b; background: #fffdf5;">
+                    <div class="card-header" style="border-color: #e8d48b;">
+                        <h3 style="color: #c9a84c;"><i class="fas fa-certificate" style="margin-right:8px;"></i><span>Course Certificate</span></h3>
+                        <p><span>Design and issue a certificate for students who complete this course.</span></p>
+                    </div>
+                    <div id="cert-action-container">
+                        <div class="action-card" onclick="openCertificateModal()" style="border-color:#e8d48b; background:white;">
+                            <i class="fas fa-award" style="color:#c9a84c; font-size:2rem; margin-bottom:10px; display:block;"></i>
+                            <h4> <span>Create Certificate</span> </h4>
+                            <p> <span>Design a certificate for your students.</span> </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Danger Zone -->
                 <div class="card" style="border-color: #fecaca; background: #fffafb;">
                     <div class="card-header" style="border-color: #fecaca;">
@@ -1009,6 +1095,7 @@
                             // Load editors if saved course
                             loadCoEditors(window.editingCourseId);
                             loadStudents(window.editingCourseId);
+                            if (typeof initCertificateCard === 'function') initCertificateCard();
                         }
                     }
                 } catch (err) {
@@ -1634,6 +1721,7 @@
     </script>
     <script src="js/module_manager.js?v=20260622_cache_bust"></script>
     <script src="js/rooms_manager.js?v=20260609"></script>
+    <script src="js/certificate_editor.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 

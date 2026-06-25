@@ -410,6 +410,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     loadEurobotSyncPanel();
 
+    // --- 2d. Load certificates ---
+    loadMyCertificates();
+
     // --- 3. Load Profile API ---
     try {
         const profileRes = await fetch('/api/profile/me', {
@@ -1245,6 +1248,158 @@ window.deleteChannelCard = async function(channelId) {
         }
     } catch(e) { 
         console.error(e); 
-        alert('Erro na comunicaÃƒÂ§ÃƒÂ£o com o servidor.');
+        alert('Erro na comunica\u00e7\u00e3o com o servidor.');
     }
 };
+
+// ============================================================================
+// Certificate System — Profile View
+// ============================================================================
+
+let _myCertificates = [];
+
+async function loadMyCertificates() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/certificates/my', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load certificates');
+        _myCertificates = await res.json();
+        renderMyCertificates();
+        updateCertHeaderBadge();
+    } catch (err) {
+        console.error('[certificates] Load error:', err);
+    }
+}
+
+function updateCertHeaderBadge() {
+    const stat = document.getElementById('cert-header-stat');
+    const count = document.getElementById('cert-header-count');
+    if (!stat || !count) return;
+
+    if (_myCertificates.length > 0) {
+        stat.style.display = '';
+        count.textContent = _myCertificates.length;
+    } else {
+        stat.style.display = 'none';
+    }
+}
+
+function renderMyCertificates() {
+    const grid = document.getElementById('certificates-grid');
+    const totalCount = document.getElementById('cert-total-count');
+    if (!grid) return;
+
+    if (totalCount) totalCount.textContent = _myCertificates.length;
+
+    if (!_myCertificates.length) {
+        grid.innerHTML = `
+            <div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #e2e8f0; grid-column: 1 / -1;">
+                <i class="fas fa-certificate" style="font-size:36px; color:#e2e8f0; margin-bottom:10px; display:block;"></i>
+                <p style="color:#94a3b8; margin:0;">No certificates yet. Complete your courses to earn certificates!</p>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = _myCertificates.map(cert => {
+        const dateStr = new Date(cert.issuedAt).toLocaleDateString();
+        return `
+            <div onclick="expandCertificate(${cert.id})" style="background:white; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.04);"
+                 onmouseover="this.style.boxShadow='0 8px 25px rgba(201,168,76,0.15)'; this.style.borderColor='#c9a84c';"
+                 onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'; this.style.borderColor='#e2e8f0';">
+                <div style="padding:15px; background:linear-gradient(135deg, #fffdf5, #f8fafc); border-bottom:1px solid #e2e8f0;">
+                    ${(() => {
+                        let bgUrl = '/assets/certificate/bg_final.png';
+                        if (cert.projectLogoUrl && cert.projectLogoUrl !== '/assets/certificate/img_52.png' && cert.projectLogoUrl !== '') {
+                            bgUrl = escapeHtmlAttr(cert.projectLogoUrl);
+                        }
+                        return `
+                        <div style="width:100%; aspect-ratio:3508/2480; position:relative; background:url('${bgUrl}') center/cover no-repeat; border-radius:4px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06); container-type: inline-size;">
+                            <!-- Content Area -->
+                            <div style="position:absolute; top:18%; left:8%; right:45%; bottom:15%; display:flex; flex-direction:column; justify-content:flex-start; z-index:4;">
+                                <div style="font-weight:900; font-size:4.5cqi; color:#032b2f; letter-spacing:2px; line-height:1.1; margin-bottom:1.5%; font-family:sans-serif;">${escapeHtml(cert.certificateTitle || 'CERTIFICATE')}</div>
+                                <div style="font-size:2cqi; color:#475569; letter-spacing:3px; margin-bottom:8%;">${escapeHtml(cert.certificateSubtitle || '')}</div>
+                                <div style="font-family:'DM Serif Display',serif; font-size:4.2cqi; color:#018c94; margin-bottom:1.5%;">${escapeHtml(cert.studentName)}</div>
+                                <div style="width:80%; height:2px; background:#333; margin-bottom:6%;"></div>
+                                <div style="font-size:1.6cqi; color:#333; line-height:1.6; max-width:95%; font-weight:500;">
+                                    ${escapeHtml(cert.certificateBodyText || '').replace(/\{studentName\}/gi, escapeHtml(cert.studentName)).replace(/\{courseName\}/gi, escapeHtml(cert.courseTitle || '')).replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    })()}
+                </div>
+                <div style="padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+                        <div>
+                            <div style="font-weight:700; color:#1e293b; font-size:0.95rem;">${escapeHtml(cert.courseTitle)}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-top:2px;"><i class="fas fa-calendar-alt" style="margin-right:4px;"></i>${dateStr}</div>
+                        </div>
+                        <span style="background:#fffdf5; color:#c9a84c; border:1px solid #e8d48b; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:bold;">
+                            <i class="fas fa-certificate"></i>
+                        </span>
+                    </div>
+                    <a href="/api/certificates/${cert.id}/download" target="_blank" onclick="event.stopPropagation();" style="display:block; text-align:center; background:#c9a84c; color:white; padding:8px; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.85rem; transition:0.2s;"
+                       onmouseover="this.style.background='#b8913f'" onmouseout="this.style.background='#c9a84c'">
+                        <i class="fas fa-download" style="margin-right:5px;"></i>Download PDF
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function expandCertificate(certId) {
+    const cert = _myCertificates.find(c => c.id === certId);
+    if (!cert) return;
+
+    const overlay = document.getElementById('certificate-viewer-overlay');
+    const content = document.getElementById('cert-viewer-content');
+    const downloadLink = document.getElementById('cert-viewer-download');
+    if (!overlay || !content) return;
+
+    if (downloadLink) downloadLink.href = `/api/certificates/${certId}/download`;
+
+    const title = escapeHtml(cert.certificateTitle || 'CERTIFICATE');
+    const subtitle = escapeHtml(cert.certificateSubtitle || '');
+    const studentName = escapeHtml(cert.studentName);
+
+    let bgUrl = '/assets/certificate/bg_final.png';
+    if (cert.projectLogoUrl && cert.projectLogoUrl !== '/assets/certificate/img_52.png' && cert.projectLogoUrl !== '') {
+        bgUrl = escapeHtmlAttr(cert.projectLogoUrl);
+    }
+
+    content.innerHTML = `
+        <div style="width:100%; aspect-ratio:3508/2480; position:relative; background:url('${bgUrl}') center/cover no-repeat; font-family:'Inter',sans-serif; container-type: inline-size;">
+            
+            <!-- Content Area -->
+            <div style="position:absolute; top:18%; left:8%; right:45%; bottom:15%; display:flex; flex-direction:column; justify-content:flex-start; z-index:4;">
+                <div style="font-weight:900; font-size:4.5cqi; color:#032b2f; letter-spacing:2px; line-height:1.1; margin-bottom:1.5%; font-family:sans-serif;">${title}</div>
+                ${subtitle ? `<div style="font-size:2cqi; color:#475569; letter-spacing:3px; margin-bottom:8%;">${subtitle}</div>` : '<div style="margin-bottom:8%;"></div>'}
+                <div style="font-family:'DM Serif Display',serif; font-size:4.2cqi; color:#018c94; margin-bottom:1.5%;">${studentName}</div>
+                <div style="width:80%; height:2px; background:#333; margin-bottom:6%;"></div>
+                <div style="font-size:1.6cqi; color:#333; line-height:1.6; max-width:95%; font-weight:500;">
+                    ${escapeHtml(cert.certificateBodyText || '').replace(/\{studentName\}/gi, studentName).replace(/\{courseName\}/gi, escapeHtml(cert.courseTitle || '')).replace(/\n/g, '<br>')}
+                </div>
+            </div>
+
+        </div>
+    `;
+
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCertificateViewer() {
+    const overlay = document.getElementById('certificate-viewer-overlay');
+    if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+window.loadMyCertificates = loadMyCertificates;
+window.expandCertificate = expandCertificate;
+window.closeCertificateViewer = closeCertificateViewer;

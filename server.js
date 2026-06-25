@@ -40,6 +40,7 @@ const systemController = require('./controllers/systemController');
 const multiplayerController = require('./controllers/multiplayerController');
 const languageSessionController = require('./controllers/languageSessionController');
 const courseRoomController = require('./controllers/courseRoomController');
+const certificateController = require('./controllers/certificateController');
 
 const COURSE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
 const MODULE_MANAGER_ROLES = ['MASTER', 'ADMIN', 'SUPER_ADMIN', 'TUTOR', 'TEACHER', 'COORDINATOR'];
@@ -344,6 +345,17 @@ app.get('/api/landing-pages/course/:courseId', landingPageController.getLandingP
 app.post('/api/landing-pages', authenticateToken, landingPageController.createLandingPage);
 app.put('/api/landing-pages/:id', authenticateToken, landingPageController.updateLandingPage);
 app.delete('/api/landing-pages/:id', authenticateToken, landingPageController.deleteLandingPage);
+
+// --- Certificates API ---
+app.get('/api/courses/:id/certificate-template', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.getTemplate);
+app.put('/api/courses/:id/certificate-template', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.upsertTemplate);
+app.delete('/api/courses/:id/certificate-template', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.deleteTemplate);
+app.post('/api/courses/:id/certificates/issue', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.issueCertificate);
+app.post('/api/courses/:id/certificates/issue-bulk', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.issueBulk);
+app.get('/api/courses/:id/certificates', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.listIssuedCertificates);
+app.get('/api/certificates/my', authenticateToken, certificateController.getMyCertificates);
+app.get('/api/certificates/:id/download', authenticateToken, certificateController.downloadCertificate);
+app.post('/api/courses/:id/certificate-template/preview', authenticateToken, roleMiddleware(COURSE_MANAGER_ROLES), certificateController.previewPdf);
 
 
 app.post('/modules', authenticateToken, roleMiddleware(MODULE_MANAGER_ROLES), moduleController.createModule);
