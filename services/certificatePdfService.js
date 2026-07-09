@@ -132,6 +132,8 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+const puppeteer = require('puppeteer');
+
 /**
  * Generate a PDF buffer from a certificate template + student name.
  * @param {object} template — CertificateTemplate record from DB
@@ -140,19 +142,41 @@ function escapeHtml(str) {
  */
 async function generateCertificatePdf(template, studentName) {
   const html = buildCertificateHtml(template, studentName);
-
-  const file = { content: html };
-  const options = {
-    width: '11.69in',
-    height: '8.27in',
-    printBackground: true,
-    preferCSSPageSize: true,
-    margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' },
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+  
+  // Launch puppeteer with strict args for containerized environments
+  const launchOptions = {
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
   };
 
-  const pdfBuffer = await htmlPdf.generatePdf(file, options);
-  return pdfBuffer;
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  } else if (fs.existsSync('/usr/bin/chromium')) {
+    launchOptions.executablePath = '/usr/bin/chromium';
+  } else if (fs.existsSync('/usr/bin/google-chrome')) {
+    launchOptions.executablePath = '/usr/bin/google-chrome';
+  }
+
+  const browser = await puppeteer.launch(launchOptions);
+  
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    
+    const pdfBuffer = await page.pdf({
+      width: '11.69in',
+      height: '8.27in',
+      printBackground: true,
+      preferCSSPageSize: true,
+      margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
+    });
+    
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    await browser.close();
+    throw error;
+  }
 }
 
 module.exports = {

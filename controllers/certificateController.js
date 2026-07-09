@@ -235,7 +235,7 @@ async function issueBulk(req, res) {
       } catch (e) {
         console.error(`[issueBulk] Failed for userId ${enrollment.userId}:`, e.message);
         results.errors++;
-        results.failedUsers.push(studentName);
+        results.failedUsers.push(`${studentName} (${e.message})`);
       }
     }
 
