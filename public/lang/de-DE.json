@@ -678,7 +678,12 @@
         "goodEffort": "Gute Leistung! Versuchen Sie es erneut, um sich zu verbessern.",
         "keepStudying": "Lernen Sie weiter und versuchen Sie es erneut!",
         "retakeQuiz": "Quiz Wiederholen",
-        "errorSubmitAnswers": "Beim Einreichen Ihrer Antworten ist ein Fehler aufgetreten."
+        "errorSubmitAnswers": "Beim Einreichen Ihrer Antworten ist ein Fehler aufgetreten.",
+        "aiTranslationNotice": "⚠️ Dieser Inhalt wurde möglicherweise mit Hilfe von KI übersetzt.",
+        "aiDownloadTitle": "KI-Übersetzungshinweis",
+        "aiDownloadMessage": "Dieses Dokument wurde möglicherweise mit Hilfe von KI übersetzt. Bitte überprüfen Sie die Genauigkeit vor der Verwendung.",
+        "downloadConfirm": "Herunterladen",
+        "downloadCancel": "Abbrechen"
     },
     "students": {
         "dashboard": "Dashboard",

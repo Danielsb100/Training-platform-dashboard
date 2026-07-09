@@ -219,11 +219,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         videos = filterBySession(moduleData.videos || []).map(v => ({ ...v, contentType: 'video' })).sort((a,b) => a.order - b.order);
-        // Documents are now filtered by session like videos and quizzes (exclusive, no fallback)
+        // Filter documents by session, with fallback to base if none found
         documents = (moduleData.documents || []).filter(d => {
             if (activeSessionId === null) return !d.languageSessionId;
             return d.languageSessionId === activeSessionId;
         }).map(d => ({ ...d, contentType: 'document' })).sort((a,b) => a.order - b.order);
+
+        // Fallback: If no documents in current language session, use base language documents
+        if (documents.length === 0 && activeSessionId !== null) {
+            documents = (moduleData.documents || [])
+                .filter(d => !d.languageSessionId)
+                .map(d => ({ ...d, contentType: 'document' }))
+                .sort((a,b) => a.order - b.order);
+        }
         let quizzesRaw = moduleData.quizzes || [];
         quizzes = filterBySession(quizzesRaw).map(q => ({ ...q, contentType: 'quiz' })).sort((a,b) => a.order - b.order);
         
@@ -1076,14 +1084,28 @@ btnBackHub.addEventListener('click', () => {
     });
     
     // Telemetry and Actions
-    window.downloadDocument = async function(documentId) {
+    window.downloadDocument = function(documentId) {
+        const modal = document.getElementById('download-confirm-modal');
+        if (!modal) { performDownload(documentId); return; }
+        modal.classList.add('active');
+        
+        document.getElementById('download-cancel-btn').onclick = () => {
+            modal.classList.remove('active');
+        };
+        document.getElementById('download-confirm-btn').onclick = () => {
+            modal.classList.remove('active');
+            performDownload(documentId);
+        };
+    };
+
+    async function performDownload(documentId) {
         try {
             const ticketRes = await fetch(`/api/documents/${documentId}/ticket`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             const { ticket } = await ticketRes.json();
             if (ticket) {
                 window.open(`/api/documents/ticket/${ticket}`, '_blank');
             } else {
-                alert('Falha ao gerar ticket de download.');
+                alert(window.t ? window.t('moduleViewer.falhaAoGerarTicketDe', 'Falha ao gerar ticket de download.') : 'Falha ao gerar ticket de download.');
                 return;
             }
             
@@ -1096,9 +1118,9 @@ btnBackHub.addEventListener('click', () => {
                 body: JSON.stringify({ source: 'dashboard' })
             });
         } catch(e) {
-            console.error('Failed to log document download telemtry:', e);
+            console.error('Failed to log document download telemetry:', e);
         }
-    };
+    }
     
     async function handleQuizSubmit(e) {
         e.preventDefault();

@@ -678,7 +678,12 @@
         "goodEffort": "Efort bun! Încearcă din nou pentru a te îmbunătăți.",
         "keepStudying": "Continuă să studiezi și încearcă din nou!",
         "retakeQuiz": "Refă Testul",
-        "errorSubmitAnswers": "A apărut o eroare la trimiterea răspunsurilor tale."
+        "errorSubmitAnswers": "A apărut o eroare la trimiterea răspunsurilor tale.",
+        "aiTranslationNotice": "⚠️ Acest conținut ar fi putut fi tradus cu ajutorul IA.",
+        "aiDownloadTitle": "Avertisment Traducere IA",
+        "aiDownloadMessage": "Acest document ar fi putut fi tradus cu ajutorul IA. Verificați acuratețea înainte de utilizare.",
+        "downloadConfirm": "Descarcă",
+        "downloadCancel": "Anulare"
     },
     "students": {
         "dashboard": "Panou",

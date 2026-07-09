@@ -678,7 +678,12 @@
         "goodEffort": "Përpjekje e mirë! Provoni përsëri për t'u përmirësuar.",
         "keepStudying": "Vazhdoni të studioni dhe provoni përsëri!",
         "retakeQuiz": "Bëni sërish Kuizin",
-        "errorSubmitAnswers": "Ndodhi një gabim gjatë dorëzimit të përgjigjeve tuaja."
+        "errorSubmitAnswers": "Ndodhi një gabim gjatë dorëzimit të përgjigjeve tuaja.",
+        "aiTranslationNotice": "⚠️ Ky përmbajtje mund të jetë përkthyer me ndihmën e IA.",
+        "aiDownloadTitle": "Njoftim Përkthimi IA",
+        "aiDownloadMessage": "Ky dokument mund të jetë përkthyer me ndihmën e IA. Verifikoni saktësinë përpara përdorimit.",
+        "downloadConfirm": "Shkarko",
+        "downloadCancel": "Anulo"
     },
     "students": {
         "dashboard": "Paneli",

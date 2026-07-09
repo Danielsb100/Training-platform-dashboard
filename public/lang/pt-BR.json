@@ -678,7 +678,12 @@
         "goodEffort": "Bom esforço! Mas você pode tentar de novo para melhorar.",
         "keepStudying": "Continue estudando e tente novamente!",
         "retakeQuiz": "Refazer Quiz",
-        "errorSubmitAnswers": "Ocorreu um erro ao enviar suas respostas."
+        "errorSubmitAnswers": "Ocorreu um erro ao enviar suas respostas.",
+        "aiTranslationNotice": "⚠️ Este conteúdo pode ter sido traduzido com o auxílio de IA.",
+        "aiDownloadTitle": "Aviso de Tradução por IA",
+        "aiDownloadMessage": "Este documento pode ter sido traduzido com o auxílio de IA. Verifique sua precisão antes de usar.",
+        "downloadConfirm": "Download",
+        "downloadCancel": "Cancelar"
     },
     "students": {
         "dashboard": "Painel",

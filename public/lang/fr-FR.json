@@ -678,7 +678,12 @@
         "goodEffort": "Bel effort ! Essayez encore pour vous améliorer.",
         "keepStudying": "Continuez à étudier et réessayez !",
         "retakeQuiz": "Refaire le Quiz",
-        "errorSubmitAnswers": "Une erreur s'est produite lors de la soumission de vos réponses."
+        "errorSubmitAnswers": "Une erreur s'est produite lors de la soumission de vos réponses.",
+        "aiTranslationNotice": "⚠️ Ce contenu a peut-être été traduit avec l'aide de l'IA.",
+        "aiDownloadTitle": "Avis de Traduction IA",
+        "aiDownloadMessage": "Ce document a peut-être été traduit avec l'aide de l'IA. Veuillez vérifier son exactitude avant utilisation.",
+        "downloadConfirm": "Télécharger",
+        "downloadCancel": "Annuler"
     },
     "students": {
         "dashboard": "Tableau de Bord",

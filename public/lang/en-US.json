@@ -678,7 +678,12 @@
         "goodEffort": "Good effort! Try again to improve.",
         "keepStudying": "Keep studying and try again!",
         "retakeQuiz": "Retake Quiz",
-        "errorSubmitAnswers": "An error occurred while submitting your answers."
+        "errorSubmitAnswers": "An error occurred while submitting your answers.",
+        "aiTranslationNotice": "⚠️ This content may have been translated with the assistance of AI.",
+        "aiDownloadTitle": "AI Translation Notice",
+        "aiDownloadMessage": "This document may have been translated with the assistance of AI. Please verify its accuracy before use.",
+        "downloadConfirm": "Download",
+        "downloadCancel": "Cancel"
     },
     "students": {
         "dashboard": "Dashboard",

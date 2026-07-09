@@ -678,7 +678,12 @@
         "goodEffort": "Buon impegno! Riprova per migliorare.",
         "keepStudying": "Continua a studiare e riprova!",
         "retakeQuiz": "Ripeti Quiz",
-        "errorSubmitAnswers": "Si è verificato un errore durante l'invio delle risposte."
+        "errorSubmitAnswers": "Si è verificato un errore durante l'invio delle risposte.",
+        "aiTranslationNotice": "⚠️ Questo contenuto potrebbe essere stato tradotto con l'assistenza dell'IA.",
+        "aiDownloadTitle": "Avviso Traduzione IA",
+        "aiDownloadMessage": "Questo documento potrebbe essere stato tradotto con l'assistenza dell'IA. Verificare la precisione prima dell'uso.",
+        "downloadConfirm": "Scarica",
+        "downloadCancel": "Annulla"
     },
     "students": {
         "dashboard": "Pannello",

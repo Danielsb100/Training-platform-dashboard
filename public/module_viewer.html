@@ -960,6 +960,9 @@
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.entryTest">Entry test</h2>
                         <p data-i18n="moduleViewer.entryTestDesc">Start the module by taking the entry test</p>
+                        <p data-i18n="moduleViewer.aiTranslationNotice" style="margin:10px 0 0; padding:8px 14px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; color:#92400e; font-size:0.82rem; display:flex; align-items:center; gap:8px;">
+                            ⚠️ This content may have been translated with the assistance of AI.
+                        </p>
                     </div>
                     <div class="list-layout" id="entry-test-list">
                         <p style="color:#94a3b8;" data-i18n="moduleViewer.entryTestNotYetAvailable">Entry test not yet available.</p>
@@ -981,6 +984,9 @@
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.videoGallery">Video Gallery</h2>
                         <p data-i18n="moduleViewer.recordedLessons">Recorded lessons and audiovisual materials.</p>
+                        <p data-i18n="moduleViewer.aiTranslationNotice" style="margin:10px 0 0; padding:8px 14px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; color:#92400e; font-size:0.82rem; display:flex; align-items:center; gap:8px;">
+                            ⚠️ This content may have been translated with the assistance of AI.
+                        </p>
                     </div>
                     <div class="grid-layout" id="videos-grid"></div>
                 </div>
@@ -989,6 +995,9 @@
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.supportMaterial">Support Material</h2>
                         <p data-i18n="moduleViewer.viewDownloadDocs">View or download module documents.</p>
+                        <p data-i18n="moduleViewer.aiTranslationNotice" style="margin:10px 0 0; padding:8px 14px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; color:#92400e; font-size:0.82rem; display:flex; align-items:center; gap:8px;">
+                            ⚠️ This content may have been translated with the assistance of AI.
+                        </p>
                         <div class="doc-filters" id="doc-filters">
                             <button class="doc-filter active" data-type="all" data-i18n="common.all">All</button>
                             <button class="doc-filter" data-type="mandatory" data-i18n="moduleViewer.mandatory" style="border-color:#d97706; color:#d97706;">★ Mandatory</button>
@@ -1012,6 +1021,9 @@
                     <div class="hub-header">
                         <h2 data-i18n="moduleViewer.assessments">Assessments</h2>
                         <p data-i18n="moduleViewer.testKnowledge">Test your knowledge with this final evaluation.</p>
+                        <p data-i18n="moduleViewer.aiTranslationNotice" style="margin:10px 0 0; padding:8px 14px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; color:#92400e; font-size:0.82rem; display:flex; align-items:center; gap:8px;">
+                            ⚠️ This content may have been translated with the assistance of AI.
+                        </p>
                     </div>
                     <div class="list-layout" id="quizzes-list"></div>
                 </div>
@@ -1029,6 +1041,24 @@
                         <!-- Content goes here -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="download-confirm-modal">
+        <div class="modal-content" style="max-width:420px; text-align:center;">
+            <i class="fas fa-exclamation-triangle" style="font-size:2.5rem; color:#f59e0b; margin-bottom:12px;"></i>
+            <h2 data-i18n="moduleViewer.aiDownloadTitle" style="color:#0f172a; margin-top:0;">AI Translation Notice</h2>
+            <p data-i18n="moduleViewer.aiDownloadMessage" style="color:#475569; font-size:0.95rem; line-height:1.6;">
+                This document may have been translated with the assistance of AI. Please verify its accuracy before use.
+            </p>
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+                <button id="download-confirm-btn" class="btn-submit-quiz" style="width:auto; padding:10px 24px; font-size:0.95rem;">
+                    <i class="fas fa-download"></i> <span data-i18n="moduleViewer.downloadConfirm">Download</span>
+                </button>
+                <button id="download-cancel-btn" style="padding:10px 24px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-weight:600; color:#475569; font-size:0.95rem;">
+                    <span data-i18n="moduleViewer.downloadCancel">Cancel</span>
+                </button>
             </div>
         </div>
     </div>
