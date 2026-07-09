@@ -45,6 +45,7 @@ model User {
   placements          WorldModulePlacement[]   @relation("MasterPlacements")
   ownedChannels       Channel[]                @relation("ChannelOwner")
   roomMemberships     CourseRoomMember[]
+  issuedCertificates  IssuedCertificate[]
 }
 
 model UserProfile {
@@ -283,6 +284,7 @@ model Course {
   placements    WorldModulePlacement[]
   channels      ChannelCourse[]
   rooms         CourseRoom[]
+  certificateTemplate CertificateTemplate?
 }
 
 model CourseEditor {
@@ -832,4 +834,35 @@ model CourseRoomMember {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([courseRoomId, userId])
+}
+
+model CertificateTemplate {
+  id              Int                 @id @default(autoincrement())
+  courseId         Int                 @unique
+  title           String
+  subtitle        String?
+  bodyText        String              @db.Text
+  projectLogoUrl  String?             @db.Text
+  autoIssue       Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  course          Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  issuedCerts     IssuedCertificate[]
+}
+
+model IssuedCertificate {
+  id          Int                   @id @default(autoincrement())
+  templateId  Int
+  userId      Int
+  courseId    Int
+  studentName String
+  issuedAt    DateTime              @default(now())
+  issuedBy    Int?
+  pdfData     Bytes
+  template    CertificateTemplate   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, userId])
+  @@index([userId])
+  @@index([courseId])
 }

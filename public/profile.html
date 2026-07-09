@@ -66,6 +66,9 @@
                         <div class="profile-stats">
                             <div class="stat"><span id="pages-count">0</span> <span data-i18n="profile.creationsCount">Creations</span></div>
                             <div class="stat"><span>4.8</span> <span data-i18n="profile.averageRating">Average Rating</span></div>
+                            <div class="stat" id="cert-header-stat" style="display:none; cursor:pointer;" onclick="document.querySelector('[data-tab=subscriptions]')?.click(); setTimeout(()=>document.getElementById('my-certificates-section')?.scrollIntoView({behavior:'smooth'}),300);">
+                                <span id="cert-header-count" style="color:#c9a84c;">0</span> <span style="color:#c9a84c;"><i class="fas fa-certificate" style="margin-right:3px;"></i>Certificates</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -230,6 +233,22 @@
 
             <!-- Subscriptions Pane -->
             <section id="pane-subscriptions" style="display:none; padding:40px 60px;">
+                <!-- My Certificates Section -->
+                <div id="my-certificates-section" style="margin-bottom:30px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h2 style="margin:0; font-family:'Inter', sans-serif; display:flex; align-items:center; gap:10px;">
+                            <i class="fas fa-certificate" style="color:#c9a84c;"></i> My Certificates
+                        </h2>
+                        <span id="cert-total-count" style="background:#fffdf5; color:#c9a84c; border:1px solid #c9a84c; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:bold;">0</span>
+                    </div>
+                    <div id="certificates-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+                        <div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #e2e8f0; grid-column: 1 / -1;">
+                            <i class="fas fa-certificate" style="font-size:36px; color:#e2e8f0; margin-bottom:10px; display:block;"></i>
+                            <p style="color:#94a3b8; margin:0;">No certificates yet. Complete your courses to earn certificates!</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <h2 style="margin:0; font-family:'Inter', sans-serif;" data-i18n="profile.subscribedCourses">Subscribed Courses & Channels</h2>
                     <div class="filter-group" style="display:flex; gap:10px; background:#f1f5f9; padding:5px; border-radius:8px; border:1px solid #e2e8f0;">
@@ -782,6 +801,14 @@
             <button id="ext-link-delete-btn" onclick="deleteExternalLink()" style="width:100%; margin-top:10px; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:1rem; cursor:pointer; display:none;"><i class="fas fa-trash"></i> <span data-i18n="externalLink.deleteLink">Excluir Link</span></button>
             <button onclick="closeExternalLinkModal()" style="width:100%; margin-top:10px; background:transparent; border:none; cursor:pointer; color:#64748b; font-weight:bold; padding:12px;" data-i18n="common.cancel">Cancelar</button>
         </div>
+    </div>
+    <!-- Certificate Full-Screen Viewer Overlay -->
+    <div id="certificate-viewer-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.9); backdrop-filter:blur(12px); z-index:9000; align-items:center; justify-content:center; flex-direction:column; gap:20px; padding:20px;">
+        <div style="display:flex; gap:15px; position:absolute; top:20px; right:20px; z-index:10;">
+            <a id="cert-viewer-download" href="#" target="_blank" style="background:#c9a84c; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer; text-decoration:none; font-size:0.95rem;"><i class="fas fa-download" style="margin-right:6px;"></i>Download PDF</a>
+            <button onclick="closeCertificateViewer()" style="background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); padding:10px 16px; border-radius:8px; font-size:1.2rem; cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="cert-viewer-content" style="width:90%; max-width:842px; aspect-ratio:842/595; background:white; border-radius:8px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,0.5);"></div>
     </div>
 </body>
 </html>

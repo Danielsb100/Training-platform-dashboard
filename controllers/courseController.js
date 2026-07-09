@@ -2,6 +2,7 @@ const prisma = require('../config/db');
 const { deepDeleteModule } = require('./moduleController');
 const { createEnrollmentNotification, createEnrollmentRequestNotification, createEventInviteNotification } = require('../services/notificationService');
 const { generateCourseInsightsForStudent } = require('../services/moduleAiService');
+const { tryAutoIssueCertificate } = require('./certificateController');
 
 function getEffectiveUserRoles(user) {
   return new Set([
@@ -879,6 +880,11 @@ async function completeCourseModule(req, res) {
             : 'ENROLLED'
         }
       });
+    }
+
+    // --- Auto-issue certificate if 100% completed ---
+    if (refreshedProgress.completedCount === refreshedProgress.modules.length && refreshedProgress.modules.length > 0) {
+      tryAutoIssueCertificate(courseId, req.user.id).catch(() => {});
     }
 
     return res.json({
