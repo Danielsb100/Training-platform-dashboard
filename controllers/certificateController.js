@@ -194,7 +194,7 @@ async function issueBulk(req, res) {
     });
     const issuedSet = new Set(alreadyIssued.map((c) => c.userId));
 
-    const results = { issued: 0, skipped: 0, errors: 0 };
+    const results = { issued: 0, skipped: 0, errors: 0, failedUsers: [] };
 
     for (const enrollment of enrollments) {
       if (issuedSet.has(enrollment.userId)) {
@@ -211,12 +211,14 @@ async function issueBulk(req, res) {
         continue;
       }
 
+      let studentName = 'Student';
       try {
         const student = await prisma.user.findUnique({
           where: { id: enrollment.userId },
           include: { profile: { select: { displayName: true } } }
         });
-        const studentName = student?.profile?.displayName || student?.username || 'Student';
+        studentName = student?.profile?.displayName || student?.username || 'Student';
+        
         const pdfBuffer = await generateCertificatePdf(template, studentName);
 
         await prisma.issuedCertificate.create({
@@ -233,6 +235,7 @@ async function issueBulk(req, res) {
       } catch (e) {
         console.error(`[issueBulk] Failed for userId ${enrollment.userId}:`, e.message);
         results.errors++;
+        results.failedUsers.push(studentName);
       }
     }
 

@@ -327,8 +327,12 @@ async function issueBulkCertificates() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) throw new Error('Bulk issue failed');
-    const results = await res.json();
-    alert(`Done! Issued: ${results.issued}, Skipped: ${results.skipped}, Errors: ${results.errors}`);
+    const { issued, skipped, errors, failedUsers } = await res.json();
+    let msg = `Done! Issued: ${issued}, Skipped: ${skipped}, Errors: ${errors}`;
+    if (failedUsers && failedUsers.length > 0) {
+      msg += `\nFailed to issue for: ${failedUsers.join(', ')}`;
+    }
+    alert(msg);
     loadIssuedCertificates();
   } catch (err) {
     alert('Error: ' + err.message);
