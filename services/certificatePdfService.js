@@ -147,7 +147,8 @@ async function generateCertificatePdf(template, studentName) {
     height: '8.27in',
     printBackground: true,
     preferCSSPageSize: true,
-    margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
+    margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' },
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   };
 
   const pdfBuffer = await htmlPdf.generatePdf(file, options);

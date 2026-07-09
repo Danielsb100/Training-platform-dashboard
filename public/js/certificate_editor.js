@@ -78,6 +78,12 @@ function populateTemplateForm(template) {
     autoIssueToggle.checked = false;
     if (filenameDisplay) filenameDisplay.textContent = 'No file selected';
   }
+
+  const saveBtn = document.getElementById('cert-save-btn');
+  if (saveBtn) {
+    saveBtn.style.background = '#e2e8f0';
+    saveBtn.style.color = '#94a3b8';
+  }
 }
 
 function handleCertLogoUpload(event) {
@@ -112,13 +118,15 @@ async function saveCertificateTemplate() {
     const payload = {
       title: document.getElementById('cert-title-input').value.trim(),
       subtitle: document.getElementById('cert-subtitle-input').value.trim() || null,
-      bodyText: document.getElementById('cert-body-input').value,
+      bodyText: document.getElementById('cert-body-input').value.trim(),
       projectLogoUrl: document.getElementById('cert-logo-input').value.trim() || null,
       autoIssue: document.getElementById('cert-auto-issue').checked
     };
 
     if (!payload.title || !payload.bodyText) {
       alert('Title and body text are required.');
+      saveBtn.innerHTML = origText;
+      saveBtn.disabled = false;
       return;
     }
 
@@ -135,9 +143,11 @@ async function saveCertificateTemplate() {
 
     saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
     saveBtn.style.background = '#10b981';
+    saveBtn.style.color = 'white';
     setTimeout(() => {
       saveBtn.innerHTML = origText;
-      saveBtn.style.background = '';
+      saveBtn.style.background = '#e2e8f0';
+      saveBtn.style.color = '#94a3b8';
       saveBtn.disabled = false;
     }, 2000);
   } catch (err) {
@@ -211,6 +221,12 @@ function updateCertificatePreview() {
   
   // Use container queries for fluid font sizing based on width
   container.style.containerType = 'inline-size';
+
+  const saveBtn = document.getElementById('cert-save-btn');
+  if (saveBtn) {
+    saveBtn.style.background = '#c9a84c';
+    saveBtn.style.color = 'white';
+  }
 }
 
 function escapeHtmlContent(str) {
