@@ -131,25 +131,30 @@ async function getSourceContent(moduleId, sourceSessionId) {
             include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } },
             orderBy: { order: 'asc' }
         });
-        return { videos, quizzes, locale: 'en-US' };
+        const documents = await prisma.moduleDocument.findMany({
+            where: { moduleId, languageSessionId: null },
+            orderBy: { order: 'asc' }
+        });
+        return { videos, quizzes, documents, locale: 'en-US' };
     } else {
         const session = await prisma.moduleLanguageSession.findUnique({
             where: { id: sourceSessionId },
             include: {
                 videos: { orderBy: { order: 'asc' } },
-                quizzes: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } }
+                quizzes: { include: { questions: { include: { options: true }, orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } },
+                documents: { orderBy: { order: 'asc' } }
             }
         });
         if (!session) return null;
-        return { videos: session.videos, quizzes: session.quizzes, locale: session.locale, moduleId: session.moduleId };
+        return { videos: session.videos, quizzes: session.quizzes, documents: session.documents, locale: session.locale, moduleId: session.moduleId };
     }
 }
 
 // Note: Quizzes are duplicated/copied as-is (no auto-translation).
 // Users can translate individual quizzes manually via the "Translate Quiz" button.
 
-// --- Helper: duplicate videos and quizzes into a target session ---
-async function duplicateContentInto(tx, moduleId, targetSessionId, sourceVideos, sourceQuizzes) {
+// --- Helper: duplicate videos, quizzes, and documents into a target session ---
+async function duplicateContentInto(tx, moduleId, targetSessionId, sourceVideos, sourceQuizzes, sourceDocuments = []) {
     // Duplicate video references (same URL, new record)
     for (const video of sourceVideos) {
         await tx.moduleVideo.create({
@@ -159,6 +164,20 @@ async function duplicateContentInto(tx, moduleId, targetSessionId, sourceVideos,
                 title: video.title,
                 url: video.url,
                 order: video.order
+            }
+        });
+    }
+
+    // Duplicate document references (same Document ID, new ModuleDocument record)
+    for (const doc of sourceDocuments) {
+        await tx.moduleDocument.create({
+            data: {
+                moduleId,
+                languageSessionId: targetSessionId,
+                documentId: doc.documentId,
+                title: doc.title,
+                order: doc.order,
+                isMandatory: doc.isMandatory
             }
         });
     }
@@ -192,6 +211,11 @@ async function duplicateContentInto(tx, moduleId, targetSessionId, sourceVideos,
 async function clearSessionContent(tx, moduleId, sessionId) {
     // Delete videos - just the record (the underlying document/URL stays)
     await tx.moduleVideo.deleteMany({
+        where: { moduleId, languageSessionId: sessionId }
+    });
+
+    // Delete module document references
+    await tx.moduleDocument.deleteMany({
         where: { moduleId, languageSessionId: sessionId }
     });
 
@@ -241,8 +265,8 @@ const duplicateTo = async (req, res) => {
                 data: { moduleId, locale: targetLocale.trim() }
             });
 
-            // Duplicate videos and quizzes as-is (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, sourceContent.quizzes);
+            // Duplicate videos, documents, and quizzes
+            await duplicateContentInto(tx, moduleId, targetSession.id, sourceContent.videos, sourceContent.quizzes, sourceContent.documents);
 
             return targetSession;
         });
@@ -300,8 +324,8 @@ const copyFrom = async (req, res) => {
                 await clearSessionContent(tx, moduleId, targetSessionId);
             }
 
-            // Copy videos and quizzes as-is (no documents — they are shared)
-            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, sourceContent.quizzes);
+            // Copy videos, documents, and quizzes
+            await duplicateContentInto(tx, moduleId, targetSessionId, sourceContent.videos, sourceContent.quizzes, sourceContent.documents);
         });
 
         res.json({ message: `Content copied from source (mode: ${mode})` });
